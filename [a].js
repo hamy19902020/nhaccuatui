@@ -2,23 +2,27 @@
 // Biến môi trường (Vercel → Settings → Environment Variables):
 //   ADMIN_PASSWORD                       mật khẩu quản trị (bắt buộc để thêm/sửa/xoá)
 //   UPSTASH_REDIS_REST_URL / _TOKEN      (hoặc KV_REST_API_URL / KV_REST_API_TOKEN) – Vercel tự thêm khi nối Upstash
-//   DB_LIMIT_MB                          tuỳ chọn, mặc định 256 (dùng để tính % dung lượng)
+//   DB_LIMIT_MB / CMD_LIMIT              tuỳ chọn: hạn mức dung lượng (mặc định 256 MB) và số lệnh/tháng (mặc định 500000) của gói Free
 const crypto = require("crypto");
 const URL_ = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
 const TOK = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 const PASS = process.env.ADMIN_PASSWORD;
-const LIMIT = Number(process.env.DB_LIMIT_MB) || 256;
+const LIMIT = Number(process.env.DB_LIMIT_MB) || 256;            // dung lượng gói Free: 256 MB
+const CMD_LIMIT = Number(process.env.CMD_LIMIT) || 500000;        // lệnh/tháng gói Free: 500.000
 const GENRES = ["tre", "remix", "trutinh", "x89", "quocte"];
 const SONGS = "hn:songs", VER = "hn:ver";
 const httpErr = (c, m) => Object.assign(new Error(m), { code: c });
 const sha = (s, t = "sha256") => crypto.createHash(t).update(String(s)).digest();
 
+let used = 0; // số lệnh Redis đã dùng trong tháng (ước tính: mỗi lệnh trong pipeline tính 1, cộng 1 lệnh đếm)
 async function redis(cmds) {
-  const r = await fetch(URL_.replace(/\/$/, "") + "/pipeline", { method: "POST", headers: { Authorization: "Bearer " + TOK, "Content-Type": "application/json" }, body: JSON.stringify(cmds) });
+  const key = "hn:cmd:" + new Date().toISOString().slice(0, 7);
+  const r = await fetch(URL_.replace(/\/$/, "") + "/pipeline", { method: "POST", headers: { Authorization: "Bearer " + TOK, "Content-Type": "application/json" }, body: JSON.stringify([...cmds, ["INCRBY", key, cmds.length + 1]]) });
   if (!r.ok) throw httpErr(502, "Không kết nối được cơ sở dữ liệu (" + r.status + ").");
   const j = await r.json(), e = j.find(x => x.error);
   if (e) throw httpErr(502, "Lỗi cơ sở dữ liệu: " + e.error);
-  return j.map(x => x.result);
+  used = Number(j[j.length - 1].result) || used;
+  return j.slice(0, -1).map(x => x.result);
 }
 // Kiểm tra mật khẩu ở máy chủ; sai quá 10 lần/15 phút (theo IP) thì tạm khoá.
 async function authed(req, password) {
@@ -42,7 +46,7 @@ module.exports = async (req, res) => {
       const songs = []; let bytes = 0;
       for (let i = 0; i < (h || []).length; i += 2) { bytes += h[i + 1].length; try { songs.push(JSON.parse(h[i + 1])); } catch { } }
       songs.sort((x, y) => x.t - y.t);
-      return send(200, { configured: true, ver: Number(v) || 0, songs, mb: bytes / 1048576, limitMb: LIMIT });
+      return send(200, { configured: true, ver: Number(v) || 0, songs, mb: bytes / 1048576, limitMb: LIMIT, cmds: used, limitCmd: CMD_LIMIT });
     }
     if (req.method !== "POST") throw httpErr(405, "Sai phương thức.");
     await authed(req, b.password);

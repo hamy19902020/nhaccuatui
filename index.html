@@ -70,7 +70,10 @@ svg.s{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-l
 .dates{text-align:right}
 .dt{font-size:17px;font-weight:700}
 .lunar{color:var(--mut);font-size:15px}
-.usage{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:9px 14px;margin-bottom:14px;font-size:13px;color:var(--mut)}
+.usage{display:grid;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:9px 14px;margin-bottom:14px;font-size:13px;color:var(--mut)}
+.ur{display:flex;align-items:center;gap:4px 12px;flex-wrap:wrap}
+.ur>span:first-child{min-width:150px}
+.usage.warn{background:var(--ybg);color:var(--ytx);border-color:var(--ybd)}
 .meter{flex:1;min-width:90px;height:6px;background:var(--nbg);border-radius:3px;overflow:hidden}
 .meter i{display:block;height:100%;background:var(--gtx);border-radius:3px;opacity:.75}
 .meter i.w{background:var(--ytx)}.meter i.d{background:var(--ktx)}
@@ -330,29 +333,35 @@ $("err").onclick=()=>err("");
 async function api(path,body){
   const r=await fetch("/api/"+path,{method:body?"POST":"GET",headers:body?{"Content-Type":"application/json"}:{},body:body?JSON.stringify(body):undefined,cache:"no-store"});
   let j={};try{j=await r.json()}catch(e){}
-  if(!r.ok){const e=new Error(j.error||"Lỗi máy chủ ("+r.status+")");e.status=r.status;throw e}
+  if(!r.ok){const e=new Error(j.error||(r.status===404?"Không tìm thấy máy chủ /api (lỗi 404). Hãy kiểm tra thư mục api đã được đẩy lên GitHub và Vercel đã deploy lại chưa.":"Lỗi máy chủ ("+r.status+")"));e.status=r.status;throw e}
   return j;
 }
 function relock(msg){pw="";unlocked=false;LS.del("hn.pw");drawAdm();render();err(msg)}
 async function write(path,body){try{return await api(path,{password:pw,...body})}catch(e){if(e.status===401)relock("Mật khẩu quản trị không còn đúng. Hãy mở khóa lại.");throw e}}
 function setCloud(c){if(cloud!==c){cloud=c;LS.set("hn.mode",c?"cloud":"local");S.items=LS.get(ikey())||[]}drawAdm();drawUsage()}
-let usageData=null;
+let usageData=null,localWhy="",localWarn=false;
+const fmtN=n=>Math.round(n).toLocaleString("vi-VN");
+function meterRow(label,pc,txt){
+  const r=document.createElement("div"),a=document.createElement("span"),m=document.createElement("div"),i=document.createElement("i"),t=document.createElement("span");
+  r.className="ur";a.textContent=label;m.className="meter";i.style.width=Math.max(Math.min(pc,100),1)+"%";i.className=pc>=90?"d":pc>=70?"w":"";m.append(i);t.textContent=txt;r.append(a,m,t);return r;
+}
 function drawUsage(){
-  const u=$("usage");u.replaceChildren();
-  if(!cloud){const t=document.createElement("span");t.textContent="Chế độ cục bộ: danh sách chỉ lưu trên thiết bị này.";u.append(t);u.hidden=false;return}
+  const u=$("usage");u.replaceChildren();u.classList.toggle("warn",!cloud&&localWarn);
+  if(!cloud){const t=document.createElement("span");t.textContent="Chế độ cục bộ: "+(localWhy?localWhy+" ":"")+"Danh sách chỉ lưu trên thiết bị này.";u.append(t);u.hidden=false;return}
   if(!usageData){u.hidden=true;return}
-  const pc=Math.min(100,usageData.mb/usageData.limitMb*100),a=document.createElement("span"),m=document.createElement("div"),i=document.createElement("i"),t=document.createElement("span");
-  a.textContent="Dung lượng lưu trữ";m.className="meter";i.style.width=Math.max(pc,1)+"%";i.className=pc>=90?"d":pc>=70?"w":"";m.append(i);
-  t.textContent=pc.toFixed(2)+"% · "+usageData.mb.toFixed(2)+"/"+usageData.limitMb+" MB";u.append(a,m,t);u.hidden=false;
+  const d=usageData,pm=d.mb/d.limitMb*100,pc=d.cmds!=null?d.cmds/d.limitCmd*100:0;
+  u.append(meterRow("Upstash: dung lượng",pm,pm.toFixed(2)+"% · "+d.mb.toFixed(2)+" / "+fmtN(d.limitMb)+" MB"));
+  if(d.cmds!=null)u.append(meterRow("Upstash: lệnh tháng này",pc,pc.toFixed(2)+"% · "+fmtN(d.cmds)+" / "+fmtN(d.limitCmd)+" lệnh (ước tính)"));
+  u.hidden=false;
 }
 async function sync(){
   if(inflight)return;
   try{
     const j=await api("data");
-    if(!j.configured){setCloud(false)}
+    if(!j.configured){localWhy="Chưa nối Upstash Redis.";localWarn=false;setCloud(false)}
     else{setCloud(true);err("");S.items=j.songs;persist();usageData=j;drawUsage()}
   }catch(e){
-    if(e.status===404||e.status===405)setCloud(false);
+    if(e.status===404||e.status===405){localWhy="Chưa tìm thấy máy chủ /api (lỗi 404): thư mục api chưa được triển khai trên Vercel.";localWarn=true;setCloud(false)}
     else err("Không đồng bộ được, đang hiển thị bản lưu trên máy. "+e.message);
   }
   loadingList=false;render();showNow();
