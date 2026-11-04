@@ -1,4 +1,4 @@
-// Hộp nhạc – "cầu nối" trên Vercel: nhận yêu cầu từ trang web, kiểm tra mật khẩu, đọc/ghi Upstash Redis.
+// Nhạc Của Tui – "cầu nối" trên Vercel: nhận yêu cầu từ trang web, kiểm tra mật khẩu, đọc/ghi Upstash Redis.
 // Biến môi trường (Vercel → Settings → Environment Variables):
 //   ADMIN_PASSWORD                       mật khẩu quản trị (bắt buộc để thêm/sửa/xoá)
 //   UPSTASH_REDIS_REST_URL / _TOKEN      (hoặc KV_REST_API_URL / KV_REST_API_TOKEN) – Vercel tự thêm khi nối Upstash
