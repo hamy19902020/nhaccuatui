@@ -21,8 +21,10 @@ api/app.js             <- "cầu nối" chạy trên Vercel (BẮT BUỘC nằm 
 
 ## Vercel
 - Nối **Storage → Upstash Redis** vào dự án (Vercel tự thêm các biến kết nối).
-- **Nên đặt** biến `ADMIN_PHONE` = số điện thoại của admin (ví dụ `0901234567`).
-  Không đặt thì người tạo tài khoản đầu tiên sau khi cập nhật sẽ thành admin.
+- **Tài khoản admin mặc định:** đăng nhập bằng email `ducanhitpt@gmail.com` (bấm "Đăng nhập bằng email" ở màn hình đăng nhập)
+  với mật khẩu mặc định chủ app đã chọn. Tài khoản tự tạo ở lần đăng nhập đầu tiên. Trong code chỉ lưu mật khẩu dạng băm.
+  Đăng nhập xong nên vào Tài khoản → Đổi mật khẩu. (Tuỳ chọn: đặt biến `ADMIN_EMAIL` / `ADMIN_PASSWORD` trên Vercel để dùng email/mật khẩu khác.)
+- Tuỳ chọn: biến `ADMIN_PHONE` = một số điện thoại cũng được làm admin.
 - Biến tuỳ chọn: `ADMIN_EMAIL` (admin của bản cũ), `SESSION_SECRET` (đừng đổi sau khi đã dùng,
   vì mật khẩu lưu cho admin xem được mã hoá bằng chuỗi này), `DB_LIMIT_MB`, `CMD_LIMIT`.
 
@@ -51,3 +53,10 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   bình luận theo bài, lưu bài .mp3 để nghe khi mất mạng, đăng nhập bằng mã ghép nối 6 số, chuyển nhanh nhiều tài khoản,
   vuốt trái/phải trên tên bài để chuyển bài, phím tắt (Space, ←/→, n, p).
   Máy chủ có thêm: lists, gsongs, glnew/glren/gldel, gadd/gedit/gdel, cmts/cmt/cmdel, pairnew/pairuse, switch.
+- **23/11/2026 (bản 4)**: Tài khoản → **Kiểm tra kết nối** (mạng, máy chủ /api, biến Upstash, ADMIN_PHONE, ghi/đọc thử,
+  dung lượng, YouTube, SponsorBlock, DeArrow…) và **Xoá dữ liệu** (admin: theo thành viên / tháng / năm / toàn bộ, đếm trước rồi
+  mới xoá). Link chia sẻ + mã QR tự theo tên miền đang mở (không cần sửa code khi đổi tên miền).
+  Máy chủ có thêm: health, purge.
+- **23/11/2026 (bản 5)**: tài khoản admin mặc định bằng email; **Quên mật khẩu** (thành viên gửi yêu cầu, admin thấy ở tab Quản trị);
+  admin **Đặt về 123** hoặc đặt mật khẩu khác; ai đang dùng mật khẩu mặc định sẽ được nhắc đổi khi đăng nhập.
+  Máy chủ có thêm: forgot, rsdel; apass nhận `reset: true`.

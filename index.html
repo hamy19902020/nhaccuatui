@@ -332,6 +332,11 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
 .cm .cx p{margin:2px 0 0;white-space:pre-wrap;word-break:break-word}
 .cmf{display:flex;gap:6px;align-items:flex-end;margin-top:6px}
 .cmf textarea{flex:1;min-width:0;border:0;outline:none;background:var(--fill);border-radius:14px;padding:10px 12px;font-size:16px;resize:none;min-height:42px;max-height:120px}
+.hc{display:flex;gap:10px;align-items:flex-start;padding:8px 6px;font-size:14px}
+.hc+.hc{border-top:1px solid var(--sep)}
+.hc i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:700;font-size:12px;background:var(--green);margin-top:1px}
+.hc i.no{background:var(--red)}.hc i.wn{background:var(--orange)}.hc i.wt{background:var(--gray)}
+.hc div{flex:1;min-width:0}.hc small{display:block;color:var(--tx2);font-size:12px;word-break:break-word}
 .code{font:700 32px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-align:center;padding:14px 0 6px}
 .note{color:var(--tx2);font-size:12.5px;margin:0 0 8px;text-align:center}
 .steps{margin:0 0 12px;padding-left:20px;font-size:13.5px}
@@ -421,6 +426,8 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
 
   <section class="view" id="vAdmin" aria-label="Quản trị" hidden>
    <div class="vh"><h1>Quản trị</h1><p>Danh sách phát chung, thành viên, số điện thoại và mật khẩu. Chỉ admin thấy trang này.</p></div>
+   <div class="atools"><button class="btn blue" id="admHealth"></button><button class="btn plain" id="admPurge"></button></div>
+   <div class="gw" id="admResetsW" hidden><h3>Yêu cầu quên mật khẩu</h3><div class="grp card" id="admResets"></div><p class="foot">Bấm “Đặt về 123” – thành viên đăng nhập bằng 123 rồi app sẽ nhắc họ đổi mật khẩu mới.</p></div>
    <div class="stats" id="admStats"></div>
    <div class="usage card" id="usage" hidden></div>
    <div class="gw"><h3>Danh sách phát chung</h3><div class="grp card" id="admLists"></div><p class="foot">Mọi thành viên đều thấy các danh sách này và thêm nhạc vào được. Thành viên không tự tạo danh sách.</p></div>
@@ -445,7 +452,8 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
 const GENRES=[["tre","Nhạc trẻ"],["remix","Remix"],["trutinh","Trữ tình"],["x89","8x · 9x"],["quocte","Nhạc nước ngoài"]];
 const GC={tre:"#ff2d75",remix:"#8b5cf6",trutinh:"#ff8a1f",x89:"#14b87a",quocte:"#2f7bff"};
 const FILLED=new Set(["play","pause","next","prev","more","skip"]);
-const SITE="https://nhaccuatui.vercel.app";
+const SITE=location.origin;
+const RESET_PW="123"; // mật khẩu mặc định khi admin đặt lại // link chia sẻ luôn theo đúng tên miền đang mở
 const $=id=>document.getElementById(id);
 const h=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const ico=(n,f)=>`<svg class="i${FILLED.has(n)?"":" s"}${f?" f":""}" aria-hidden="true"><use href="#${n}"/></svg>`;
@@ -476,7 +484,7 @@ let user=me0.user||null,lists=me0.lists||[],favIds=new Set(me0.favIds||[]),admin
 let accts=LS.get("hn.accts")||[];
 let glists=LS.get("hn.gl")||[],src=LS.get("hn.src")||null,items=[],qText="";
 let tab=LS.get("hn.tab")||"home";if(!["home","me","admin"].includes(tab))tab="home";
-let members=LS.get("hn.members")||[],aUsers=null,usageData=null,admQ="",showAll=false;const shown=new Set();
+let resets=[],members=LS.get("hn.members")||[],aUsers=null,usageData=null,admQ="",showAll=false;const shown=new Set();
 let offIds=new Set(LS.get("hn.off")||[]);
 let loaded=false,yt=null,ytReady=false,pending=null,played=new Set(),hist=[],playing=false,wantPlay=false,sleepAt=0,sleepEnd=false,loadingList=false,inflight=0,toastT,ccDone="",blobUrl="",netWait=false;
 const au=$("au");
@@ -575,11 +583,23 @@ function openLogin(){
   const mk=(t,fn)=>{const b=h("button","link",t);b.type="button";b.onclick=fn;ex.append(b)};
   mk("Chưa có tài khoản? Đăng ký",()=>openSignup());
   mk("Đăng nhập bằng mã ghép nối (6 số)",()=>openCodeLogin());
-  mk("Quên mật khẩu?",()=>{fMsg.className="msg ok";fMsg.textContent="Hãy nhờ admin xem lại hoặc đặt lại mật khẩu giúp bạn."});
-  mk("Tài khoản cũ đăng ký bằng email",()=>{const e=els.phone;e.type="email";e.inputMode="email";e.placeholder="ten@gmail.com";e.closest(".fld").firstChild.textContent="Email";e.focus()});
+  mk("Quên mật khẩu?",()=>openForgot(els.phone.value));
+  mk("Đăng nhập bằng email (tài khoản admin)",()=>{const e=els.phone;e.type="email";e.inputMode="email";e.placeholder="ten@gmail.com";e.closest(".fld").firstChild.textContent="Email";e.focus()});
   els=formSheet({title:"Đăng nhập",btn:"Đăng nhập",extra:ex,
     fields:[{id:"phone",label:"Số điện thoại",type:"tel",im:"tel",auto:"username",ph:"Ví dụ: 0901 234 567"},{id:"pass",label:"Mật khẩu",type:"password",auto:"current-password"}],
     fn:async v=>{if(!v.phone)throw Error("Hãy nhập số điện thoại.");if(!v.pass)throw Error("Hãy nhập mật khẩu.");const j=await api("login",{phone:v.phone,password:v.pass});remember(j.user,j.tok);await afterAuth("Xin chào "+j.user.name+"!")}});
+}
+function openForgot(ph){
+  const ex=h("div","links"),b=h("button","link","Quay lại đăng nhập");b.type="button";b.onclick=()=>openLogin();ex.append(b);
+  formSheet({title:"Quên mật khẩu",btn:"Gửi yêu cầu cho admin",extra:ex,note:"Nhập số điện thoại đã đăng ký. Admin sẽ đặt lại mật khẩu về "+RESET_PW+" cho bạn. Sau đó đăng nhập bằng "+RESET_PW+" và đổi mật khẩu mới.",
+    fields:[{id:"phone",label:"Số điện thoại",type:"tel",im:"tel",auto:"username",ph:"Ví dụ: 0901 234 567",value:ph&&!ph.includes("@")?ph:""}],
+    fn:async v=>{if(!okPhone(normPhone(v.phone)))throw Error("Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");await api("forgot",{phone:v.phone});
+      return{keep:"Đã gửi yêu cầu tới admin. Khi admin đặt lại xong, hãy đăng nhập bằng mật khẩu "+RESET_PW+" rồi đổi mật khẩu mới."}}});
+}
+let mcAsked=false;
+function askChangePass(){
+  if(!user||!user.mc||mcAsked)return;mcAsked=true;
+  setTimeout(()=>sheet("Bạn đang dùng mật khẩu mặc định","Để an toàn, hãy đổi sang mật khẩu của riêng bạn.",[{label:"Đổi mật khẩu ngay",icon:"lock",fn:changePass}],"Để sau"),400);
 }
 function openCodeLogin(){
   formSheet({title:"Đăng nhập bằng mã",btn:"Đăng nhập",note:"Trên máy đang đăng nhập: vào Tài khoản → “Đăng nhập máy khác bằng mã” để lấy mã 6 số.",
@@ -596,7 +616,7 @@ function openSignup(){
       const j=await api("register",{name:v.name,phone:v.phone,password:v.pass});remember(j.user,j.tok);await afterAuth("Đã tạo tài khoản. Chào mừng "+v.name+"!");
     }});
 }
-async function afterAuth(msg){aUsers=null;await loadMe();if(!src)pickSrc();else if(src.k==="u"&&src.p==="fav"&&user)src={k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name};render();loadItems();loadMembers();if(admin)loadAdmin();say(msg)}
+async function afterAuth(msg){aUsers=null;mcAsked=false;await loadMe();askChangePass();if(!src)pickSrc();else if(src.k==="u"&&src.p==="fav"&&user)src={k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name};render();loadItems();loadMembers();if(admin)loadAdmin();say(msg)}
 const needLogin=msg=>{say(msg||"Hãy đăng nhập để dùng chức năng này.");openLogin()};
 function clearMe(){user=null;lists=[];favIds=new Set();admin=false;aUsers=null;LS.del("hn.me2")}
 function logout(){
@@ -616,7 +636,7 @@ async function loadMe(){
     const j=await api("me");
     if(j.configured===false){configured=false;warn("Chưa nối cơ sở dữ liệu Upstash Redis nên chưa dùng được tài khoản. Xem hướng dẫn trong README.");return}
     configured=true;warn("");
-    if(j.user){user=j.user;lists=j.lists;favIds=new Set(j.favIds);admin=!!j.admin;saveMe();const a=accts.find(x=>x.id===user.id);if(a&&a.name!==user.name){a.name=user.name;LS.set("hn.accts",accts)}}
+    if(j.user){user=j.user;setTimeout(askChangePass,0);lists=j.lists;favIds=new Set(j.favIds);admin=!!j.admin;saveMe();const a=accts.find(x=>x.id===user.id);if(a&&a.name!==user.name){a.name=user.name;LS.set("hn.accts",accts)}}
     else if(user)clearMe();
   }catch(e){if(e.status===404){configured=false;warn("Chưa tìm thấy máy chủ /api (lỗi 404): thư mục api chưa được đưa lên GitHub hoặc Vercel chưa deploy lại.")}else if(navigator.onLine)err("Không kết nối được máy chủ, đang dùng bản lưu trên máy. "+e.message)}
   if(!admin&&tab==="admin")tab="me";
@@ -630,7 +650,7 @@ function changePhone(){formSheet({title:"Đổi số điện thoại",btn:"Lưu 
 function changePass(){formSheet({title:"Đổi mật khẩu",btn:"Đổi mật khẩu",note:"Các máy khác đang đăng nhập tài khoản này sẽ phải đăng nhập lại.",
   fields:[{id:"old",label:"Mật khẩu hiện tại",type:"password",auto:"current-password"},{id:"pass",label:"Mật khẩu mới (ít nhất 4 ký tự)",type:"password",auto:"new-password"},{id:"pass2",label:"Nhập lại mật khẩu mới",type:"password",auto:"new-password"}],
   fn:async v=>{if(!v.old)throw Error("Hãy nhập mật khẩu hiện tại.");if(v.pass.length<4)throw Error("Mật khẩu mới tối thiểu 4 ký tự.");if(v.pass!==v.pass2)throw Error("Hai mật khẩu mới chưa giống nhau.");
-    const j=await api("passwd",{old:v.old,password:v.pass});remember(user,j.tok);if(admin)loadAdmin();say("Đã đổi mật khẩu.")}})}
+    const j=await api("passwd",{old:v.old,password:v.pass});remember(user,j.tok);user.mc=false;saveMe();if(admin)loadAdmin();say("Đã đổi mật khẩu.")}})}
 async function showPair(){
   if(!user)return needLogin();
   try{
@@ -1151,19 +1171,82 @@ function renderMe(){
       m.l.forEach(l=>ch.append(chip(l.name,l.id==="fav"?"heart":"ilist",false,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.name,owner:m.n}),null,l.c||0)));d.append(ch);r.append(avatar(m.n),d);g.append(r)});
     w.append(g,h("p","foot","Bấm vào danh sách của ai đó để nghe."));B.append(w);
   }
-  const w=h("div","gw");w.append(h("h3",null,"Ứng dụng"));const A=h("div","card appc"),t=h("div","t"),im=h("img");im.src="qr.svg";im.alt="Mã QR mở Nhạc Của Tui";const d=h("div");
+  B.append(group(admin?"Hệ thống (admin)":"Hệ thống",[cell("wifi","var(--blue)","Kiểm tra kết nối","",runHealth,0,admin?"Máy chủ, cơ sở dữ liệu, cấu hình Vercel, YouTube, SponsorBlock…":"Mạng, máy chủ, YouTube, phát nền…"),
+    admin&&cell("trash","var(--red)","Xoá dữ liệu","",openPurge,0,"Theo thành viên, theo tháng, theo năm hoặc toàn bộ")]));
+  const w=h("div","gw");w.append(h("h3",null,"Ứng dụng"));const A=h("div","card appc"),t=h("div","t"),im=h("img");im.src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data="+encodeURIComponent(SITE+"/");im.onerror=()=>{im.onerror=null;im.src="qr.svg"};im.alt="Mã QR mở Nhạc Của Tui";const d=h("div");
   d.append(h("b",null,"Nhạc Của Tui"),h("p",null,SITE.replace(/^https?:\/\//,"")+" · quét mã QR bằng camera điện thoại để mở app"));t.append(im,d);
   const acts=h("div","acts");acts.append(btn("blue","share","Chia sẻ",shareApp),btn("purple","copy","Sao chép link",()=>copyText(SITE+"/","Đã sao chép liên kết ứng dụng.")));
   if(!standalone){const x=btn("green wide","download","Tạo icon ngoài màn hình điện thoại",install);acts.append(x)}
   A.append(t,acts);w.append(A);B.append(w);
-  if(user){const g=[];if(admin)g.push(cell("shield","var(--purple)","Quản trị",aUsers?aUsers.length+" thành viên":"",()=>goTab("admin")));g.push(cell("logout","var(--red)","Đăng xuất","",logout,1));B.append(group(null,g))}
+  if(user){const g=[];if(admin)g.push(cell("shield","var(--purple)","Quản trị",resets.length?resets.length+" yêu cầu quên MK":aUsers?aUsers.length+" thành viên":"",()=>goTab("admin")));g.push(cell("logout","var(--red)","Đăng xuất","",logout,1));B.append(group(null,g))}
 }
 async function loadMembers(){try{const j=await api("members");members=j.members;LS.set("hn.members",members)}catch(e){}if(tab==="me")renderMe()}
+
+/* ===== Kiểm tra kết nối ===== */
+const tfetch=(u,ms=6000,o={})=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);return fetch(u,{...o,signal:c.signal}).finally(()=>clearTimeout(t))};
+async function runHealth(){
+  const box=h("div");panel("Kiểm tra kết nối","Đang kiểm tra…",[box]);
+  let bad=0,warnN=0;
+  const R=(st,label,detail)=>{if(st===0)bad++;if(st===2)warnN++;const r=h("div","hc"),i=h("i",st===1?"":st===0?"no":st===2?"wn":"wt",st===1?"✓":st===0?"✕":st===2?"!":"–"),d=h("div");d.append(h("b",null,label));if(detail)d.append(h("small",null,detail));r.append(i,d);box.append(r)};
+  R(navigator.onLine?1:0,"Kết nối mạng",navigator.onLine?"Máy đang có mạng":"Máy đang mất mạng – hãy bật Wi-Fi hoặc 4G");
+  const t0=performance.now();let apiOk=false;
+  try{const r=await tfetch("/api/app?a=usage",8000,{cache:"no-store"});const ms=Math.round(performance.now()-t0);let j={};try{j=await r.json()}catch(e){}
+    if(r.status===404)R(0,"Máy chủ /api","Không thấy (lỗi 404): thư mục api chưa có trên GitHub hoặc Vercel chưa deploy lại");
+    else if(!r.ok)R(0,"Máy chủ /api","Lỗi "+r.status+(j.error?": "+j.error:""));
+    else{apiOk=true;R(1,"Máy chủ /api","Trả lời sau "+ms+" ms");if(j.configured===false)R(0,"Cơ sở dữ liệu Upstash","Chưa nối: vào Vercel → dự án → Storage → nối Upstash Redis, rồi Redeploy")}}
+  catch(e){R(0,"Máy chủ /api","Không kết nối được ("+(e.name==="AbortError"?"chờ quá lâu":e.message)+")")}
+  if(apiOk&&admin){
+    try{const j=await api("health"),E=j.env||{};
+      R(E.redisUrl?1:0,"Biến UPSTASH_REDIS_REST_URL",E.redisUrl?"Đã có":"Thiếu – nối Upstash trong Vercel → Storage");
+      R(E.redisToken?1:0,"Biến UPSTASH_REDIS_REST_TOKEN",E.redisToken?"Đã có":"Thiếu – nối Upstash trong Vercel → Storage");
+      if(j.db){R(j.db.pong==="PONG"?1:0,"Cơ sở dữ liệu trả lời","PING "+j.db.pong+" · "+j.db.ms+" ms");R(j.db.rw?1:0,"Ghi / đọc thử dữ liệu",j.db.rw?"Ghi và đọc lại được":"Ghi xong nhưng đọc lại không khớp")}
+      R(E.adminPhone?1:3,"Biến ADMIN_PHONE (tuỳ chọn)",E.adminPhone?"Đã đặt – số này cũng là admin":"Chưa đặt – không sao, admin đăng nhập bằng email");
+      if(j.adminEmail)R(j.adminDefaultPw?2:1,"Tài khoản admin "+j.adminEmail,!j.adminEmailCreated?"Sẽ tự tạo khi đăng nhập lần đầu bằng email này":j.adminDefaultPw?"Đang dùng mật khẩu mặc định – nên đổi trong Tài khoản → Đổi mật khẩu":"Đã đổi mật khẩu riêng");
+      R(E.sessionSecret?1:3,"Biến SESSION_SECRET (tuỳ chọn)",E.sessionSecret?"Đã đặt":"Chưa đặt – vẫn chạy bình thường");
+      if(j.counts){const c=j.counts,pm=c.mb/c.limitMb*100,pc=c.cmds/c.limitCmd*100;
+        R(pm<90?1:2,"Dung lượng Upstash",c.mb.toFixed(2)+" / "+c.limitMb+" MB ("+pm.toFixed(1)+"%)");
+        R(pc<90?1:2,"Số lệnh tháng này",fmtN(c.cmds)+" / "+fmtN(c.limitCmd)+" ("+pc.toFixed(1)+"%)");
+        R(1,"Dữ liệu hiện có",c.users+" thành viên · "+c.glists+" danh sách chung · "+c.phones+" số điện thoại")}
+      if(E.region)R(1,"Vercel","Máy chủ "+E.region+(E.vercelUrl?" · "+E.vercelUrl:""));
+    }catch(e){R(0,"Chi tiết cơ sở dữ liệu",e.message)}
+  }else if(apiOk)R(3,"Chi tiết cơ sở dữ liệu","Đăng nhập bằng tài khoản admin để xem");
+  R(ytReady?1:window.YT?2:0,"Trình phát YouTube",ytReady?"Sẵn sàng":window.YT?"Đang tải…":"Không tải được (mạng chặn youtube.com?)");
+  for(const[nm,u,on]of[["SponsorBlock (bỏ qua quảng cáo tài trợ)","https://sponsor.ajay.app/api/skipSegments?videoID=dQw4w9WgXcQ",set.sb],["DeArrow (sửa tên bài)","https://sponsor.ajay.app/api/branding?videoID=dQw4w9WgXcQ",set.da]]){
+    try{const r=await tfetch(u,6000),ok=r.ok||r.status===404;R(ok?1:2,nm,ok?"Kết nối được · "+(on?"đang bật":"đang tắt trong cài đặt"):"Máy chủ cộng đồng báo lỗi "+r.status+" – thử lại sau")}
+    catch(e){R(2,nm,"Không kết nối được lúc này (không ảnh hưởng việc nghe nhạc)")}}
+  R("mediaSession" in navigator?1:2,"Điều khiển ở màn hình khoá","mediaSession" in navigator?"Hỗ trợ · phát trong nền đang "+(set.bg?"bật":"tắt"):"Trình duyệt này không hỗ trợ");
+  R("wakeLock" in navigator?1:2,"Giữ màn hình sáng","wakeLock" in navigator?"Hỗ trợ":"Chưa hỗ trợ (iPhone cần iOS 16.4 trở lên)");
+  R("documentPictureInPicture" in window?1:3,"Cửa sổ nổi của app","documentPictureInPicture" in window?"Hỗ trợ":"Máy này dùng nút cửa sổ nổi có sẵn của video");
+  const sw=!!(navigator.serviceWorker&&navigator.serviceWorker.controller);R(sw?1:3,"Chế độ ứng dụng (mở nhanh)",sw?"Đang hoạt động":"Sẽ bật sau lần mở thứ hai");
+  R(1,"Tên miền đang dùng",location.host+(standalone?" · đang mở từ icon ngoài màn hình":""));
+  const sub=$("sSub");sub.textContent=bad?"Có "+bad+" mục lỗi cần sửa"+(warnN?", "+warnN+" mục nên xem":""):warnN?"Chạy được, có "+warnN+" mục nên xem":"Mọi thứ đều ổn ✓";sub.hidden=false;
+}
+/* ===== Xoá dữ liệu (admin) ===== */
+async function openPurge(){
+  if(!admin)return;if(!aUsers)await loadAdmin();
+  const now=new Date(),y=now.getFullYear(),users=(aUsers||[]).map(u=>[u.id,u.name+(u.phone?" · "+fmtPhone(u.phone):"")]);
+  const els=formSheet({title:"Xoá dữ liệu",btn:"Đếm trước số lượng",note:"Bước 1: chọn phạm vi để app đếm trước. Bước 2: xác nhận mới xoá thật. Tài khoản và tên danh sách phát vẫn giữ nguyên.",
+    fields:[{id:"by",label:"Xoá theo",options:[["user","Theo thành viên"],["month","Theo tháng"],["year","Theo năm"],["all","Toàn bộ (làm trống dữ liệu)"]]},
+      {id:"id",label:"Thành viên",options:users.length?users:[["","(chưa có thành viên)"]]},
+      {id:"y",label:"Năm",options:[y,y-1,y-2,y-3].map(x=>[String(x),"Năm "+x])},
+      {id:"m",label:"Tháng",options:Array.from({length:12},(_,i)=>[String(i+1).padStart(2,"0"),"Tháng "+(i+1)]),value:String(now.getMonth()+1).padStart(2,"0")},
+      {id:"what",label:"Loại dữ liệu",options:[["both","Bài hát + bình luận"],["songs","Chỉ bài hát"],["cmts","Chỉ bình luận"]]}],
+    fn:async v=>{
+      const body={by:v.by,id:v.id,per:v.by==="month"?v.y+"-"+v.m:v.y,songs:v.what!=="cmts",cmts:v.what!=="songs"};
+      const d=await api("purge",{...body,dry:true});
+      if(!d.songs&&!d.cmts)return{keep:"Không có dữ liệu nào khớp để xoá."};
+      const scope=v.by==="user"?"của "+(((aUsers||[]).find(u=>u.id===v.id)||{}).name||"thành viên")+" (gồm cả bài họ thêm vào danh sách chung)":v.by==="month"?"được thêm trong tháng "+v.m+"/"+v.y:v.by==="year"?"được thêm trong năm "+v.y:"trên toàn bộ app";
+      setTimeout(()=>confirmSheet("Xoá "+d.songs+" bài hát và "+d.cmts+" bình luận?","Dữ liệu "+scope+". Đã xoá thì không khôi phục được.","Xoá vĩnh viễn",async()=>{
+        try{const r=await api("purge",body);say("Đã xoá "+r.songs+" bài hát và "+r.cmts+" bình luận.");await loadGL();await loadMe();loadItems();loadMembers();loadAdmin()}catch(e){err(e.message)}}),60);
+    }});
+  const sync=()=>{const b=els.by.value;els.id.closest(".fld").hidden=b!=="user";els.y.closest(".fld").hidden=!(b==="month"||b==="year");els.m.closest(".fld").hidden=b!=="month"};
+  els.by.onchange=sync;sync();
+}
 
 /* ===== Quản trị ===== */
 async function loadAdmin(){
   if(!admin)return;
-  try{const j=await api("ausers");aUsers=j.users;if(tab==="admin"||tab==="me")render()}catch(e){err("Không tải được danh sách thành viên: "+e.message)}
+  try{const j=await api("ausers");aUsers=j.users;const nr=(j.resets||[]).filter(r=>!resets.some(x=>x.id===r.id)).length;resets=j.resets||[];if(nr)say("Có "+resets.length+" yêu cầu quên mật khẩu – xem ở tab Quản trị.");if(tab==="admin"||tab==="me")render()}catch(e){err("Không tải được danh sách thành viên: "+e.message)}
   loadUsage();loadGL();
 }
 async function loadUsage(){try{const j=await api("usage");if(j.configured){usageData=j;if(tab==="admin")drawUsage()}}catch(e){}}
@@ -1174,6 +1257,11 @@ function renderAdmin(){
   const U=aUsers||[],st=$("admStats");st.replaceChildren();
   [[U.length,"Thành viên"],[glists.length,"Danh sách chung"],[glists.reduce((s,l)=>s+(l.c||0),0),"Bài (chung)"],[U.reduce((s,u)=>s+u.songs,0),"Bài (cá nhân)"]].forEach(([n,t])=>{const c=h("div","stat card");c.append(h("b",null,aUsers||t!=="Thành viên"?fmtN(n):"–"),h("small",null,t));st.append(c)});
   drawUsage();
+  const RW=$("admResets");RW.replaceChildren();$("admResetsW").hidden=!resets.length;
+  resets.forEach(r=>{const row=h("div","urow"),d=h("div","ud");d.append(h("b",null,r.name||"Thành viên"),h("small",null,fmtPhone(r.phone)+" · gửi "+ago(r.t)));
+    const a=h("div","lacts");a.style.marginTop="6px";const u={id:r.id,name:r.name};
+    a.append(btn("green","lock","Đặt về "+RESET_PW,()=>adminReset(u)),btn("plain","edit","Mật khẩu khác",()=>adminSetPass(u)),btn("plain","x","Bỏ qua",async()=>{try{await api("rsdel",{id:r.id});resets=resets.filter(x=>x.id!==r.id);renderAdmin()}catch(e){err(e.message)}}));
+    a.style.flexWrap="wrap";d.append(a);row.append(avatar(r.name||"?"),d);RW.append(row)});
   const GL=$("admLists");GL.replaceChildren();
   glists.forEach(l=>{const r=cell("note","var(--acc)",l.name,(l.c||0)+" bài",()=>sheet(l.name,(l.c||0)+" bài",[{label:"Mở để nghe",icon:"play",fn:()=>setSrc({k:"g",id:l.id,name:l.name})},{label:"Đổi tên",icon:"edit",fn:()=>glRename(l)},{label:"Xoá danh sách",icon:"trash",red:1,fn:()=>glDelete(l)}]));GL.append(r)});
   GL.append(cell("plus","var(--green)","Tạo danh sách phát mới","",glNew));
@@ -1186,6 +1274,8 @@ function renderAdmin(){
 }
 $("admQ").oninput=e=>{admQ=e.target.value;renderAdmin()};
 $("admAdd").onclick=()=>adminAdd();
+$("admHealth").innerHTML=ico("wifi")+"<span>Kiểm tra kết nối</span>";$("admHealth").onclick=runHealth;
+$("admPurge").innerHTML=ico("trash")+"<span>Xoá dữ liệu</span>";$("admPurge").style.color="var(--red)";$("admPurge").onclick=openPurge;
 $("admShow").onclick=()=>{showAll=!showAll;shown.clear();renderAdmin()};
 function urow(u){
   const r=h("div","urow"),d=h("div","ud"),t=h("b",null,u.name);
@@ -1203,7 +1293,8 @@ function userMenu(u){
   const self=!!user&&u.id===user.id,login=u.phone||u.email;
   sheet(u.name,u.phone?fmtPhone(u.phone):u.email,[
     u.pw!=null&&{label:"Sao chép SĐT và mật khẩu",icon:"copy",fn:()=>copyText(`Nhạc Của Tui\nSố điện thoại: ${login}\nMật khẩu: ${u.pw}\n${SITE}/`,"Đã sao chép thông tin đăng nhập.")},
-    {label:"Đặt lại mật khẩu",icon:"lock",fn:()=>adminSetPass(u)},
+    {label:"Đặt về mật khẩu mặc định ("+RESET_PW+")",icon:"lock",fn:()=>adminReset(u)},
+    {label:"Đổi sang mật khẩu khác",icon:"edit",fn:()=>adminSetPass(u)},
     {label:"Nghe mục Yêu thích của "+u.name,icon:"heart",fn:()=>setSrc({k:"u",u:u.id,p:"fav",name:"Nhạc Yêu Thích",owner:u.name})},
     !self&&!u.admin&&{label:"Xoá thành viên",icon:"trash",red:1,fn:()=>adminDel(u)}
   ]);
@@ -1214,7 +1305,9 @@ function adminAdd(){formSheet({title:"Thêm thành viên",btn:"Tạo tài khoả
     await api("aadd",{name:v.name,phone:v.phone,password:v.pass});await loadAdmin();loadMembers();say("Đã tạo tài khoản cho "+v.name+".")}})}
 function adminSetPass(u){formSheet({title:"Đặt lại mật khẩu",btn:"Lưu mật khẩu mới",note:u.name+" sẽ phải đăng nhập lại bằng mật khẩu mới trên mọi máy.",
   fields:[{id:"pass",label:"Mật khẩu mới (ít nhất 4 ký tự)",type:"text",ph:"Ví dụ: 1234"}],
-  fn:async v=>{if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");const j=await api("apass",{id:u.id,password:v.pass});if(j.tok&&user)remember(user,j.tok);else accts=accts.filter(a=>a.id!==u.id),LS.set("hn.accts",accts);await loadAdmin();say("Đã đặt lại mật khẩu cho "+u.name+".")}})}
+  fn:async v=>{if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");const j=await api("apass",{id:u.id,password:v.pass});resets=resets.filter(x=>x.id!==u.id);if(j.tok&&user)remember(user,j.tok);else accts=accts.filter(a=>a.id!==u.id),LS.set("hn.accts",accts);await loadAdmin();say("Đã đặt lại mật khẩu cho "+u.name+".")}})}
+function adminReset(u){confirmSheet("Đặt mật khẩu của "+u.name+" về "+RESET_PW+"?","Họ sẽ phải đăng nhập lại bằng "+RESET_PW+" và được nhắc đổi mật khẩu mới.","Đặt về "+RESET_PW,async()=>{
+  try{const j=await api("apass",{id:u.id,reset:true});if(j.tok&&user)remember(user,j.tok);resets=resets.filter(x=>x.id!==u.id);await loadAdmin();say("Đã đặt mật khẩu của "+u.name+" về "+RESET_PW+".")}catch(e){err(e.message)}},"lock")}
 function adminDel(u){confirmSheet("Xoá "+u.name+"?","Tài khoản và "+u.songs+" bài cá nhân sẽ bị xoá vĩnh viễn. Bài họ đã thêm vào danh sách chung vẫn giữ lại.","Xoá thành viên này",async()=>{
   try{await api("adel",{id:u.id});await loadAdmin();loadMembers();say("Đã xoá "+u.name+".")}catch(e){err(e.message)}})}
 

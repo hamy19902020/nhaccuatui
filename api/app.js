@@ -21,8 +21,13 @@ const uidOf = e => sha(e).toString("hex").slice(0, 16);
 const cleanEmail = e => String(e || "").trim().toLowerCase();
 const normPhone = p => { let s = String(p || "").replace(/[^\d+]/g, ""); if (s.startsWith("+84")) s = "0" + s.slice(3); else if (s.startsWith("+")) s = s.slice(1); else if (/^84\d{9,10}$/.test(s)) s = "0" + s.slice(2); return s; };
 const okPhone = s => /^0\d{9,10}$/.test(s);
-const ENV_PHONE = E.ADMIN_PHONE ? normPhone(E.ADMIN_PHONE) : "", ENV_EMAIL = E.ADMIN_EMAIL ? cleanEmail(E.ADMIN_EMAIL) : "";
-const isAdmin = (id, U, aid) => (ENV_PHONE && U.phone === ENV_PHONE) || (ENV_EMAIL && U.email === ENV_EMAIL) || (!ENV_PHONE && !ENV_EMAIL && !!aid && aid === id);
+const ENV_PHONE = E.ADMIN_PHONE ? normPhone(E.ADMIN_PHONE) : "";
+// Tài khoản admin mặc định: đăng nhập bằng email này. Mật khẩu chỉ lưu dạng băm (không đọc ngược được).
+// Muốn đổi: đặt biến ADMIN_EMAIL / ADMIN_PASSWORD trên Vercel, hoặc đăng nhập rồi vào Tài khoản → Đổi mật khẩu.
+const ENV_EMAIL = cleanEmail(E.ADMIN_EMAIL || "ducanhitpt@gmail.com");
+const DEF_PASS_HASH = "f9a94e2cf4d26650a3b21edf50292e0d:b506f6c301aea42f6315840174870cc78c8bf1b3b4cc54db50817587a5947ab54a7fc0403a219ad7d932ddded261fe2bb3f92941d33de2381b052178e8b91954";
+const RESET_PW = "123"; // mật khẩu mặc định khi admin đặt lại cho thành viên
+const isAdmin = (id, U, aid) => (ENV_PHONE && U.phone === ENV_PHONE) || (!!U.email && U.email === ENV_EMAIL) || (!!aid && aid === id);
 
 let used = 0; // số lệnh Redis đã dùng trong tháng (ước tính)
 async function redis(cmds) {
@@ -40,7 +45,7 @@ const check = (s, st) => { if (!st) return false; const [a, b] = st.split(":"), 
 const enc = s => { const iv = crypto.randomBytes(12), c = crypto.createCipheriv("aes-256-gcm", PWKEY, iv), d = Buffer.concat([c.update(String(s), "utf8"), c.final()]); return [iv, c.getAuthTag(), d].map(b => b.toString("base64url")).join("."); };
 const dec = s => { try { const [a, b, c] = String(s).split(".").map(x => Buffer.from(x, "base64url")), d = crypto.createDecipheriv("aes-256-gcm", PWKEY, a); d.setAuthTag(b); return Buffer.concat([d.update(c), d.final()]).toString("utf8"); } catch { return null; } };
 const okPass = p => { p = String(p || ""); if (p.length < 4) throw httpErr(400, "Mật khẩu tối thiểu 4 ký tự."); if (p.length > 64) throw httpErr(400, "Mật khẩu dài quá (tối đa 64 ký tự)."); return p; };
-const setPass = (U, p) => { U.pass = hash(p); U.pw = enc(p); U.sv = (U.sv || 0) + 1; delete U.rec; };
+const setPass = (U, p) => { U.pass = hash(p); U.pw = enc(p); U.sv = (U.sv || 0) + 1; delete U.rec; delete U.mc; delete U.dflt; };
 const sign = v => crypto.createHmac("sha256", SECRET).update(v).digest("base64url");
 const cookie = (res, c) => res.setHeader("Set-Cookie", [].concat(res.getHeader("Set-Cookie") || [], c));
 const setSession = (res, uid, v) => { const p = Buffer.from(JSON.stringify({ u: uid, v: v || 0, x: Date.now() + 365 * 864e5 })).toString("base64url"), t = `${p}.${sign(p)}`; cookie(res, `hn=${t}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`); return t; };
@@ -68,7 +73,7 @@ async function recount(uid, pid) {
 const clean = x => (x && ["yt", "audio"].includes(x.type) && x.ref && x.title && GENRES.includes(x.genre))
   ? { id: sha(x.ref, "sha1").toString("hex").slice(0, 12), type: x.type, ref: String(x.ref).slice(0, 300), title: String(x.title).slice(0, 200), author: String(x.author || "").slice(0, 100), genre: x.genre, t: Date.now() } : null;
 const listName = n => String(n || "").trim().slice(0, 40);
-const pubUser = (id, U) => ({ id, name: U.name, phone: U.phone || "", email: U.email || "" });
+const pubUser = (id, U) => ({ id, name: U.name, phone: U.phone || "", email: U.email || "", mc: !!(U.mc || U.dflt) });
 
 async function createUser(name, phone, password) {
   name = String(name || "").trim().slice(0, 40); phone = normPhone(phone);
@@ -80,7 +85,6 @@ async function createUser(name, phone, password) {
   const [ok] = await redis([["HSETNX", PHONES, phone, id]]); if (!ok) throw httpErr(409, "Số điện thoại này đã có tài khoản.");
   const U = { name, phone, created: new Date().toISOString() }; setPass(U, password);
   const cmds = [["HSET", USERS, id, JSON.stringify(U)], ["HSET", PUB, id, JSON.stringify({ n: name, l: [FAV()] })], ["INCRBY", BYTES, JSON.stringify(U).length + 120]];
-  if (!ENV_PHONE && !ENV_EMAIL) cmds.push(["SETNX", ADMIN, id]); // chưa đặt ADMIN_PHONE: người đầu tiên là admin
   await redis(cmds); return { id, U };
 }
 
@@ -88,7 +92,8 @@ module.exports = async (req, res) => {
   const a = req.query.a, b = req.body || {}, q = req.query, send = (c, o) => res.status(c).json(o);
   res.setHeader("Cache-Control", "no-store");
   try {
-    if (!URL_ || !TOK) { if (a === "me" || a === "usage") return send(200, { configured: false }); throw httpErr(503, "Chưa nối cơ sở dữ liệu Upstash Redis."); }
+    const envInfo = () => ({ redisUrl: !!URL_, redisToken: !!TOK, adminPhone: !!ENV_PHONE, adminEmail: !!E.ADMIN_EMAIL, sessionSecret: !!E.SESSION_SECRET, node: process.version, region: E.VERCEL_REGION || "", vercelUrl: E.VERCEL_URL || "" });
+    if (!URL_ || !TOK) { if (a === "me" || a === "usage") return send(200, { configured: false }); if (a === "health") return send(200, { configured: false, env: envInfo() }); throw httpErr(503, "Chưa nối cơ sở dữ liệu Upstash Redis."); }
     used = 0;
     const ses = getSession(req); let meC;
     const loadMe = async () => {
@@ -127,9 +132,17 @@ module.exports = async (req, res) => {
           out.push({ id, name: U.name, phone: U.phone || "", email: U.email || "", pw: U.pw ? dec(U.pw) : null, created: U.created || "", lists: P.l.length, songs: P.l.reduce((s, l) => s + (l.c || 0), 0), admin: !!isAdmin(id, U, ad) });
         } catch { }
       }
-      out.sort((x, y) => String(x.created).localeCompare(String(y.created))); return send(200, { users: out });
+      out.sort((x, y) => String(x.created).localeCompare(String(y.created)));
+      const [hr] = await redis([["HGETALL", "hn:resets"]]), resets = []; for (let i = 0; i < (hr || []).length; i += 2) { try { resets.push(JSON.parse(hr[i + 1])); } catch { } }
+      return send(200, { users: out, resets: resets.sort((x, y) => x.t - y.t) });
     }
 
+    if (a === "health") { // admin: kiểm tra kết nối cơ sở dữ liệu + cấu hình
+      const m = await need(); if (!m.admin) throw httpErr(403, "Chỉ admin mới kiểm tra được.");
+      const t0 = Date.now(), stamp = String(t0), [pong, , back] = await redis([["PING"], ["SET", "hn:health", stamp, "EX", 60], ["GET", "hn:health"]]), ms = Date.now() - t0;
+      const [nu, ng, np, by, ad, da] = await redis([["HLEN", USERS], ["HLEN", GL], ["HLEN", PHONES], ["GET", BYTES], ["GET", ADMIN], ["HGET", USERS, uidOf(ENV_EMAIL)]]), DA = da ? JSON.parse(da) : null;
+      return send(200, { configured: true, env: envInfo(), db: { pong: String(pong), rw: back === stamp, ms }, counts: { users: nu, glists: ng, phones: np, mb: Math.max(0, Number(by) || 0) / 1048576, cmds: used, limitMb: LIMIT, limitCmd: CMD_LIMIT }, adminMode: ENV_PHONE ? "ADMIN_PHONE" : "ADMIN_EMAIL", adminEmail: ENV_EMAIL, adminDefaultPw: !!(DA && DA.dflt), adminEmailCreated: !!DA });
+    }
     if (a === "lists") { // danh sách phát chung
       const [h] = await redis([["HGETALL", GL]]), out = [];
       for (let i = 0; i < (h || []).length; i += 2) { try { out.push(JSON.parse(h[i + 1])); } catch { } }
@@ -157,10 +170,23 @@ module.exports = async (req, res) => {
     if (a === "login") {
       const fk = await throttle(req), raw = String(b.phone || b.email || "").trim(); let id = null;
       if (raw.includes("@")) id = uidOf(cleanEmail(raw)); else if (raw) { const [x] = await redis([["HGET", PHONES, normPhone(raw)]]); id = x; }
-      const [u] = id ? await redis([["HGET", USERS, id]]) : [null], U = u && JSON.parse(u);
+      let [u] = id ? await redis([["HGET", USERS, id]]) : [null];
+      if (!u && raw.includes("@") && cleanEmail(raw) === ENV_EMAIL) { // lần đầu: tự tạo tài khoản admin mặc định
+        const pw = String(b.password || ""), ok = E.ADMIN_PASSWORD ? pw === E.ADMIN_PASSWORD : check(pw, DEF_PASS_HASH);
+        if (ok) { const X = { name: "Admin", email: ENV_EMAIL, created: new Date().toISOString() }; setPass(X, pw); X.dflt = 1; u = JSON.stringify(X);
+          await redis([["HSET", USERS, id, u], ["HSETNX", PUB, id, JSON.stringify({ n: "Admin", l: [FAV()] })]]); }
+      }
+      const U = u && JSON.parse(u);
       if (!U || !check(String(b.password || ""), U.pass)) { await failed(fk); throw httpErr(401, "Số điện thoại hoặc mật khẩu chưa đúng."); }
       if (!U.pw) { U.pw = enc(String(b.password)); await redis([["HSET", USERS, id, JSON.stringify(U)]]); } // tài khoản cũ: lưu lại để admin xem được
       const tok = setSession(res, id, U.sv); return send(200, { user: pubUser(id, U), tok });
+    }
+    if (a === "forgot") { // quên mật khẩu: gửi yêu cầu cho admin đặt lại
+      const ph = normPhone(b.phone); if (!okPhone(ph)) throw httpErr(400, "Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");
+      const [id] = await redis([["HGET", PHONES, ph]]); if (!id) throw httpErr(404, "Số điện thoại này chưa có tài khoản. Hãy đăng ký mới.");
+      const [ok] = await redis([["SET", "hn:fg:" + ph, "1", "EX", 300, "NX"]]); if (!ok) throw httpErr(429, "Bạn vừa gửi yêu cầu rồi. Hãy chờ admin xử lý (gửi lại được sau 5 phút).");
+      const [u] = await redis([["HGET", USERS, id]]), X = u ? JSON.parse(u) : {};
+      await redis([["HSET", "hn:resets", id, JSON.stringify({ id, name: X.name || "", phone: ph, t: Date.now() })]]); return send(200, { ok: 1 });
     }
     if (a === "pairuse") { // đăng nhập bằng mã ghép nối 6 số (tạo ở máy đang đăng nhập)
       const fk = await throttle(req), code = String(b.code || "").replace(/\D/g, "");
@@ -182,6 +208,7 @@ module.exports = async (req, res) => {
     const needAdmin = () => { if (!M.admin) throw httpErr(403, "Chỉ admin mới làm được việc này."); };
     const grecount = async p => { const [n, l] = await redis([["HLEN", gkey(p)], ["HGET", GL, p]]); if (!l) return null; const L = JSON.parse(l); L.c = n; await redis([["HSET", GL, p, JSON.stringify(L)]]); return L; };
     const gsong = async (p, id) => { const [cur] = await redis([["HGET", gkey(p), String(id)]]); if (!cur) throw httpErr(404, "Không tìm thấy bài này."); const s = JSON.parse(cur); if (s.by !== me && !M.admin) throw httpErr(403, "Chỉ người đã thêm bài này hoặc admin mới sửa/xoá được."); return { s, cur }; };
+    if (a === "rsdel") { needAdmin(); await redis([["HDEL", "hn:resets", String(b.id || "")]]); return send(200, { ok: 1 }); }
     if (a === "glnew") {
       needAdmin(); const name = listName(b.name); if (!name) throw httpErr(400, "Hãy nhập tên danh sách.");
       const [n] = await redis([["HLEN", GL]]); if (n >= 100) throw httpErr(400, "Tối đa 100 danh sách chung.");
@@ -218,6 +245,38 @@ module.exports = async (req, res) => {
       if (!raw) throw httpErr(404, "Không tìm thấy bình luận."); if (JSON.parse(raw).u !== me && !M.admin) throw httpErr(403, "Bạn chỉ xoá được bình luận của mình.");
       await redis([["LREM", ckey(id), 1, raw], ["INCRBY", BYTES, -raw.length]]); return send(200, { ok: 1 });
     }
+    if (a === "purge") { // admin: xoá dữ liệu theo thành viên / tháng / năm / toàn bộ (dry = chỉ đếm trước)
+      needAdmin(); const mode = String(b.by || ""), dry = !!b.dry, wS = b.songs !== false, wC = b.cmts !== false, uid = String(b.id || ""), per = String(b.per || "");
+      if (!["all", "user", "month", "year"].includes(mode)) throw httpErr(400, "Kiểu xoá chưa đúng.");
+      if (mode === "user" && !uid) throw httpErr(400, "Hãy chọn thành viên.");
+      if (mode === "month" && !/^\d{4}-\d{2}$/.test(per) || mode === "year" && !/^\d{4}$/.test(per)) throw httpErr(400, "Thời gian chưa đúng.");
+      const vn = t => new Date(Number(t) + 7 * 36e5).toISOString(); // giờ Việt Nam
+      const hit = mode === "all" ? () => true : mode === "month" ? t => vn(t).slice(0, 7) === per : t => vn(t).slice(0, 4) === per;
+      const [hp, hg] = await redis([["HGETALL", PUB], ["HGETALL", GL]]), pubs = {}, gls = {}, keys = [];
+      for (let i = 0; i < (hp || []).length; i += 2) { try { pubs[hp[i]] = JSON.parse(hp[i + 1]); } catch { } }
+      for (let i = 0; i < (hg || []).length; i += 2) { try { gls[hg[i]] = JSON.parse(hg[i + 1]); } catch { } }
+      for (const u in pubs) for (const l of pubs[u].l) keys.push({ k: skey(u, l.id), u, p: l.id });
+      for (const g in gls) keys.push({ k: gkey(g), g });
+      let songs = 0, cmts = 0, bytes = 0; const cmds = [];
+      if (wS && keys.length) {
+        const res = await redis(keys.map(x => ["HGETALL", x.k]));
+        res.forEach((hh, i) => { const K = keys[i]; for (let j = 0; j < (hh || []).length; j += 2) { let s; try { s = JSON.parse(hh[j + 1]); } catch { continue; }
+          const ok = mode === "user" ? (K.g ? s.by === uid : K.u === uid) : hit(s.t); if (ok) { songs++; bytes += hh[j + 1].length; cmds.push(["HDEL", K.k, hh[j]]); K.dirty = 1; } } });
+      }
+      if (wC) {
+        const ck = []; let cur = "0", n = 0; do { const [r] = await redis([["SCAN", cur, "MATCH", "hn:cm:*", "COUNT", 1000]]); cur = String(r[0]); ck.push(...r[1]); } while (cur !== "0" && ++n < 100);
+        const lr = ck.length ? await redis(ck.map(k => ["LRANGE", k, 0, -1])) : [];
+        lr.forEach((arr, i) => (arr || []).forEach(raw => { let c; try { c = JSON.parse(raw); } catch { return; } if (mode === "user" ? c.u === uid : hit(c.t)) { cmts++; bytes += raw.length; cmds.push(["LREM", ck[i], 1, raw]); } }));
+      }
+      if (!dry && cmds.length) {
+        for (let i = 0; i < cmds.length; i += 400) await redis(cmds.slice(i, i + 400));
+        const dk = keys.filter(x => x.dirty), lens = dk.length ? await redis(dk.map(x => ["HLEN", x.k])) : [], up = [];
+        dk.forEach((x, i) => { if (x.g) { gls[x.g].c = lens[i]; up.push(["HSET", GL, x.g, JSON.stringify(gls[x.g])]); } else { const l = pubs[x.u].l.find(y => y.id === x.p); if (l) l.c = lens[i]; } });
+        new Set(dk.filter(x => !x.g).map(x => x.u)).forEach(u => up.push(["HSET", PUB, u, JSON.stringify(pubs[u])]));
+        up.push(["INCRBY", BYTES, -bytes]); await redis(up);
+      }
+      return send(200, { songs, cmts, dry });
+    }
     if (a === "pairnew") { // tạo mã 6 số, hết hạn sau 5 phút
       for (let i = 0; i < 6; i++) { const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0"), [ok] = await redis([["SET", "hn:pair:" + code, me, "EX", 300, "NX"]]); if (ok) return send(200, { code, ttl: 300 }); }
       throw httpErr(503, "Chưa tạo được mã, hãy thử lại.");
@@ -245,8 +304,8 @@ module.exports = async (req, res) => {
     // ----- admin -----
     if (a === "aadd") { needAdmin(); const r = await createUser(b.name, b.phone, b.password); return send(200, { id: r.id }); }
     if (a === "apass") {
-      needAdmin(); const id = String(b.id || ""), pw = okPass(b.password), [u] = await redis([["HGET", USERS, id]]);
-      if (!u) throw httpErr(404, "Không tìm thấy thành viên."); const X = JSON.parse(u); setPass(X, pw); await saveU(id, X);
+      needAdmin(); const id = String(b.id || ""), pw = b.reset ? RESET_PW : okPass(b.password), [u] = await redis([["HGET", USERS, id]]);
+      if (!u) throw httpErr(404, "Không tìm thấy thành viên."); const X = JSON.parse(u); setPass(X, pw); if (b.reset) X.mc = 1; await saveU(id, X); await redis([["HDEL", "hn:resets", id]]);
       const tok = id === me ? setSession(res, me, X.sv) : undefined; return send(200, { ok: 1, tok });
     }
     if (a === "adel") {
