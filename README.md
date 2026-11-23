@@ -42,3 +42,12 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   Trang chủ có icon Đăng nhập / Đăng ký và ô "Thể loại của bạn" (bấm để nghe theo thể loại, lấy từ
   mọi danh sách của chính mình – máy chủ có thêm chức năng `mine`). Link chia sẻ luôn là
   https://nhaccuatui.vercel.app/. Nút nhiều màu tươi hơn, chữ hamy19902020 nhỏ hơn.
+- **23/11/2026 (bản 3)**: Trang chủ chính là trang nghe nhạc (máy tính: trình phát bên trái, danh sách bên phải).
+  Chỉ còn 2 tab: **Nghe nhạc** và **Tài khoản** (gồm cài đặt, Mọi người, Ứng dụng/QR) + tab Quản trị cho admin.
+  **Danh sách phát chung** do admin tạo (Quản trị → Tạo danh sách phát mới); thành viên chọn danh sách rồi thêm nhạc,
+  chỉ người thêm hoặc admin mới sửa/xoá bài. Mỗi người vẫn có mục Yêu thích riêng.
+  Tính năng mới: phát trong nền + tự phát tiếp khi có mạng lại, điều khiển ở màn hình khoá, cửa sổ nổi (PiP, Chrome/Edge máy tính),
+  SponsorBlock, DeArrow, tốc độ 0.25x–2x, phụ đề + dịch tự động sang tiếng Việt, hàng đợi (phát tiếp theo), hẹn giờ tắt,
+  bình luận theo bài, lưu bài .mp3 để nghe khi mất mạng, đăng nhập bằng mã ghép nối 6 số, chuyển nhanh nhiều tài khoản,
+  vuốt trái/phải trên tên bài để chuyển bài, phím tắt (Space, ←/→, n, p).
+  Máy chủ có thêm: lists, gsongs, glnew/glren/gldel, gadd/gedit/gdel, cmts/cmt/cmdel, pairnew/pairuse, switch.
