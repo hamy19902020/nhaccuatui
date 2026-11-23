@@ -1,4 +1,4 @@
-# Nhạc Của Tui
+# Nhac Hot
 
 Ứng dụng nghe nhạc nhiều người dùng, giao diện kiểu iOS 26 (Liquid Glass).
 
@@ -60,3 +60,8 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
 - **23/11/2026 (bản 5)**: tài khoản admin mặc định bằng email; **Quên mật khẩu** (thành viên gửi yêu cầu, admin thấy ở tab Quản trị);
   admin **Đặt về 123** hoặc đặt mật khẩu khác; ai đang dùng mật khẩu mặc định sẽ được nhắc đổi khi đăng nhập.
   Máy chủ có thêm: forgot, rsdel; apass nhận `reset: true`.
+- **23/11/2026 (bản 6)**: đổi tên app thành **Nhac Hot**. Thành viên **đăng ký / đăng nhập bằng Gmail + mật khẩu** (tài khoản cũ dùng số điện
+  thoại vẫn đăng nhập được). Phiên đăng nhập giữ **30 ngày**. Kiểm tra kết nối cho mọi người xem phần cơ sở dữ liệu (admin xem thêm số liệu).
+  Trang nghe nhạc có 2 mục **Của bạn / Thành viên**: chọn một thành viên để thấy và nghe các danh sách của người đó.
+  Admin tạo danh sách **chung** (ai cũng thêm nhạc) hoặc **riêng cho một thành viên** (chỉ người đó + admin thêm nhạc).
+  Máy chủ có thêm: email (đổi Gmail); register/aadd/forgot dùng `email`; glnew/glren nhận `o` (người dùng danh sách).
