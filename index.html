@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<script>try{var t=(JSON.parse(localStorage.getItem("hn.set")||"{}")||{}).theme;if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,7 +32,15 @@
  --aura:radial-gradient(42% 30% at 8% 0%,rgba(255,105,135,.26),transparent 70%),radial-gradient(40% 32% at 96% 8%,rgba(90,150,255,.24),transparent 70%),radial-gradient(50% 38% at 60% 100%,rgba(110,220,170,.2),transparent 70%);
  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Be Vietnam Pro",system-ui,"Segoe UI",Roboto,sans-serif;
  color-scheme:light dark}
-@media(prefers-color-scheme:dark){:root{
+:root[data-theme=dark]{
+ --bg:#000;--tx:#f5f5f7;--tx2:rgba(235,235,245,.6);--tx3:rgba(235,235,245,.28);--sep:rgba(84,84,88,.45);
+ --fill:rgba(118,118,128,.22);--fill2:rgba(118,118,128,.34);
+ --card:rgba(28,28,30,.74);--sheet:rgba(30,30,32,.96);--glass:rgba(40,40,44,.58);--gl:rgba(255,255,255,.1);--hl:rgba(255,255,255,.12);
+ --sh:0 8px 30px rgba(0,0,0,.45);
+ --acc:#ff375f;--accS:rgba(255,55,95,.18);--blue:#0a84ff;--green:#30d158;--orange:#ff9f0a;--purple:#bf5af2;--red:#ff453a;--gray:#98989d;--teal:#40c8e0;
+ --aura:radial-gradient(42% 30% at 8% 0%,rgba(255,55,95,.2),transparent 70%),radial-gradient(40% 32% at 96% 8%,rgba(10,132,255,.2),transparent 70%),radial-gradient(50% 38% at 60% 100%,rgba(48,209,88,.12),transparent 70%);color-scheme:dark}
+:root[data-theme=light]{color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){
  --bg:#000;--tx:#f5f5f7;--tx2:rgba(235,235,245,.6);--tx3:rgba(235,235,245,.28);--sep:rgba(84,84,88,.45);
  --fill:rgba(118,118,128,.22);--fill2:rgba(118,118,128,.34);
  --card:rgba(28,28,30,.74);--sheet:rgba(30,30,32,.96);--glass:rgba(40,40,44,.58);--gl:rgba(255,255,255,.1);--hl:rgba(255,255,255,.12);
@@ -137,9 +146,29 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .lhead .ttl{min-width:0}
 .lacts{display:flex;gap:6px;flex:none;align-items:center}
 .lacts .btn{min-height:32px;padding:0 11px;font-size:12.5px}
-.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;margin:0 -2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:2px 2px 8px;margin:0 -2px;min-width:0}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;min-height:30px;padding:0 11px;border-radius:999px;background:var(--fill);font-size:12.5px;font-weight:600;color:var(--tx);display:inline-flex;align-items:center;gap:5px;max-width:200px}
+.chip{flex:none;min-height:30px;padding:0 11px;border-radius:999px;background:var(--fill);font-size:12.5px;font-weight:600;color:var(--tx);display:inline-flex;align-items:center;gap:5px;max-width:100%;min-width:0}
+.chip b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:2px 0 10px}
+@media(max-width:400px){.ptiles{grid-template-columns:1fr 1fr}}
+.ptile{display:flex;align-items:center;gap:8px;min-width:0;min-height:52px;padding:7px 10px 7px 7px;border-radius:14px;text-align:left;background:color-mix(in srgb,var(--lc) 13%,transparent);border:1px solid color-mix(in srgb,var(--lc) 22%,transparent)}
+.ptile .pi{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:16px;background:var(--lc);box-shadow:0 3px 8px color-mix(in srgb,var(--lc) 35%,transparent)}
+.ptile .pt{min-width:0;display:grid}
+.ptile b{font-size:13.5px;font-weight:600;line-height:1.25}
+.ptile small{font-size:11.5px;color:var(--tx2)}
+.ptile[aria-pressed=true]{background:linear-gradient(135deg,var(--lc),color-mix(in srgb,var(--lc) 70%,#000));border-color:transparent;color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--lc) 35%,transparent)}
+.ptile[aria-pressed=true] small{color:rgba(255,255,255,.85)}
+.ptile[aria-pressed=true] .pi{background:rgba(255,255,255,.25);box-shadow:none}
+.ptile.add{background:transparent;border:1.5px dashed var(--fill2)}.ptile.add .pi{background:var(--fill);color:var(--acc);box-shadow:none}.ptile.add b{color:var(--acc)}
+.lhead .ttl h2{display:flex;align-items:center;gap:7px}
+.lhead .ttl h2::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--lc,var(--acc))}
+.cv,.cl,.ud code,.cr code,.hc small,.shead small,.shead b,.mem .md>b{overflow-wrap:anywhere}
+.lacts{flex-wrap:wrap;justify-content:flex-end}
+.urow .lacts{justify-content:flex-start}
+.theme3{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--fill);margin:4px 12px 8px}
+.theme3 button{flex:1;min-height:34px;border-radius:9px;font-size:13px;font-weight:600;color:var(--tx2);display:flex;align-items:center;justify-content:center;gap:5px}
+.theme3 button[aria-pressed=true]{background:var(--card);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .chip svg{font-size:13px}
 .chip span{opacity:.55;font-weight:500}
 .chip[aria-pressed=true]{background:var(--tx);color:var(--bg)}
@@ -147,6 +176,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .gch .chip[aria-pressed=true]{background:var(--gc);color:#fff}
 .gch .chip i{width:7px;height:7px;border-radius:50%;background:var(--gc)}
 .gch .chip[aria-pressed=true] i{background:#fff}
+.gch .chip.all[aria-pressed=true]{color:var(--bg)}
+@media(max-width:380px){.tools button{font-size:9px}.tools button svg{font-size:16px}.top h1{font-size:19px}}
 .lhint{display:block;width:100%;text-align:left;color:var(--acc);font-size:17px;font-weight:700;letter-spacing:-.01em;margin:2px 2px 10px;line-height:1.3}
 .lhint:active{transform:none;opacity:.6}
 .empty .lhint{text-align:center;margin:8px 0 12px}
@@ -278,7 +309,8 @@ body.away #vHome .lcol,body.away #vHome .top{display:none}
  #sideNav button svg{font-size:17px;color:var(--acc)}
  #sideNav button[aria-current=page]{background:var(--fill2)}
  #sideWho{margin-top:auto;display:flex;align-items:center;gap:8px;padding:8px;border-radius:14px;text-align:left;min-width:0}
- #sideWho b{display:block;font-size:13.5px}#sideWho small{color:var(--tx2);font-size:11.5px}
+ #sideWho b{display:block;font-size:13.5px}#sideWho small{display:block;color:var(--tx2);font-size:11.5px}
+ #sideWho{width:100%;overflow:hidden}
  #sideWho>div:last-child{min-width:0}
  #main{max-width:none;margin:0;padding:22px 26px 40px}
  body.mini #main{padding-bottom:90px}
@@ -394,6 +426,7 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
  <symbol id="skip" viewBox="0 0 24 24"><path d="M5 5l10 7-10 7zM19 5v14"/></symbol>
  <symbol id="tag" viewBox="0 0 24 24"><path d="M3 12V3h9l9 9-9 9zM7.5 7.5h.01"/></symbol>
  <symbol id="ilist" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+ <symbol id="auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor"/></symbol>
  <symbol id="wifi" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10.5 10.5 0 0 1 14 0M8.5 15.5a5.5 5.5 0 0 1 7 0M12 19h.01"/></symbol>
 </svg>
 
@@ -418,11 +451,11 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
      </div>
     </div>
     <div class="lcol">
-     <div class="lhead"><div class="ttl"><h2 class="el" id="lTitle">Danh sách phát</h2><p class="el" id="lSub"></p></div><div class="lacts" id="lActs"></div></div>
+     <div class="lhead" id="lhead"><div class="ttl"><h2 class="el" id="lTitle">Danh sách phát</h2><p class="el" id="lSub"></p></div><div class="lacts" id="lActs"></div></div>
      <button class="lhint" id="loginHint" hidden>Đăng nhập thêm nhạc vào danh sách của bạn.</button>
      <div class="seg2" id="plTabs"><button data-m="mine">Của bạn</button><button data-m="mem">Thành viên</button></div>
      <div class="chips" id="memChips" aria-label="Chọn thành viên"></div>
-     <div class="chips" id="plChips" aria-label="Chọn danh sách phát"></div>
+     <div class="ptiles" id="plChips" aria-label="Chọn danh sách phát"></div>
      <div class="chips gch" id="gChips" aria-label="Thể loại"></div>
      <label class="search"><svg class="i s" aria-hidden="true"><use href="#search"/></svg><input id="q" type="search" placeholder="Tìm bài trong danh sách" autocomplete="off"></label>
      <div class="grp card" id="list"></div>
@@ -488,7 +521,16 @@ const wide=()=>matchMedia("(min-width:1000px)").matches;
 /* ===== Trạng thái ===== */
 let S=Object.assign({shuffle:false,repeat:"all",cur:null,pos:0,curSong:null,rate:1,genre:"all"},LS.get("hn.state")||{});
 const save=()=>LS.set("hn.state",S);
-let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true},LS.get("hn.set")||{});
+let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto"},LS.get("hn.set")||{});
+const THEMES=[["light","sun","Sáng"],["dark","moon","Tối"],["auto","auto","Tự động"]];
+function applyTheme(){
+  const t=set.theme,r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
+  const dark=t==="dark"||t!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches;
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{m.setAttribute("content",dark?"#000000":"#f2f2f7");m.removeAttribute("media")});
+}
+function setTheme(t){set.theme=t;saveSet();applyTheme();say("Giao diện: "+(THEMES.find(x=>x[0]===t)||[])[2]);render()}
+function themeBtn(){const b=h("button","ib bg"),cur=THEMES.find(x=>x[0]===set.theme)||THEMES[2];b.innerHTML=ico(cur[1]);b.setAttribute("aria-label","Giao diện: "+cur[2]+" (bấm để đổi)");b.title="Giao diện: "+cur[2];b.onclick=()=>{const i=THEMES.findIndex(x=>x[0]===set.theme);setTheme(THEMES[(i+1)%3][0])};b.style.alignSelf="center";return b}
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(set.theme==="auto")applyTheme()});
 const saveSet=()=>LS.set("hn.set",set);
 const q0=LS.get("hn.q")||{};let queue=q0.items||[],qName=q0.name||"";
 const me0=LS.get("hn.me2")||{};
@@ -621,12 +663,12 @@ function openCodeLogin(){
 }
 function openSignup(){
   const ex=h("div","links"),b=h("button","link","Đã có tài khoản? Đăng nhập");b.type="button";b.onclick=()=>openLogin();ex.append(b);
-  formSheet({title:"Đăng ký",btn:"Tạo tài khoản",extra:ex,note:"Gmail là tên đăng nhập. Mỗi Gmail chỉ tạo được một tài khoản.",
-    fields:[{id:"name",label:"Họ và tên",auto:"name",cap:"words",ph:"Ví dụ: Nguyễn Văn An",max:40},{id:"email",label:"Gmail",type:"email",im:"email",auto:"email",ph:"ten@gmail.com"},{id:"pass",label:"Mật khẩu (ít nhất 4 ký tự)",type:"password",auto:"new-password"},{id:"pass2",label:"Nhập lại mật khẩu",type:"password",auto:"new-password"}],
+  formSheet({title:"Đăng ký",btn:"Tạo tài khoản",extra:ex,note:"Đăng nhập bằng Gmail. Mỗi Gmail và mỗi số điện thoại chỉ tạo được một tài khoản.",
+    fields:[{id:"name",label:"Họ và tên",auto:"name",cap:"words",ph:"Ví dụ: Nguyễn Văn An",max:40},{id:"phone",label:"Số điện thoại",type:"tel",im:"tel",auto:"tel",ph:"Ví dụ: 0901 234 567"},{id:"email",label:"Gmail (dùng để đăng nhập)",type:"email",im:"email",auto:"email",ph:"ten@gmail.com"},{id:"pass",label:"Mật khẩu (ít nhất 4 ký tự)",type:"password",auto:"new-password"},{id:"pass2",label:"Nhập lại mật khẩu",type:"password",auto:"new-password"}],
     fn:async v=>{
-      if(!v.name)throw Error("Hãy nhập họ và tên.");if(!okEmail(v.email))throw Error("Gmail chưa đúng (ví dụ: ten@gmail.com).");
+      if(!v.name)throw Error("Hãy nhập họ và tên.");if(!okPhone(normPhone(v.phone)))throw Error("Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");if(!okEmail(v.email))throw Error("Gmail chưa đúng (ví dụ: ten@gmail.com).");
       if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");if(v.pass!==v.pass2)throw Error("Hai mật khẩu chưa giống nhau.");
-      const j=await api("register",{name:v.name,email:v.email,password:v.pass});remember(j.user,j.tok);await afterAuth("Đã tạo tài khoản. Chào mừng "+v.name+"!");
+      const j=await api("register",{name:v.name,phone:v.phone,email:v.email,password:v.pass});remember(j.user,j.tok);await afterAuth("Đã tạo tài khoản. Chào mừng "+v.name+"!");
     }});
 }
 async function afterAuth(msg){aUsers=null;mcAsked=false;await loadMe();askChangePass();if(!src)pickSrc();else if(src.k==="u"&&src.p==="fav"&&user)src={k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name};render();loadItems();loadMembers();if(admin)loadAdmin();say(msg)}
@@ -737,7 +779,7 @@ function playList(sh){const v=visible();if(!v.length)return say("Danh sách đan
 function authBtn(cls,icon,label,fn){const b=h("button");b.innerHTML='<span class="ic '+cls+'">'+ico(icon)+"</span><span></span>";b.lastChild.textContent=label;b.setAttribute("aria-label",label);b.onclick=fn;return b}
 function renderHome(){
   clock();
-  const A=$("homeAuth");A.replaceChildren();
+  const A=$("homeAuth");A.replaceChildren(themeBtn());
   if(user){const b=h("button");b.append(avatar(user.name));b.setAttribute("aria-label","Tài khoản của bạn");b.onclick=()=>goTab("me");A.append(b)}
   else A.append(authBtn("l","person","Đăng nhập",openLogin),authBtn("r","useradd","Đăng ký",openSignup));
   renderChips();renderListHead();renderList();
@@ -746,33 +788,44 @@ function chip(label,icon,on,fn,cls,count){const b=h("button","chip"+(cls?" "+cls
 const memName=id=>(members.find(m=>m.id===id)||(aUsers||[]).find(u=>u.id===id)||{}).n||((aUsers||[]).find(u=>u.id===id)||{}).name||"thành viên";
 function memChip(m,on,fn){const b=h("button","chip");b.append(avatar(m.n,"sm"),h("b","el",m.n));b.querySelector("b").style.fontWeight="600";b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b}
 function showMember(id){plMode="mem";selMem=id;LS.set("hn.pl",{plMode,selMem});if(tab!=="home")goTab("home");else renderHome()}
+const PAL=["#ff2d75","#ff8a1f","#14b87a","#2f7bff","#8b5cf6","#06b6d4","#e11d48","#ca8a04","#0ea5e9","#16a34a","#d946ef","#f97316"];
+const COLORS=[["","Tự động"],["#ff2d75","Hồng"],["#e11d48","Đỏ"],["#ff8a1f","Cam"],["#ca8a04","Vàng"],["#14b87a","Xanh lá"],["#06b6d4","Xanh ngọc"],["#2f7bff","Xanh dương"],["#8b5cf6","Tím"],["#d946ef","Tím hồng"]];
+const colOf=(key,c)=>c||(String(key).endsWith(".fav")||key==="fav"?"#ff2d75":PAL[hue(key)%PAL.length]);
+const srcColor=()=>!src?"var(--acc)":src.k==="g"?colOf("g."+src.id,glOf(src.id).col):src.k==="off"?"#14b87a":colOf("u."+src.u+"."+src.p);
+function ptile(label,icon,on,fn,col,count,add){
+  const b=h("button","ptile"+(add?" add":""));b.style.setProperty("--lc",col);
+  b.innerHTML='<span class="pi">'+ico(icon,icon==="heart")+'</span><span class="pt"><b class="el"></b><small></small></span>';
+  b.querySelector("b").textContent=label;b.querySelector("small").textContent=add?"":(count||0)+" bài";b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b;
+}
 function renderChips(){
   const P=$("plChips"),MC=$("memChips");P.replaceChildren();MC.replaceChildren();const k=srcKey();
   $("loginHint").hidden=!!user||!configured||!src;
   const others=members.filter(m=>!user||m.id!==user.id);
   $("plTabs").hidden=!others.length;if(!others.length)plMode="mine";
   $("plTabs").querySelectorAll("button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.m===plMode);b.onclick=()=>{plMode=b.dataset.m;LS.set("hn.pl",{plMode,selMem});renderChips()}});
+  const G_=l=>P.append(ptile(l.name+(l.o&&admin&&(!user||l.o!==user.id)?" · "+memName(l.o):""),"note",k==="g."+l.id,()=>setSrc({k:"g",id:l.id,name:l.name}),colOf("g."+l.id,l.col),l.c));
   if(plMode==="mine"){
-    if(user)P.append(chip("Yêu thích","heart",k==="u."+user.id+".fav",()=>setSrc({k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name}),null,(lists.find(l=>l.id==="fav")||{}).c||0));
-    glists.filter(l=>!l.o||user&&l.o===user.id||admin).forEach(l=>P.append(chip(l.name+(l.o&&admin&&(!user||l.o!==user.id)?" · "+memName(l.o):""),"note",k==="g."+l.id,()=>setSrc({k:"g",id:l.id,name:l.name}),null,l.c||0)));
-    if(user)lists.filter(l=>l.id!=="fav").forEach(l=>P.append(chip(l.name,"ilist",k==="u."+user.id+"."+l.id,()=>setSrc({k:"u",u:user.id,p:l.id,name:l.name,owner:user.name}),null,l.c||0)));
-    if(offIds.size)P.append(chip("Đã lưu","download",k==="off",()=>setSrc({k:"off",name:"Đã lưu trên máy"}),null,offIds.size));
-    if(admin)P.append(chip("Danh sách mới","plus",false,glNew,"add"));
+    if(user)P.append(ptile("Yêu thích","heart",k==="u."+user.id+".fav",()=>setSrc({k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name}),"#ff2d75",(lists.find(l=>l.id==="fav")||{}).c));
+    glists.filter(l=>!l.o||user&&l.o===user.id||admin).forEach(G_);
+    if(user)lists.filter(l=>l.id!=="fav").forEach(l=>P.append(ptile(l.name,"ilist",k==="u."+user.id+"."+l.id,()=>setSrc({k:"u",u:user.id,p:l.id,name:l.name,owner:user.name}),colOf("u."+user.id+"."+l.id),l.c)));
+    if(offIds.size)P.append(ptile("Đã lưu trên máy","download",k==="off",()=>setSrc({k:"off",name:"Đã lưu trên máy"}),"#14b87a",offIds.size));
+    if(admin)P.append(ptile("Tạo danh sách","plus",false,()=>glNew(),"var(--gray)",0,1));
   }else{
     if(!others.some(m=>m.id===selMem))selMem=others[0]?others[0].id:"";
     others.forEach(m=>MC.append(memChip(m,m.id===selMem,()=>{selMem=m.id;LS.set("hn.pl",{plMode,selMem});renderChips()})));
     const m=others.find(x=>x.id===selMem);
     if(m){
-      m.l.forEach(l=>P.append(chip(l.id==="fav"?"Yêu thích của "+m.n.split(/\s+/).pop():l.name,l.id==="fav"?"heart":"ilist",k==="u."+m.id+"."+l.id,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n}),null,l.c||0)));
-      glists.filter(l=>l.o===m.id).forEach(l=>P.append(chip(l.name,"note",k==="g."+l.id,()=>setSrc({k:"g",id:l.id,name:l.name}),null,l.c||0)));
-      if(admin)P.append(chip("Tạo danh sách cho "+m.n.split(/\s+/).pop(),"plus",false,()=>glNew(m.id),"add"));
+      m.l.forEach(l=>P.append(ptile(l.id==="fav"?"Yêu thích của "+m.n.split(/\s+/).pop():l.name,l.id==="fav"?"heart":"ilist",k==="u."+m.id+"."+l.id,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n}),colOf("u."+m.id+"."+l.id),l.c)));
+      glists.filter(l=>l.o===m.id).forEach(G_);
+      if(admin)P.append(ptile("Tạo cho "+m.n.split(/\s+/).pop(),"plus",false,()=>glNew(m.id),"var(--gray)",0,1));
     }
   }
   MC.hidden=plMode!=="mem";
   P.hidden=!P.children.length;
+  $("lhead").style.setProperty("--lc",srcColor());
   const G=$("gChips");G.replaceChildren();
   [["all","Tất cả"],...GENRES].forEach(([g,n])=>{const c=g==="all"?items.length:items.filter(i=>i.genre===g).length;if(g!=="all"&&!c&&S.genre!==g)return;
-    const b=h("button","chip");b.style.setProperty("--gc",g==="all"?"var(--tx)":GC[g]);b.innerHTML=(g==="all"?"":"<i></i>")+"<b style='font-weight:600'></b><span></span>";b.querySelector("b").textContent=n;b.lastChild.textContent=c;b.setAttribute("aria-pressed",S.genre===g);b.onclick=()=>{S.genre=g;save();renderChips();renderList()};G.append(b)});
+    const b=h("button","chip"+(g==="all"?" all":""));b.style.setProperty("--gc",g==="all"?"var(--tx)":GC[g]);b.innerHTML=(g==="all"?"":"<i></i>")+"<b style='font-weight:600'></b><span></span>";b.querySelector("b").textContent=n;b.lastChild.textContent=c;b.setAttribute("aria-pressed",S.genre===g);b.onclick=()=>{S.genre=g;save();renderChips();renderList()};G.append(b)});
   G.hidden=items.length<2;
 }
 function renderListHead(){
@@ -813,7 +866,7 @@ function listMenu(){
   if(!src)return;const g=src.k==="g",mineU=src.k==="u"&&user&&src.u===user.id&&src.p!=="fav";
   sheet(srcName(),g?"Danh sách chung":src.owner?"của "+src.owner:null,[
     {label:"Chia sẻ danh sách",icon:"share",fn:shareList},
-    admin&&g&&{label:"Sửa tên / người dùng danh sách",icon:"edit",fn:()=>glRename(glists.find(l=>l.id===src.id)||{id:src.id,name:src.name})},
+    admin&&g&&{label:"Sửa tên / màu / người dùng",icon:"edit",fn:()=>glRename(glists.find(l=>l.id===src.id)||{id:src.id,name:src.name})},
     admin&&g&&{label:"Xoá danh sách chung",icon:"trash",red:1,fn:()=>glDelete(glists.find(l=>l.id===src.id)||{id:src.id,name:src.name,c:items.length})},
     mineU&&{label:"Đổi tên danh sách",icon:"edit",fn:()=>renameList()},
     (mineU||admin&&src.k==="u"&&user&&src.u!==user.id&&src.p!=="fav")&&{label:"Xoá danh sách này",icon:"trash",red:1,fn:delList}
@@ -831,10 +884,10 @@ function delList(){confirmSheet("Xoá “"+srcName()+"”?","Toàn bộ "+items.
 /* --- danh sách chung (admin) --- */
 const ownerOpts=()=>[["","Mọi người (danh sách chung)"],...(aUsers||members.map(m=>({id:m.id,name:m.n}))).map(u=>[u.id,"Riêng cho "+u.name])];
 function glNew(o){formSheet({title:"Tạo danh sách phát",btn:"Tạo danh sách",note:"Chọn “Mọi người” để ai cũng thêm nhạc được, hoặc chọn một thành viên để danh sách chỉ dành cho người đó.",
-  fields:[{id:"name",label:"Tên danh sách",ph:"Ví dụ: Nhạc đi xe",max:40,cap:"sentences"},{id:"o",label:"Dành cho",options:ownerOpts(),value:typeof o==="string"?o:""}],
-  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên danh sách.");const j=await api("glnew",{name:v.name,o:v.o});glists.push(j.list);LS.set("hn.gl",glists);say("Đã tạo danh sách.");setSrc({k:"g",id:j.list.id,name:j.list.name});if(tab==="admin")renderAdmin()}})}
-function glRename(l){formSheet({title:"Sửa danh sách",btn:"Lưu",fields:[{id:"name",label:"Tên danh sách",value:l.name,max:40,cap:"sentences"},{id:"o",label:"Dành cho",options:ownerOpts(),value:l.o||""}],
-  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên.");const j=await api("glren",{id:l.id,name:v.name,o:v.o});glists=glists.map(x=>x.id===l.id?j.list:x);LS.set("hn.gl",glists);if(src&&src.k==="g"&&src.id===l.id)src.name=v.name;render();say("Đã đổi tên.")}})}
+  fields:[{id:"name",label:"Tên danh sách",ph:"Ví dụ: Nhạc đi xe",max:40,cap:"sentences"},{id:"o",label:"Dành cho",options:ownerOpts(),value:typeof o==="string"?o:""},{id:"col",label:"Màu danh sách",options:COLORS}],
+  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên danh sách.");const j=await api("glnew",{name:v.name,o:v.o,col:v.col});glists.push(j.list);LS.set("hn.gl",glists);say("Đã tạo danh sách.");setSrc({k:"g",id:j.list.id,name:j.list.name});if(tab==="admin")renderAdmin()}})}
+function glRename(l){formSheet({title:"Sửa danh sách",btn:"Lưu",fields:[{id:"name",label:"Tên danh sách",value:l.name,max:40,cap:"sentences"},{id:"o",label:"Dành cho",options:ownerOpts(),value:l.o||""},{id:"col",label:"Màu danh sách",options:COLORS,value:l.col||""}],
+  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên.");const j=await api("glren",{id:l.id,name:v.name,o:v.o,col:v.col});glists=glists.map(x=>x.id===l.id?j.list:x);LS.set("hn.gl",glists);if(src&&src.k==="g"&&src.id===l.id)src.name=v.name;render();say("Đã đổi tên.")}})}
 function glDelete(l){confirmSheet("Xoá “"+l.name+"”?","Danh sách chung cùng "+(l.c||0)+" bài sẽ bị xoá với mọi thành viên.","Xoá danh sách",async()=>{
   try{await api("gldel",{id:l.id});glists=glists.filter(x=>x.id!==l.id);LS.set("hn.gl",glists);if(src&&src.k==="g"&&src.id===l.id){pickSrc(true);loadItems()}render();say("Đã xoá danh sách.")}catch(e){err(e.message)}})}
 
@@ -1209,8 +1262,11 @@ function renderMe(){
       glists.filter(l=>l.o===m.id).forEach(l=>ch.append(chip(l.name,"note",false,()=>{showMember(m.id);setSrc({k:"g",id:l.id,name:l.name})},null,l.c||0)));d.append(ch);r.append(avatar(m.n),d);g.append(r)});
     w.append(g,h("p","foot","Bấm vào danh sách của ai đó để nghe. Ở trang Nghe nhạc, chọn mục “Thành viên” cũng xem được."));B.append(w);
   }
-  B.append(group(admin?"Hệ thống (admin)":"Hệ thống",[cell("wifi","var(--blue)","Kiểm tra kết nối","",runHealth,0,"Máy chủ, cơ sở dữ liệu Upstash, YouTube, SponsorBlock…"),
-    admin&&cell("trash","var(--red)","Xoá dữ liệu","",openPurge,0,"Theo thành viên, theo tháng, theo năm hoặc toàn bộ")]));
+  {const w=h("div","gw");w.append(h("h3",null,"Giao diện"));const t=h("div","theme3");
+   THEMES.forEach(([k,i,n])=>{const b=h("button");b.innerHTML=ico(i)+"<span></span>";b.lastChild.textContent=n;b.setAttribute("aria-pressed",set.theme===k);b.onclick=()=>setTheme(k);t.append(b)});
+   w.append(t,h("p","foot","Tự động: theo chế độ sáng/tối của điện thoại hoặc máy tính."));B.append(w)}
+  if(admin)B.append(group("Cài đặt admin",[cell("wifi","var(--blue)","Kiểm tra kết nối","",runHealth,0,"Máy chủ, cơ sở dữ liệu Upstash, YouTube, SponsorBlock…"),
+    cell("trash","var(--red)","Xoá dữ liệu","",openPurge,0,"Theo thành viên, theo tháng, theo năm hoặc toàn bộ")]));
   const w=h("div","gw");w.append(h("h3",null,"Ứng dụng"));const A=h("div","card appc"),t=h("div","t"),im=h("img");im.src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data="+encodeURIComponent(SITE+"/");im.onerror=()=>{im.onerror=null;im.src="qr.svg"};im.alt="Mã QR mở Nhac Hot";const d=h("div");
   d.append(h("b",null,"Nhac Hot"),h("p",null,SITE.replace(/^https?:\/\//,"")+" · quét mã QR bằng camera điện thoại để mở app"));t.append(im,d);
   const acts=h("div","acts");acts.append(btn("blue","share","Chia sẻ",shareApp),btn("purple","copy","Sao chép link",()=>copyText(SITE+"/","Đã sao chép liên kết ứng dụng.")));
@@ -1302,7 +1358,7 @@ function renderAdmin(){
     a.append(btn("green","lock","Đặt về "+RESET_PW,()=>adminReset(u)),btn("plain","edit","Mật khẩu khác",()=>adminSetPass(u)),btn("plain","x","Bỏ qua",async()=>{try{await api("rsdel",{id:r.id});resets=resets.filter(x=>x.id!==r.id);renderAdmin()}catch(e){err(e.message)}}));
     a.style.flexWrap="wrap";d.append(a);row.append(avatar(r.name||"?"),d);RW.append(row)});
   const GL=$("admLists");GL.replaceChildren();
-  glists.forEach(l=>{const r=cell("note","var(--acc)",l.name,(l.c||0)+" bài · "+(l.o?memName(l.o):"chung"),()=>sheet(l.name,(l.c||0)+" bài",[{label:"Mở để nghe",icon:"play",fn:()=>setSrc({k:"g",id:l.id,name:l.name})},{label:"Sửa tên / người dùng",icon:"edit",fn:()=>glRename(l)},{label:"Xoá danh sách",icon:"trash",red:1,fn:()=>glDelete(l)}]));GL.append(r)});
+  glists.forEach(l=>{const r=cell("note",colOf("g."+l.id,l.col),l.name,(l.c||0)+" bài · "+(l.o?memName(l.o):"chung"),()=>sheet(l.name,(l.c||0)+" bài",[{label:"Mở để nghe",icon:"play",fn:()=>setSrc({k:"g",id:l.id,name:l.name})},{label:"Sửa tên / màu / người dùng",icon:"edit",fn:()=>glRename(l)},{label:"Xoá danh sách",icon:"trash",red:1,fn:()=>glDelete(l)}]));GL.append(r)});
   GL.append(cell("plus","var(--green)","Tạo danh sách phát mới","",glNew));
   $("admAdd").innerHTML=ico("useradd")+"<span>Thêm</span>";$("admShow").innerHTML=ico(showAll?"eyeoff":"eye")+"<span>"+(showAll?"Ẩn MK":"Hiện MK")+"</span>";
   const L=$("admList");L.replaceChildren();
@@ -1319,7 +1375,7 @@ $("admShow").onclick=()=>{showAll=!showAll;shown.clear();renderAdmin()};
 function urow(u){
   const r=h("div","urow"),d=h("div","ud"),t=h("b",null,u.name);
   if(u.admin)t.append(h("span","badge","Admin"));if(user&&u.id===user.id)t.append(h("span","badge blue","Bạn"));
-  const cr=h("div","cred"),l1=h("div","cr");l1.innerHTML=ico("chat");l1.append(h("code",null,u.email||fmtPhone(u.phone)||"—"));
+  const cr=h("div","cred"),l1=h("div","cr");l1.innerHTML=ico("chat");l1.append(h("code",null,u.email||"—"));if(u.phone){const l0=h("div","cr");l0.innerHTML=ico("phone");l0.append(h("code",null,fmtPhone(u.phone)));cr.append(l0)}
   const l2=h("div","cr");l2.innerHTML=ico("lock");
   if(u.pw==null)l2.append(h("span","mute","Chưa xem được (tài khoản cũ). Sẽ hiện khi họ đăng nhập lại, hoặc bạn đặt lại mật khẩu."));
   else{const vis=showAll||shown.has(u.id);l2.append(h("code",null,vis?u.pw:"•".repeat(Math.max(6,Math.min(u.pw.length,12)))));
@@ -1340,9 +1396,9 @@ function userMenu(u){
   ]);
 }
 function adminAdd(){formSheet({title:"Thêm thành viên",btn:"Tạo tài khoản",note:"Tạo sẵn tài khoản cho người thân, rồi gửi Gmail và mật khẩu cho họ.",
-  fields:[{id:"name",label:"Họ và tên",cap:"words",max:40,ph:"Ví dụ: Mẹ"},{id:"email",label:"Gmail",type:"email",im:"email",ph:"ten@gmail.com"},{id:"pass",label:"Mật khẩu (ít nhất 4 ký tự)",type:"text",ph:"Ví dụ: 1234"}],
+  fields:[{id:"name",label:"Họ và tên",cap:"words",max:40,ph:"Ví dụ: Mẹ"},{id:"email",label:"Gmail",type:"email",im:"email",ph:"ten@gmail.com"},{id:"phone",label:"Số điện thoại (không bắt buộc)",type:"tel",im:"tel",ph:"Ví dụ: 0901 234 567"},{id:"pass",label:"Mật khẩu (ít nhất 4 ký tự)",type:"text",ph:"Ví dụ: 1234"}],
   fn:async v=>{if(!v.name)throw Error("Hãy nhập họ và tên.");if(!okEmail(v.email))throw Error("Gmail chưa đúng (ví dụ: ten@gmail.com).");if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");
-    await api("aadd",{name:v.name,email:v.email,password:v.pass});await loadAdmin();loadMembers();say("Đã tạo tài khoản cho "+v.name+".")}})}
+    if(v.phone&&!okPhone(normPhone(v.phone)))throw Error("Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");await api("aadd",{name:v.name,email:v.email,phone:v.phone,password:v.pass});await loadAdmin();loadMembers();say("Đã tạo tài khoản cho "+v.name+".")}})}
 function adminSetPass(u){formSheet({title:"Đặt lại mật khẩu",btn:"Lưu mật khẩu mới",note:u.name+" sẽ phải đăng nhập lại bằng mật khẩu mới trên mọi máy.",
   fields:[{id:"pass",label:"Mật khẩu mới (ít nhất 4 ký tự)",type:"text",ph:"Ví dụ: 1234"}],
   fn:async v=>{if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");const j=await api("apass",{id:u.id,password:v.pass});resets=resets.filter(x=>x.id!==u.id);if(j.tok&&user)remember(user,j.tok);else accts=accts.filter(a=>a.id!==u.id),LS.set("hn.accts",accts);await loadAdmin();say("Đã đặt lại mật khẩu cho "+u.name+".")}})}
@@ -1369,7 +1425,7 @@ async function shareApp(){
 
 /* ===== Khởi động ===== */
 async function init(){
-  buildNav();
+  applyTheme();buildNav();
   const qs=new URLSearchParams(location.search);
   if(qs.get("g"))src={k:"g",id:qs.get("g"),name:""};else if(qs.get("u")&&qs.get("p"))src={k:"u",u:qs.get("u"),p:qs.get("p"),name:"",owner:""};
   if(qs.toString()){history.replaceState(null,"",location.pathname);tab="home"}

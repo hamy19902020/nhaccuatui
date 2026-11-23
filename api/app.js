@@ -78,17 +78,19 @@ const listName = n => String(n || "").trim().slice(0, 40);
 const pubUser = (id, U) => ({ id, name: U.name, phone: U.phone || "", email: U.email || "", mc: !!(U.mc || U.dflt) });
 
 const findByEmail = async e => { const [x, y] = await redis([["HGET", EMAILS, e], ["HEXISTS", USERS, uidOf(e)]]); return x || (y ? uidOf(e) : null); };
-async function createUser(name, email, password) {
-  name = String(name || "").trim().slice(0, 40); email = cleanEmail(email);
+async function createUser(name, email, password, phone, needPhone) {
+  name = String(name || "").trim().slice(0, 40); email = cleanEmail(email); phone = normPhone(phone);
   if (!name) throw httpErr(400, "Hãy nhập họ và tên.");
   if (!okEmail(email)) throw httpErr(400, "Email chưa đúng (ví dụ: ten@gmail.com).");
   if (email === ENV_EMAIL) throw httpErr(409, "Email này dành cho tài khoản admin.");
+  if (phone && !okPhone(phone) || needPhone && !phone) throw httpErr(400, "Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");
   password = okPass(password);
   const [n] = await redis([["HLEN", USERS]]); if (n >= 2000) throw httpErr(400, "Đã đủ số thành viên tối đa.");
   if (await findByEmail(email)) throw httpErr(409, "Email này đã có tài khoản. Hãy đăng nhập.");
   const id = crypto.randomBytes(8).toString("hex");
-  const [ok] = await redis([["HSETNX", EMAILS, email, id]]); if (!ok) throw httpErr(409, "Email này đã có tài khoản. Hãy đăng nhập.");
-  const U = { name, email, created: new Date().toISOString() }; setPass(U, password);
+  if (phone) { const [okp] = await redis([["HSETNX", PHONES, phone, id]]); if (!okp) throw httpErr(409, "Số điện thoại này đã có tài khoản khác."); }
+  const [ok] = await redis([["HSETNX", EMAILS, email, id]]); if (!ok) { if (phone) await redis([["HDEL", PHONES, phone]]); throw httpErr(409, "Email này đã có tài khoản. Hãy đăng nhập."); }
+  const U = { name, email, created: new Date().toISOString() }; if (phone) U.phone = phone; setPass(U, password);
   const cmds = [["HSET", USERS, id, JSON.stringify(U)], ["HSET", PUB, id, JSON.stringify({ n: name, l: [FAV()] })], ["INCRBY", BYTES, JSON.stringify(U).length + 120]];
   await redis(cmds); return { id, U };
 }
@@ -172,7 +174,7 @@ module.exports = async (req, res) => {
 
     // ===== tài khoản =====
     if (req.method !== "POST") throw httpErr(405, "Sai phương thức.");
-    if (a === "register") { const { id, U } = await createUser(b.name, b.email, b.password); const tok = setSession(res, id, U.sv); return send(200, { user: pubUser(id, U), tok }); }
+    if (a === "register") { const { id, U } = await createUser(b.name, b.email, b.password, b.phone, true); const tok = setSession(res, id, U.sv); return send(200, { user: pubUser(id, U), tok }); }
     if (a === "login") {
       const fk = await throttle(req), raw = String(b.phone || b.email || "").trim(); let id = null;
       if (raw.includes("@")) id = (await findByEmail(cleanEmail(raw))) || uidOf(cleanEmail(raw)); else if (raw) { const [x] = await redis([["HGET", PHONES, normPhone(raw)]]); id = x; }
@@ -220,11 +222,11 @@ module.exports = async (req, res) => {
       needAdmin(); const name = listName(b.name); if (!name) throw httpErr(400, "Hãy nhập tên danh sách.");
       const [n] = await redis([["HLEN", GL]]); if (n >= 100) throw httpErr(400, "Tối đa 100 danh sách chung.");
       const o = String(b.o || ""); if (o) { const [ex] = await redis([["HEXISTS", USERS, o]]); if (!ex) throw httpErr(400, "Không tìm thấy thành viên này."); }
-      const L = { id: crypto.randomBytes(4).toString("hex"), name, c: 0, t: Date.now(), o }; await redis([["HSET", GL, L.id, JSON.stringify(L)]]); return send(200, { list: L });
+      const L = { id: crypto.randomBytes(4).toString("hex"), name, c: 0, t: Date.now(), o, col: /^#[0-9a-f]{6}$/i.test(b.col || "") ? b.col : "" }; await redis([["HSET", GL, L.id, JSON.stringify(L)]]); return send(200, { list: L });
     }
     if (a === "glren") {
       needAdmin(); const name = listName(b.name), [l] = await redis([["HGET", GL, String(b.id)]]); if (!l || ("name" in b && !name)) throw httpErr(400, "Không đổi được danh sách này.");
-      const L = JSON.parse(l); if (name) L.name = name; if ("o" in b) L.o = String(b.o || ""); await redis([["HSET", GL, L.id, JSON.stringify(L)]]); return send(200, { list: L });
+      const L = JSON.parse(l); if (name) L.name = name; if ("o" in b) L.o = String(b.o || ""); if ("col" in b) L.col = /^#[0-9a-f]{6}$/i.test(b.col || "") ? b.col : ""; await redis([["HSET", GL, L.id, JSON.stringify(L)]]); return send(200, { list: L });
     }
     if (a === "gldel") {
       needAdmin(); const id = String(b.id || ""), [h] = await redis([["HGETALL", gkey(id)]]); let by = 0; for (let i = 1; i < (h || []).length; i += 2) by += h[i].length;
@@ -322,7 +324,7 @@ module.exports = async (req, res) => {
       await redis(cmds); return send(200, { user: pubUser(me, U) });
     }
     // ----- admin -----
-    if (a === "aadd") { needAdmin(); const r = await createUser(b.name, b.email, b.password); return send(200, { id: r.id }); }
+    if (a === "aadd") { needAdmin(); const r = await createUser(b.name, b.email, b.password, b.phone, false); return send(200, { id: r.id }); }
     if (a === "apass") {
       needAdmin(); const id = String(b.id || ""), pw = b.reset ? RESET_PW : okPass(b.password), [u] = await redis([["HGET", USERS, id]]);
       if (!u) throw httpErr(404, "Không tìm thấy thành viên."); const X = JSON.parse(u); setPass(X, pw); if (b.reset) X.mc = 1; await saveU(id, X); await redis([["HDEL", "hn:resets", id]]);

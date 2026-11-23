@@ -65,3 +65,7 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   Trang nghe nhạc có 2 mục **Của bạn / Thành viên**: chọn một thành viên để thấy và nghe các danh sách của người đó.
   Admin tạo danh sách **chung** (ai cũng thêm nhạc) hoặc **riêng cho một thành viên** (chỉ người đó + admin thêm nhạc).
   Máy chủ có thêm: email (đổi Gmail); register/aadd/forgot dùng `email`; glnew/glren nhận `o` (người dùng danh sách).
+- **23/11/2026 (bản 7)**: tên miền **https://nhachot.vercel.app** (link chia sẻ + mã QR tự theo tên miền đang mở, qr.svg dự phòng
+  đã đổi sang nhachot). Đăng ký gồm **họ tên, số điện thoại, Gmail**. Giao diện **Sáng / Tối / Tự động** (Tài khoản → Giao diện,
+  hoặc nút mặt trời/trăng trên cùng). Mỗi danh sách có **màu riêng** (admin chọn màu khi tạo/sửa), xếp dạng ô nhiều hàng.
+  Kiểm tra kết nối chỉ còn trong **Cài đặt admin**. Sửa các chỗ chữ bị tràn.
