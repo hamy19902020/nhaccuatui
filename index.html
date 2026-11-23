@@ -150,17 +150,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;min-height:30px;padding:0 11px;border-radius:999px;background:var(--fill);font-size:12.5px;font-weight:600;color:var(--tx);display:inline-flex;align-items:center;gap:5px;max-width:100%;min-width:0}
 .chip b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:2px 0 10px}
+.ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;padding:2px 0 10px}
 @media(max-width:400px){.ptiles{grid-template-columns:1fr 1fr}}
-.ptile{display:flex;align-items:center;gap:8px;min-width:0;min-height:52px;padding:7px 10px 7px 7px;border-radius:14px;text-align:left;background:color-mix(in srgb,var(--lc) 13%,transparent);border:1px solid color-mix(in srgb,var(--lc) 22%,transparent)}
-.ptile .pi{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:16px;background:var(--lc);box-shadow:0 3px 8px color-mix(in srgb,var(--lc) 35%,transparent)}
-.ptile .pt{min-width:0;display:grid}
-.ptile b{font-size:13.5px;font-weight:600;line-height:1.25}
-.ptile small{font-size:11.5px;color:var(--tx2)}
-.ptile[aria-pressed=true]{background:linear-gradient(135deg,var(--lc),color-mix(in srgb,var(--lc) 70%,#000));border-color:transparent;color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--lc) 35%,transparent)}
-.ptile[aria-pressed=true] small{color:rgba(255,255,255,.85)}
-.ptile[aria-pressed=true] .pi{background:rgba(255,255,255,.25);box-shadow:none}
-.ptile.add{background:transparent;border:1.5px dashed var(--fill2)}.ptile.add .pi{background:var(--fill);color:var(--acc);box-shadow:none}.ptile.add b{color:var(--acc)}
+.ptile{display:flex;align-items:center;gap:8px;min-width:0;min-height:42px;padding:5px 8px 5px 6px;border-radius:12px;text-align:left;background:var(--card);border:1px solid var(--sep);border-left:4px solid var(--lc)}
+.ptile .pi{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;background:var(--lc)}
+.ptile b{flex:1;min-width:0;font-size:13.5px;font-weight:600}
+.ptile .pc{flex:none;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--lc) 16%,transparent);color:var(--lc);white-space:nowrap}
+.ptile[aria-pressed=true]{background:var(--lc);border-color:var(--lc);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--lc) 35%,transparent)}
+.ptile[aria-pressed=true] .pi{background:rgba(255,255,255,.25)}
+.ptile[aria-pressed=true] .pc{background:rgba(255,255,255,.25);color:#fff}
+.ptile.add{background:transparent;border:1.5px dashed var(--fill2)}.ptile.add .pi{background:var(--fill);color:var(--acc)}.ptile.add b{color:var(--acc)}
 .lhead .ttl h2{display:flex;align-items:center;gap:7px}
 .lhead .ttl h2::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--lc,var(--acc))}
 .cv,.cl,.ud code,.cr code,.hc small,.shead small,.shead b,.mem .md>b{overflow-wrap:anywhere}
@@ -521,7 +520,8 @@ const wide=()=>matchMedia("(min-width:1000px)").matches;
 /* ===== Trạng thái ===== */
 let S=Object.assign({shuffle:false,repeat:"all",cur:null,pos:0,curSong:null,rate:1,genre:"all"},LS.get("hn.state")||{});
 const save=()=>LS.set("hn.state",S);
-let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto"},LS.get("hn.set")||{});
+const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1;
+let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto",ka:!isIOS},LS.get("hn.set")||{});
 const THEMES=[["light","sun","Sáng"],["dark","moon","Tối"],["auto","auto","Tự động"]];
 function applyTheme(){
   const t=set.theme,r=document.documentElement;if(t==="light"||t==="dark")r.dataset.theme=t;else delete r.dataset.theme;
@@ -610,7 +610,7 @@ function formSheet(o){
   F.onsubmit=async ev=>{
     ev.preventDefault();go.disabled=true;msg.className="msg";msg.textContent="";
     const v={};o.fields.forEach(f=>{const x=els[f.id].value;v[f.id]=f.type==="password"?x:x.trim()});
-    try{const r=await o.fn(v,els);if(r&&r.keep){msg.className="msg ok";msg.textContent=r.keep;o.fields.forEach(f=>{if(f.clear)els[f.id].value=""})}else d.close()}
+    try{const r=await o.fn(v,els);if(r&&r.node){msg.className="msg";msg.replaceChildren(r.node)}else if(r&&r.keep){msg.className="msg ok";msg.textContent=r.keep;o.fields.forEach(f=>{if(f.clear)els[f.id].value=""})}else d.close()}
     catch(x){msg.className="msg";msg.textContent=x.message}
     go.disabled=false;
   };
@@ -786,7 +786,7 @@ function renderHome(){
 }
 function chip(label,icon,on,fn,cls,count){const b=h("button","chip"+(cls?" "+cls:""));b.innerHTML=(icon?ico(icon,icon==="heart"):"")+"<b class='el'></b>"+(count!=null?"<span></span>":"");b.querySelector("b").textContent=label;b.querySelector("b").style.fontWeight="600";if(count!=null)b.lastChild.textContent=count;b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b}
 const memName=id=>(members.find(m=>m.id===id)||(aUsers||[]).find(u=>u.id===id)||{}).n||((aUsers||[]).find(u=>u.id===id)||{}).name||"thành viên";
-function memChip(m,on,fn){const b=h("button","chip");b.append(avatar(m.n,"sm"),h("b","el",m.n));b.querySelector("b").style.fontWeight="600";b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b}
+function memChip(m,on,fn){const b=h("button","chip"),n=m.l.reduce((a,l)=>a+(l.c||0),0)+glists.filter(l=>l.o===m.id).reduce((a,l)=>a+(l.c||0),0);b.append(avatar(m.n,"sm"),h("b","el",m.n),h("span",null,String(n)));b.querySelector("b").style.fontWeight="600";b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b}
 function showMember(id){plMode="mem";selMem=id;LS.set("hn.pl",{plMode,selMem});if(tab!=="home")goTab("home");else renderHome()}
 const PAL=["#ff2d75","#ff8a1f","#14b87a","#2f7bff","#8b5cf6","#06b6d4","#e11d48","#ca8a04","#0ea5e9","#16a34a","#d946ef","#f97316"];
 const COLORS=[["","Tự động"],["#ff2d75","Hồng"],["#e11d48","Đỏ"],["#ff8a1f","Cam"],["#ca8a04","Vàng"],["#14b87a","Xanh lá"],["#06b6d4","Xanh ngọc"],["#2f7bff","Xanh dương"],["#8b5cf6","Tím"],["#d946ef","Tím hồng"]];
@@ -794,28 +794,32 @@ const colOf=(key,c)=>c||(String(key).endsWith(".fav")||key==="fav"?"#ff2d75":PAL
 const srcColor=()=>!src?"var(--acc)":src.k==="g"?colOf("g."+src.id,glOf(src.id).col):src.k==="off"?"#14b87a":colOf("u."+src.u+"."+src.p);
 function ptile(label,icon,on,fn,col,count,add){
   const b=h("button","ptile"+(add?" add":""));b.style.setProperty("--lc",col);
-  b.innerHTML='<span class="pi">'+ico(icon,icon==="heart")+'</span><span class="pt"><b class="el"></b><small></small></span>';
-  b.querySelector("b").textContent=label;b.querySelector("small").textContent=add?"":(count||0)+" bài";b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b;
+  b.innerHTML='<span class="pi">'+ico(icon,icon==="heart")+'</span><b class="el"></b>'+(add?"":'<span class="pc"></span>');
+  b.querySelector("b").textContent=label;if(!add)b.querySelector(".pc").textContent=(count||0)+" bài";b.setAttribute("aria-pressed",!!on);b.title=label+(add?"":" – "+(count||0)+" bài");b.onclick=fn;return b;
 }
 function renderChips(){
   const P=$("plChips"),MC=$("memChips");P.replaceChildren();MC.replaceChildren();const k=srcKey();
   $("loginHint").hidden=!!user||!configured||!src;
-  const others=members.filter(m=>!user||m.id!==user.id);
+  const has=(key,c)=>(c||0)>0||k===key; // chỉ hiện danh sách có bài (hoặc đang mở)
+  const others=members.filter(m=>(!user||m.id!==user.id)&&(m.l.some(l=>has("u."+m.id+"."+l.id,l.c))||glists.some(l=>l.o===m.id&&has("g."+l.id,l.c))));
+  $("plTabs").firstElementChild.textContent=user?"Của bạn":"Danh sách chung";
+  $("plTabs").lastElementChild.textContent="Thành viên ("+others.length+")";
   $("plTabs").hidden=!others.length;if(!others.length)plMode="mine";
   $("plTabs").querySelectorAll("button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.m===plMode);b.onclick=()=>{plMode=b.dataset.m;LS.set("hn.pl",{plMode,selMem});renderChips()}});
-  const G_=l=>P.append(ptile(l.name+(l.o&&admin&&(!user||l.o!==user.id)?" · "+memName(l.o):""),"note",k==="g."+l.id,()=>setSrc({k:"g",id:l.id,name:l.name}),colOf("g."+l.id,l.col),l.c));
+  const G_=l=>has("g."+l.id,l.c)&&P.append(ptile(l.name+(l.o&&admin&&(!user||l.o!==user.id)?" · "+memName(l.o):""),"note",k==="g."+l.id,()=>setSrc({k:"g",id:l.id,name:l.name}),colOf("g."+l.id,l.col),l.c));
   if(plMode==="mine"){
-    if(user)P.append(ptile("Yêu thích","heart",k==="u."+user.id+".fav",()=>setSrc({k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name}),"#ff2d75",(lists.find(l=>l.id==="fav")||{}).c));
+    if(user&&has("u."+user.id+".fav",(lists.find(l=>l.id==="fav")||{}).c))P.append(ptile("Yêu thích","heart",k==="u."+user.id+".fav",()=>setSrc({k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name}),"#ff2d75",(lists.find(l=>l.id==="fav")||{}).c));
     glists.filter(l=>!l.o||user&&l.o===user.id||admin).forEach(G_);
-    if(user)lists.filter(l=>l.id!=="fav").forEach(l=>P.append(ptile(l.name,"ilist",k==="u."+user.id+"."+l.id,()=>setSrc({k:"u",u:user.id,p:l.id,name:l.name,owner:user.name}),colOf("u."+user.id+"."+l.id),l.c)));
+    if(user)lists.filter(l=>l.id!=="fav"&&has("u."+user.id+"."+l.id,l.c)).forEach(l=>P.append(ptile(l.name,"ilist",k==="u."+user.id+"."+l.id,()=>setSrc({k:"u",u:user.id,p:l.id,name:l.name,owner:user.name}),colOf("u."+user.id+"."+l.id),l.c)));
     if(offIds.size)P.append(ptile("Đã lưu trên máy","download",k==="off",()=>setSrc({k:"off",name:"Đã lưu trên máy"}),"#14b87a",offIds.size));
     if(admin)P.append(ptile("Tạo danh sách","plus",false,()=>glNew(),"var(--gray)",0,1));
+    if(!P.querySelector(".ptile:not(.add)")&&others.length&&!user){plMode="mem";return renderChips()}
   }else{
     if(!others.some(m=>m.id===selMem))selMem=others[0]?others[0].id:"";
     others.forEach(m=>MC.append(memChip(m,m.id===selMem,()=>{selMem=m.id;LS.set("hn.pl",{plMode,selMem});renderChips()})));
     const m=others.find(x=>x.id===selMem);
     if(m){
-      m.l.forEach(l=>P.append(ptile(l.id==="fav"?"Yêu thích của "+m.n.split(/\s+/).pop():l.name,l.id==="fav"?"heart":"ilist",k==="u."+m.id+"."+l.id,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n}),colOf("u."+m.id+"."+l.id),l.c)));
+      m.l.filter(l=>has("u."+m.id+"."+l.id,l.c)).forEach(l=>P.append(ptile(l.id==="fav"?"Yêu thích của "+m.n.split(/\s+/).pop():l.name,l.id==="fav"?"heart":"ilist",k==="u."+m.id+"."+l.id,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n}),colOf("u."+m.id+"."+l.id),l.c)));
       glists.filter(l=>l.o===m.id).forEach(G_);
       if(admin)P.append(ptile("Tạo cho "+m.n.split(/\s+/).pop(),"plus",false,()=>glNew(m.id),"var(--gray)",0,1));
     }
@@ -894,7 +898,11 @@ function glDelete(l){confirmSheet("Xoá “"+l.name+"”?","Danh sách chung cù
 /* ===== Thêm / sửa / xoá / yêu thích ===== */
 function parse(u){
   u=u.trim();let m;
-  if(/zingmp3\.vn|nhaccuatui\.com/i.test(u))return{err:"Zing MP3 và NhacCuaTui không phát được ở đây. Hãy dán link YouTube của bài đó."};
+  if(/zingmp3\.vn|nhaccuatui\.(com|vn)/i.test(u)){
+    let q="";try{const seg=new URL(u).pathname.split("/").filter(Boolean),i=seg.findIndex(x=>/bai-hat|song|video|playlist|album/i.test(x));q=decodeURIComponent((seg[i+1]||seg[seg.length-1]||"").replace(/\.[\w-]+\.html?$|\.html?$/i,"")).replace(/[-_.]+/g," ").trim()}catch(e){}
+    return{err:"Link Zing MP3 / NhacCuaTui không phát được ở đây (2 trang này khoá nhạc, không cho app khác phát). Hãy dùng link YouTube của bài đó.",q};
+  }
+  if(false)return{err:"Zing MP3 và NhacCuaTui không phát được ở đây. Hãy dán link YouTube của bài đó."};
   m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/i);
   if(m)return{type:"yt",ref:m[1]};
   if(/^https?:\/\/.+\.(mp3|m4a|aac|ogg|opus|wav)(\?.*)?$/i.test(u))return{type:"audio",ref:u};
@@ -928,7 +936,8 @@ function openAdd(){
   formSheet({title:"Thêm nhạc",btn:"Lưu bài hát",note:"Trong ứng dụng YouTube: bấm Chia sẻ → Sao chép đường liên kết, rồi dán vào ô dưới. Thể loại (Nhạc trẻ, Remix, Trữ tình…) app tự nhận theo tên bài, sửa lại được bằng nút ⋯ ở bài hát.",
     fields:[{id:"url",label:"Link YouTube hoặc link file .mp3",type:"url",im:"url",ph:"https://youtu.be/…",paste:1,clear:1},{id:"p",label:"Lưu vào danh sách",options:T,value:def}],
     fn:async v=>{
-      const p=parse(v.url);if(p.err)throw Error(p.err);
+      const p=parse(v.url);
+      if(p.err){if(p.q){const box=h("span");box.append(document.createTextNode(p.err+" "));const a=h("a",null,"Tìm “"+p.q+"” trên YouTube →");a.href="https://www.youtube.com/results?search_query="+encodeURIComponent(p.q);a.target="_blank";a.rel="noopener";a.style.cssText="color:var(--blue);font-weight:600";box.append(a);return{node:box}}throw Error(p.err)}
       fMsg.className="msg ok";fMsg.textContent="Đang lấy tên bài…";let title="",author="",da="";
       if(p.type==="yt"){try{const r=await fetch("https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+p.ref));const j=await r.json();title=j.title;author=j.author_name||""}catch(e){}if(set.da){da=await daTitle(p.ref);if(da)title=da}}
       if(!title)title=p.type==="yt"?"YouTube "+p.ref:decodeURIComponent(p.ref.split("/").pop().split("?")[0]);
@@ -1034,7 +1043,7 @@ function drawTools(){
     tbtn("tCC","cc",ccLbl,"var(--purple)",openCC),
     tbtn("tSleep","moon",sleepEnd?"Hết bài":sleepAt?rem+" phút":"Hẹn giờ","var(--orange)",openSleep),
     tbtn("tQueue","queue","Hàng đợi","var(--green)",openQueue),
-    tbtn("tPip","pip",pipWin?"Đóng PiP":"Cửa sổ","var(--teal)",openPip),
+    tbtn("tPip","pip",pipWin?"Đóng nổi":"Cửa sổ","var(--teal)",openPip),
     tbtn("tFull","full","Phóng to","var(--acc)",goFull),
     tbtn("tWake","sun",wl?"Đang sáng":"Giữ sáng","var(--orange)",toggleWake));
   [["tRate",S.rate!=1],["tCC",set.cc>0],["tSleep",!!sleepAt||sleepEnd],["tPip",!!pipWin],["tWake",!!wl]].forEach(([i,on])=>$(i).classList.toggle("on",on));
@@ -1057,6 +1066,7 @@ function showNow(){
   const ph=$("ph");ph.innerHTML=ico("note")+"<span></span>";ph.lastChild.textContent=it?(it.type==="yt"?"Bấm ▶ để phát":it.title):"Chọn một bài để bắt đầu";
   if(it&&it.type==="yt"&&!loaded){scr.style.background=`#000 center/cover url("${yThumb(it.ref,"hq")}")`}else scr.style.background="";
   const fav=!!it&&favIds.has(it.id),hb=$("nHeart");hb.hidden=!it;hb.className="ib"+(fav?" on":"");hb.innerHTML=ico("heart",fav);$("nCmt").hidden=!it;
+  pipUpd();
   const showMini=!!it&&tab!=="home";$("mini").classList.toggle("show",showMini);document.body.classList.toggle("mini",showMini);
 }
 $("nHeart").onclick=()=>{const it=curItem();if(it)toggleFav(it)};
@@ -1093,12 +1103,25 @@ function applyCC(){ // phụ đề + dịch tự động sang tiếng Việt (t�
     yt.setOption("captions","fontSize",set.ccSize);
   }catch(x){}
 }
+/* --- giữ phiên âm thanh khi tắt màn hình (Android / máy tính): một đoạn âm 20Hz rất nhỏ, tai không nghe thấy --- */
+let ka=null,kaU="";
+function kaUrl(){if(kaU)return kaU;const sr=8000,n=sr,b=new ArrayBuffer(44+n*2),v=new DataView(b),w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
+  w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.round(90*Math.sin(2*Math.PI*20*i/sr)),true);return kaU=URL.createObjectURL(new Blob([b],{type:"audio/wav"}))}
+function keepAlive(on){try{if(on&&set.ka&&set.bg&&!isIOS){if(!ka){ka=new Audio(kaUrl());ka.loop=true;ka.setAttribute("playsinline","")}if(ka.paused)ka.play().catch(()=>{})}else if(ka&&!ka.paused)ka.pause()}catch(e){}}
+let bufT=0,resumeT=0;
+function watchdog(it){ // tự cứu khi bị dừng/kẹt: phát lại khi trình duyệt tự dừng lúc tắt màn hình, tải lại khi kẹt quá lâu
+  if(!wantPlay||!it||it.type!=="yt"||!ytReady||!yt||!yt.getPlayerState)return;
+  let st;try{st=yt.getPlayerState()}catch(e){return}const P=YT.PlayerState;
+  if(st===P.PAUSED&&document.hidden&&set.bg&&Date.now()-resumeT>2000){resumeT=Date.now();try{yt.playVideo()}catch(e){}}
+  if(st===P.BUFFERING||st===-1||st===P.CUED){if(!bufT)bufT=Date.now();else if(Date.now()-bufT>15000&&navigator.onLine){bufT=0;try{loadYT(it.ref,S.pos)}catch(e){}}}else bufT=0;
+}
 /* --- điều khiển chung --- */
 function stopAll(){try{ytReady&&yt.stopVideo()}catch(e){}au.pause();au.removeAttribute("src");if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=""}setPlaying(false)}
 function play(id,at=0,nopush){
   const it=queue.find(i=>i.id===id)||(S.curSong&&S.curSong.id===id?S.curSong:null);if(!it)return;
   if(!nopush&&S.cur&&S.cur!==id)hist.push(S.cur);
-  loaded=true;wantPlay=true;netWait=false;stopAll();S.cur=id;S.curSong=it;played.add(id);S.pos=at;ccDone="";
+  loaded=true;wantPlay=true;netWait=false;keepAlive(true);stopAll();S.cur=id;S.curSong=it;played.add(id);S.pos=at;ccDone="";
   if(it.type==="yt"){ytReady?loadYT(it.ref,at):pending={ref:it.ref,at};if(set.sb)sbGet(it.ref);if(set.da)daTitle(it.ref).then(()=>{if(curItem()===it){showNow();setMedia(it)}})}
   else playAudio(it,at);
   setMedia(it);save();drawSegs();render();
@@ -1107,10 +1130,10 @@ async function playAudio(it,at){
   let u=it.ref;if(offIds.has(it.id)){try{const o=await offGet(it.id);if(o&&o.b){blobUrl=URL.createObjectURL(o.b);u=blobUrl}}catch(e){}}
   if(S.cur!==it.id)return;au.src=u;au.playbackRate=+S.rate||1;au.onloadedmetadata=()=>{if(at)au.currentTime=at};au.play().catch(()=>say("Bấm ▶ để phát."));
 }
-function doPlay(){const it=curItem();if(!it)return toggle();wantPlay=true;if(!loaded)return play(it.id,S.pos,true);if(it.type==="yt"){if(ytReady)yt.playVideo()}else au.play().catch(()=>{})}
-function doPause(){wantPlay=false;try{ytReady&&yt.pauseVideo()}catch(e){}au.pause()}
+function doPlay(){const it=curItem();if(!it)return toggle();wantPlay=true;keepAlive(true);if(!loaded)return play(it.id,S.pos,true);if(it.type==="yt"){if(ytReady)yt.playVideo()}else au.play().catch(()=>{})}
+function doPause(){wantPlay=false;keepAlive(false);try{ytReady&&yt.pauseVideo()}catch(e){}au.pause()}
 function toggle(){const it=curItem();if(!it){if(visible().length)return playList(S.shuffle);if(queue.length)return play(queue[0].id);return say("Hãy chọn một bài để nghe.")}playing?doPause():doPlay()}
-function setPlaying(p){playing=p;drawBtns();document.querySelectorAll(".eq").forEach(e=>e.classList.toggle("paused",!p));if("mediaSession" in navigator)navigator.mediaSession.playbackState=p?"playing":"paused"}
+function setPlaying(p){playing=p;drawBtns();pipUpd();document.querySelectorAll(".eq").forEach(e=>e.classList.toggle("paused",!p));if("mediaSession" in navigator)navigator.mediaSession.playbackState=p?"playing":"paused"}
 function pick(dir){
   const v=queue;if(!v.length)return null;const i=v.findIndex(x=>x.id===S.cur);
   if(S.shuffle&&dir>0){let pool=v.filter(x=>!played.has(x.id));
@@ -1119,8 +1142,8 @@ function pick(dir){
   if(dir<0){while(hist.length){const hh=hist.pop();if(v.some(x=>x.id===hh))return"!"+hh}}
   const n=i+dir;if(n>=v.length)return S.repeat==="off"?null:v[0].id;if(n<0)return v[v.length-1].id;return v[n].id;
 }
-function step(dir){const id=pick(dir);if(!id){stopAll();wantPlay=false;return}id[0]==="!"?play(id.slice(1),0,true):play(id)}
-function ended(){if(sleepEnd){sleepEnd=false;wantPlay=false;say("Đã tắt nhạc sau khi hết bài.");drawTools();return}S.repeat==="one"?play(S.cur,0,true):step(1)}
+function step(dir){const id=pick(dir);if(!id){stopAll();wantPlay=false;keepAlive(false);return}id[0]==="!"?play(id.slice(1),0,true):play(id)}
+function ended(){if(sleepEnd){sleepEnd=false;wantPlay=false;keepAlive(false);say("Đã tắt nhạc sau khi hết bài.");drawTools();return}S.repeat==="one"?play(S.cur,0,true):step(1)}
 au.addEventListener("ended",ended);
 au.addEventListener("play",()=>{wantPlay=true;setPlaying(true)});
 au.addEventListener("pause",()=>{setPlaying(false);setTimeout(()=>{if(wantPlay&&au.paused&&document.hidden&&set.bg)au.play().catch(()=>{})},350)});
@@ -1131,10 +1154,11 @@ let seeking=false,lastDur=0,posT=0;
 function tick(){
   const it=curItem();if(!it||!loaded)return;const[c,d]=curTime();
   if(d){const pc=c/d*100;if(!seeking){$("sk").value=c/d*1000;$("sk").style.setProperty("--p",pc+"%")}$("mProg").style.width=pc+"%";if(Math.abs(d-lastDur)>1){lastDur=d;drawSegs()}}
-  $("cu").textContent=fmt(c);$("du").textContent=d?"-"+fmt(d-c):"0:00";S.pos=c;
+  $("cu").textContent=fmt(c);$("du").textContent=d?"-"+fmt(d-c):"0:00";if(c>0)S.pos=c;
   if(playing)sbCheck(c,d);
   if(playing&&d&&"mediaSession" in navigator&&Date.now()-posT>4000){posT=Date.now();try{navigator.mediaSession.setPositionState({duration:d,position:Math.min(c,d),playbackRate:+S.rate||1})}catch(e){}}
   if(sleepAt&&Date.now()%15000<500)drawTools();
+  pipUpd();watchdog(it);
 }
 setInterval(tick,500);setInterval(()=>{if(playing)save()},5000);
 $("sk").addEventListener("input",()=>{seeking=true;$("sk").style.setProperty("--p",$("sk").value/10+"%")});
@@ -1184,22 +1208,34 @@ function drawSegs(){
   const G=$("segs");G.replaceChildren();const it=curItem(),d=lastDur;if(!set.sb||!it||it.type!=="yt"||!d)return;
   (sbCache[it.ref]||[]).forEach(s=>{const i=h("i");i.style.left=(s.a/d*100)+"%";i.style.width=Math.max(.6,(s.b-s.a)/d*100)+"%";i.title=SBN[s.c]||"";G.append(i)});
 }
-/* --- cửa sổ nổi (Picture-in-Picture) --- */
-let pipWin=null,mainYt=null;
+/* --- cửa sổ nổi: bảng điều khiển nhỏ luôn nằm trên cùng (video vẫn chạy ở trang chính nên không bị lỗi trình phát) --- */
+let pipWin=null;
+const PIPSVG={prev:'<path d="M21 6.2v11.6a.8.8 0 0 1-1.2.7L12 13.4v4.4a.8.8 0 0 1-1.2.7l-9.2-5.8a.8.8 0 0 1 0-1.4l9.2-5.8a.8.8 0 0 1 1.2.7v4.4l7.8-5.1a.8.8 0 0 1 1.2.7z"/>',next:'<path d="M3 6.2v11.6a.8.8 0 0 0 1.2.7L12 13.4v4.4a.8.8 0 0 0 1.2.7l9.2-5.8a.8.8 0 0 0 0-1.4l-9.2-5.8a.8.8 0 0 0-1.2.7v4.4L4.2 5.5a.8.8 0 0 0-1.2.7z"/>',play:'<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/>',pause:'<rect x="5.5" y="4" width="4.5" height="16" rx="1.4"/><rect x="14" y="4" width="4.5" height="16" rx="1.4"/>'};
+const pipIco=n=>'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">'+PIPSVG[n]+"</svg>";
+function pipUpd(){
+  if(!pipWin)return;const d=pipWin.document,it=curItem();if(!d.getElementById("t"))return;
+  d.getElementById("t").textContent=it?(set.da&&it.type==="yt"&&daCache[it.ref]||it.title):"Chưa phát";
+  d.getElementById("a").textContent=it?(it.author||gName(it.genre)):"";
+  const im=d.getElementById("im"),src=it&&it.type==="yt"?yThumb(it.ref):"icon-192.png";if(im.getAttribute("src")!==src)im.src=src;
+  d.getElementById("pp").innerHTML=pipIco(playing?"pause":"play");
+  const[c,du]=curTime();d.getElementById("bar").style.width=(du?c/du*100:0)+"%";
+}
 async function openPip(){
   if(pipWin){pipWin.close();return}
-  if(!("documentPictureInPicture" in window))return panel("Cửa sổ nổi",null,[h("p","note","Máy tính (Chrome, Edge): bấm nút này để mở video trong cửa sổ nổi luôn nằm trên cùng."),h("p","note","iPhone / iPad: bấm nút Phóng to (hoặc nút toàn màn hình ở góc video), rồi bấm biểu tượng cửa sổ nhỏ ở góc trên để video thu thành cửa sổ nổi. Android: bấm nút Home khi video đang phát toàn màn hình.")]);
-  const it=curItem();if(!it||it.type!=="yt")return say("Cửa sổ nổi dùng cho video YouTube. Hãy phát một bài trước.");
-  const t=curTime()[0],was=wantPlay;
-  try{pipWin=await documentPictureInPicture.requestWindow({width:480,height:270})}catch(e){pipWin=null;return say("Trình duyệt không mở được cửa sổ nổi.")}
-  const d=pipWin.document;d.title="Nhac Hot";const st=d.createElement("style");st.textContent="html,body{margin:0;height:100%;background:#000}#p{position:fixed;inset:0;width:100%;height:100%}";d.head.append(st);
-  const div=d.createElement("div");div.id="p";d.body.append(div);mainYt=yt;
-  pipWin.onYouTubeIframeAPIReady=()=>{new pipWin.YT.Player(div,{width:"100%",height:"100%",videoId:it.ref,playerVars:{autoplay:1,start:Math.floor(t),playsinline:1,rel:0,origin:location.origin},
-    events:{onReady:e=>{try{mainYt.pauseVideo()}catch(x){}yt=e.target;try{yt.setPlaybackRate(+S.rate||1)}catch(x){}if(was)yt.playVideo();drawTools()},onStateChange:onYtState,onError:onYtError}})};
-  const sc=d.createElement("script");sc.src="https://www.youtube.com/iframe_api";d.head.append(sc);
-  pipWin.addEventListener("pagehide",()=>{const P=yt,c=curItem();let tt=0;try{tt=P.getCurrentTime()}catch(e){}const go=wantPlay;yt=mainYt||yt;mainYt=null;pipWin=null;
-    if(c&&c.type==="yt"&&ytReady){yt.loadVideoById({videoId:c.ref,startSeconds:tt});if(!go)setTimeout(()=>{try{yt.pauseVideo()}catch(e){}},600)}drawTools()});
-  drawTools();
+  if(!("documentPictureInPicture" in window))return panel("Cửa sổ nổi",null,[h("p","note","Máy tính (Chrome, Edge): nút này mở một cửa sổ điều khiển nhỏ luôn nằm trên cùng (tên bài, ảnh, Phát/Dừng, Bài trước/sau)."),h("p","note","iPhone / iPad: bấm nút Phóng to (hoặc nút toàn màn hình ở góc video), rồi bấm biểu tượng cửa sổ nhỏ ở góc trên để video thu thành cửa sổ nổi. Android: khi video đang toàn màn hình, bấm nút Home.")]);
+  if(!curItem())return say("Hãy phát một bài trước rồi mở cửa sổ nổi.");
+  try{pipWin=await documentPictureInPicture.requestWindow({width:360,height:120})}catch(e){pipWin=null;return say("Trình duyệt không mở được cửa sổ nổi.")}
+  const d=pipWin.document;d.title="Nhac Hot";const dark=document.documentElement.dataset.theme==="dark"||!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches;
+  const st=d.createElement("style");st.textContent=`*{box-sizing:border-box}html,body{margin:0;height:100%;font:14px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;background:${dark?"#1c1c1e":"#fff"};color:${dark?"#f5f5f7":"#111"}}
+  .w{display:flex;align-items:center;gap:10px;height:100%;padding:10px 12px 14px;position:relative}img{width:72px;height:72px;border-radius:10px;object-fit:cover;flex:none;background:#333}
+  .x{flex:1;min-width:0}.x b,.x small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.x small{opacity:.6;font-size:12px;margin-bottom:6px}
+  .c{display:flex;gap:6px;align-items:center}button{border:0;background:none;color:inherit;cursor:pointer;width:38px;height:38px;border-radius:50%;display:grid;place-items:center}
+  button#pp{background:linear-gradient(135deg,#ff6a88,#ff2d75);color:#fff;width:44px;height:44px}.p{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(128,128,128,.25)}#bar{height:100%;width:0;background:#ff2d75}`;
+  d.head.append(st);
+  d.body.innerHTML='<div class="w"><img id="im" alt=""><div class="x"><b id="t"></b><small id="a"></small><div class="c"><button id="pv" title="Bài trước">'+pipIco("prev")+'</button><button id="pp" title="Phát / Tạm dừng"></button><button id="nx" title="Bài sau">'+pipIco("next")+'</button></div></div><div class="p"><div id="bar"></div></div></div>';
+  d.getElementById("pv").onclick=()=>step(-1);d.getElementById("pp").onclick=toggle;d.getElementById("nx").onclick=()=>step(1);
+  pipWin.addEventListener("pagehide",()=>{pipWin=null;drawTools()});
+  pipUpd();drawTools();
 }
 /* --- phóng to --- */
 function goFull(){
@@ -1259,12 +1295,13 @@ function renderMe(){
     B.append(group("Tài khoản trên máy này",[...others.map(a=>{const b=cell("swap","var(--teal)",a.name,fmtPhone(a.login),()=>switchTo(a),0,"Bấm để chuyển sang");return b}),cell("useradd","var(--green)","Thêm tài khoản khác","",addAccount)],"Chuyển nhanh giữa các tài khoản mà không cần đăng nhập lại."));
   }
   B.append(group("Nghe nhạc",[
-    toggleCell("note","var(--acc)","Phát trong nền",set.bg,()=>{set.bg=!set.bg;saveSet();renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
+    !isIOS&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
+    toggleCell("note","var(--acc)","Phát trong nền",set.bg,()=>{set.bg=!set.bg;saveSet();keepAlive(set.bg&&wantPlay);renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
     toggleCell("skip","var(--green)","SponsorBlock",set.sb,()=>{set.sb=!set.sb;saveSet();drawSegs();renderMe()},"Tự bỏ qua đoạn tài trợ, nhắc đăng ký, đoạn không phải nhạc"),
     toggleCell("tag","var(--blue)","DeArrow",set.da,()=>{set.da=!set.da;saveSet();showNow();renderMe()},"Dùng tên bài do cộng đồng sửa, bớt “giật tít”"),
     toggleCell("sun","var(--orange)","Giữ màn hình sáng",!!wl,toggleWake),
     cell("download","var(--teal)","Bài đã lưu trên máy",offIds.size+" bài",()=>offIds.size?setSrc({k:"off",name:"Đã lưu trên máy"}):say("Chưa lưu bài nào. Bấm ⋯ ở bài hát (file .mp3) → Lưu để nghe khi mất mạng."))
-  ],"Trên iPhone, Safari có thể vẫn dừng video YouTube khi khoá màn hình. Khi đó mở màn hình khoá và bấm ▶ để nghe tiếp. Bài thêm bằng link file .mp3 phát nền ổn định nhất."));
+  ],isIOS?"iPhone/iPad: hãy mở app bằng Safari (không mở từ icon ngoài màn hình) thường nghe nền tốt hơn. Nếu nhạc dừng khi khoá máy, bấm ▶ ngay trên màn hình khoá. Bài thêm bằng link file .mp3 phát nền ổn định nhất.":"Khi khoá máy nhạc vẫn chạy. Điều khiển Phát/Dừng/Bài sau ngay trên màn hình khoá hoặc thanh thông báo."));
   if(configured&&members.length){
     const w=h("div","gw"),g=h("div","grp card");w.append(h("h3",null,"Mọi người · "+members.length+" thành viên"));
     members.forEach(m=>{const r=h("div","mem"),d=h("div","md");d.append(h("b","el",m.n+(user&&m.id===user.id?" (bạn)":"")));const ch=h("div","chips");

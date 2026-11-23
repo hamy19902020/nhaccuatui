@@ -71,3 +71,8 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   Kiểm tra kết nối chỉ còn trong **Cài đặt admin**. Sửa các chỗ chữ bị tràn.
 - **23/11/2026 (bản 8)**: màn hình Thêm nhạc chỉ còn **Link + Lưu vào danh sách**; thể loại tự nhận theo tên bài/kênh
   (remix, bolero/trữ tình, 8x-9x, nhạc nước ngoài, còn lại là nhạc trẻ), sửa được bằng ⋯ → Sửa tên / thể loại.
+- **23/11/2026 (bản 9)**: nút **Cửa sổ** mở bảng điều khiển nổi (ảnh, tên bài, Phát/Dừng, Bài trước/sau), hết lỗi "cấu hình trình phát".
+  Danh sách phát dạng ô gọn có **số bài**; danh sách **không có bài thì ẩn**. Người **chưa đăng nhập** vẫn xem được Thành viên và nghe
+  danh sách của họ. Dán link Zing/NhacCuaTui → báo không phát được + nút tìm bài đó trên YouTube.
+  Phát nền ổn định hơn: tự phát lại khi bị dừng lúc tắt màn hình, tự tải lại khi kẹt >15 giây, giữ phiên âm thanh trên Android/máy tính
+  (Tài khoản → Giữ phát khi tắt màn hình).
