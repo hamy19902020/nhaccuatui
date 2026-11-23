@@ -906,6 +906,15 @@ async function daTitle(ref){ // DeArrow: tên do cộng đồng sửa lại cho 
   try{const r=await fetch("https://sponsor.ajay.app/api/branding?videoID="+ref);if(r.ok){const j=await r.json();const t=(j.titles||[]).find(x=>!x.original&&(x.locked||x.votes>=0));if(t)daCache[ref]=t.title.replace(/^>\s*/,"").replace(/(^|\s)>(\S)/g,"$1$2").trim()}}catch(e){}
   return daCache[ref];
 }
+const VN=/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+function guessGenre(title,author){ // tự nhận thể loại theo tên bài + kênh
+  const t=(title+" "+(author||"")).toLowerCase();
+  if(/remix|vinahouse|nonstop|edm|bass ?boost|house|dj /.test(t))return"remix";
+  if(/bolero|trữ tình|tru tinh|dân ca|quê hương|nhạc vàng|nhạc xưa|cải lương|vọng cổ|tình khúc|nhạc trịnh|trịnh công sơn/.test(t))return"trutinh";
+  if(/8x|9x|thập niên|ngày xưa|hồi ức|lam trường|đan trường|cẩm ly|phương thanh|mỹ tâm|quang dũng|hồ quỳnh hương|ưng hoàng phúc|minh thuận|nhật tinh anh|lâm hùng|tuấn hưng|thanh thảo|lệ quyên/.test(t))return"x89";
+  if(!VN.test(t))return"quocte";
+  return"tre";
+}
 function targets(){const t=[];glists.filter(l=>!l.o||user&&l.o===user.id||admin).forEach(l=>t.push(["g:"+l.id,l.name+(l.o?(user&&l.o===user.id?" (của bạn)":" ("+memName(l.o)+")"):" (chung)")]));if(user){t.push(["u:fav","Yêu thích của tôi"]);lists.filter(l=>l.id!=="fav").forEach(l=>t.push(["u:"+l.id,l.name]))}return t}
 async function addTo(target,song){
   const[k,id]=target.split(":");
@@ -916,17 +925,18 @@ function openAdd(){
   if(!user)return needLogin("Hãy đăng nhập để thêm nhạc.");
   const T=targets();if(!T.length)return say("Chưa có danh sách nào để thêm nhạc.");
   const def=src&&canAdd()?(src.k==="g"?"g:"+src.id:"u:"+src.p):T[0][0];
-  formSheet({title:"Thêm nhạc",btn:"Lưu bài hát",note:"Trong ứng dụng YouTube: bấm Chia sẻ → Sao chép đường liên kết, rồi dán vào ô dưới.",
-    fields:[{id:"url",label:"Link YouTube hoặc link file .mp3",type:"url",im:"url",ph:"https://youtu.be/…",paste:1,clear:1},{id:"genre",label:"Thể loại",options:GENRES,value:S.genre!=="all"?S.genre:null},{id:"p",label:"Lưu vào danh sách",options:T,value:def}],
+  formSheet({title:"Thêm nhạc",btn:"Lưu bài hát",note:"Trong ứng dụng YouTube: bấm Chia sẻ → Sao chép đường liên kết, rồi dán vào ô dưới. Thể loại (Nhạc trẻ, Remix, Trữ tình…) app tự nhận theo tên bài, sửa lại được bằng nút ⋯ ở bài hát.",
+    fields:[{id:"url",label:"Link YouTube hoặc link file .mp3",type:"url",im:"url",ph:"https://youtu.be/…",paste:1,clear:1},{id:"p",label:"Lưu vào danh sách",options:T,value:def}],
     fn:async v=>{
       const p=parse(v.url);if(p.err)throw Error(p.err);
       fMsg.className="msg ok";fMsg.textContent="Đang lấy tên bài…";let title="",author="",da="";
       if(p.type==="yt"){try{const r=await fetch("https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+p.ref));const j=await r.json();title=j.title;author=j.author_name||""}catch(e){}if(set.da){da=await daTitle(p.ref);if(da)title=da}}
       if(!title)title=p.type==="yt"?"YouTube "+p.ref:decodeURIComponent(p.ref.split("/").pop().split("?")[0]);
-      const song=await addTo(v.p,{type:p.type,ref:p.ref,title,author,genre:v.genre});
+      const genre=S.genre!=="all"?S.genre:guessGenre(title,author);
+      const song=await addTo(v.p,{type:p.type,ref:p.ref,title,author,genre});
       const here=src&&(src.k==="g"?"g:"+src.id:src.k==="u"&&user&&src.u===user.id?"u:"+src.p:"")===v.p;
       if(here&&!items.some(i=>i.id===song.id)){items.push(song);LS.set("hn.l."+srcKey(),items)}render();
-      return{keep:"Đã thêm: "+title+(da?" (tên đã sửa bởi DeArrow)":"")+". Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng."};
+      return{keep:"Đã thêm: "+title+" · "+gName(genre)+(da?" (tên đã sửa bởi DeArrow)":"")+". Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng."};
     }});
 }
 function openEdit(it){formSheet({title:"Sửa bài hát",btn:"Lưu thay đổi",fields:[{id:"title",label:"Tên bài",value:it.title,max:200,cap:"sentences"},{id:"genre",label:"Thể loại",options:GENRES,value:it.genre}],

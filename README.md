@@ -69,3 +69,5 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   đã đổi sang nhachot). Đăng ký gồm **họ tên, số điện thoại, Gmail**. Giao diện **Sáng / Tối / Tự động** (Tài khoản → Giao diện,
   hoặc nút mặt trời/trăng trên cùng). Mỗi danh sách có **màu riêng** (admin chọn màu khi tạo/sửa), xếp dạng ô nhiều hàng.
   Kiểm tra kết nối chỉ còn trong **Cài đặt admin**. Sửa các chỗ chữ bị tràn.
+- **23/11/2026 (bản 8)**: màn hình Thêm nhạc chỉ còn **Link + Lưu vào danh sách**; thể loại tự nhận theo tên bài/kênh
+  (remix, bolero/trữ tình, 8x-9x, nhạc nước ngoài, còn lại là nhạc trẻ), sửa được bằng ⋯ → Sửa tên / thể loại.
