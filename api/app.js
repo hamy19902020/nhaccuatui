@@ -31,6 +31,30 @@ const DEF_PASS_HASH = "f9a94e2cf4d26650a3b21edf50292e0d:b506f6c301aea42f63158401
 const RESET_PW = "123"; // mật khẩu mặc định khi admin đặt lại cho thành viên
 const isAdmin = (id, U, aid) => (ENV_PHONE && U.phone === ENV_PHONE) || (!!U.email && U.email === ENV_EMAIL) || (!!aid && aid === id);
 
+// Nguồn lấy luồng ÂM THANH của bài YouTube để nghe nền (như file mp3). Đổi được bằng biến AUDIO_SOURCES trên Vercel,
+// dạng "piped:https://...,inv:https://..." (Piped / Invidious là các trang xem YouTube mã nguồn mở).
+const AUDIO_SRC = (E.AUDIO_SOURCES || "piped:https://pipedapi.kavin.rocks,piped:https://pipedapi.adminforge.de,piped:https://api.piped.private.coffee,piped:https://pipedapi.leptons.xyz,inv:https://inv.nadeko.net,inv:https://invidious.nerdvpn.de,inv:https://yewtu.be,inv:https://invidious.privacyredirect.com")
+  .split(",").map(x => x.trim()).filter(Boolean);
+async function getJson(u, ms) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(u, { signal: c.signal, headers: { "User-Agent": "Mozilla/5.0 NhacHot", Accept: "application/json" } }); if (!r.ok) throw new Error(String(r.status)); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+const byRate = (x, y) => (Number(y.bitrate) || 0) - (Number(x.bitrate) || 0);
+async function resolveAudio(id) {
+  return Promise.any(AUDIO_SRC.map(async s => {
+    const i = s.indexOf(":"), kind = s.slice(0, i), base = s.slice(i + 1).replace(/\/$/, ""), host = new URL(base).host;
+    if (kind === "piped") {
+      const j = await getJson(`${base}/streams/${id}`, 7000), a = (j.audioStreams || []).filter(x => x.url); if (!a.length) throw new Error("no audio");
+      const p = a.filter(x => /mp4|m4a/i.test((x.mimeType || "") + (x.format || ""))).sort(byRate)[0] || a.sort(byRate)[0];
+      return { url: p.url, mime: (p.mimeType || "").split(";")[0], src: host, dur: j.duration || 0 };
+    }
+    const j = await getJson(`${base}/api/v1/videos/${id}?local=true&fields=adaptiveFormats,lengthSeconds`, 7000), a = (j.adaptiveFormats || []).filter(x => /^audio\//.test(x.type || "") && x.url); if (!a.length) throw new Error("no audio");
+    const p = a.filter(x => /mp4/.test(x.type)).sort(byRate)[0] || a.sort(byRate)[0];
+    return { url: p.url.startsWith("/") ? base + p.url : p.url, mime: (p.type || "").split(";")[0], src: host, dur: Number(j.lengthSeconds) || 0 };
+  }));
+}
+
 let used = 0; // số lệnh Redis đã dùng trong tháng (ước tính)
 async function redis(cmds) {
   const key = "hn:cmd:" + new Date().toISOString().slice(0, 7);
@@ -150,6 +174,13 @@ module.exports = async (req, res) => {
       if (!m || !m.admin) return send(200, base);
       const [nu, ng, np, by, ad, da] = await redis([["HLEN", USERS], ["HLEN", GL], ["HLEN", PHONES], ["GET", BYTES], ["GET", ADMIN], ["HGET", USERS, uidOf(ENV_EMAIL)]]), DA = da ? JSON.parse(da) : null;
       return send(200, { ...base, counts: { users: nu, glists: ng, phones: np, mb: Math.max(0, Number(by) || 0) / 1048576, cmds: used, limitMb: LIMIT, limitCmd: CMD_LIMIT }, adminMode: ENV_PHONE ? "ADMIN_PHONE" : "ADMIN_EMAIL", adminEmail: ENV_EMAIL, adminDefaultPw: !!(DA && DA.dflt), adminEmailCreated: !!DA });
+    }
+    if (a === "stream") { // luồng âm thanh để nghe nền (có lưu tạm 50 phút)
+      const v = String(q.v || ""); if (!/^[\w-]{11}$/.test(v)) throw httpErr(400, "Mã video chưa đúng.");
+      const key = "hn:st:" + v;
+      if (!q.fresh) { const [c] = await redis([["GET", key]]); if (c === "x") throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); if (c) return send(200, JSON.parse(c)); }
+      try { const r = await resolveAudio(v); await redis([["SET", key, JSON.stringify(r), "EX", 3000]]); return send(200, r); }
+      catch (e) { await redis([["SET", key, "x", "EX", 300]]); throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); }
     }
     if (a === "lists") { // danh sách phát chung
       const [h] = await redis([["HGETALL", GL]]), out = [];

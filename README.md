@@ -76,3 +76,9 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   danh sách của họ. Dán link Zing/NhacCuaTui → báo không phát được + nút tìm bài đó trên YouTube.
   Phát nền ổn định hơn: tự phát lại khi bị dừng lúc tắt màn hình, tự tải lại khi kẹt >15 giây, giữ phiên âm thanh trên Android/máy tính
   (Tài khoản → Giữ phát khi tắt màn hình).
+- **23/11/2026 (bản 10)**: **Nghe nền thật**: bài YouTube được phát bằng luồng âm thanh (như file mp3) lấy qua Piped/Invidious
+  (máy chủ có thêm `stream`), nên vẫn nghe khi tắt màn hình / chuyển app; nút **Nghe nền ⇄ Video** ở trình phát; lấy không được
+  thì tự phát bằng video. Đổi nguồn bằng biến `AUDIO_SOURCES`. Trang chủ khi chưa đăng nhập hiện **lưới thành viên**; bấm vào
+  thành viên để thấy danh sách có bài của họ, nút **← Trang chủ** để quay lại. Tab đầu đổi tên thành **Trang chủ**.
+- **23/11/2026 (bản 11)**: Tài khoản → **Thông tin của bạn**: sửa tên, **số điện thoại**, **Gmail**, mật khẩu. Chưa đăng nhập thì mở
+  sẵn tab **Của bạn** với nút **Đăng nhập để vào danh sách của bạn** (vẫn nghe được danh sách chung và tab Thành viên).
