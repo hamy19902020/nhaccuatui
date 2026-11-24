@@ -223,6 +223,14 @@ module.exports = async (req, res) => {
       const out = { title, artist, yt, q: (title + " " + artist).trim() };
       await redis([["SET", key, JSON.stringify(out), "EX", yt.length ? 7 * 86400 : 600]]); return send(200, out);
     }
+    if (a === "top") { // bài được nghe nhiều nhất trên app
+      const [r] = await redis([["ZREVRANGE", "hn:top", 0, 49, "WITHSCORES"]]), ids = [], sc = {};
+      for (let i = 0; i < (r || []).length; i += 2) { ids.push(r[i]); sc[r[i]] = Number(r[i + 1]) || 0; }
+      if (!ids.length) return send(200, { songs: [] });
+      const [d] = await redis([["HMGET", "hn:topd", ...ids]]), songs = [];
+      (d || []).forEach((x, i) => { try { const s = JSON.parse(x); s.n = sc[ids[i]]; songs.push(s); } catch { } });
+      return send(200, { songs });
+    }
     if (a === "lists") { // danh sách phát chung
       const [h] = await redis([["HGETALL", GL]]), out = [];
       for (let i = 0; i < (h || []).length; i += 2) { try { out.push(JSON.parse(h[i + 1])); } catch { } }
@@ -280,6 +288,12 @@ module.exports = async (req, res) => {
       const t = parseTok(b.tok), [u] = t ? await redis([["HGET", USERS, t.u]]) : [null], U = u && JSON.parse(u);
       if (!U || (U.sv || 0) !== t.v) throw httpErr(401, "Tài khoản này cần đăng nhập lại (có thể đã đổi mật khẩu).");
       const tok = setSession(res, t.u, U.sv); return send(200, { user: pubUser(t.u, U), tok });
+    }
+    if (a === "played") { // đếm 1 lượt nghe (mỗi máy tối đa 1 lượt / bài / 30 phút)
+      const s = clean(b.song); if (!s) throw httpErr(400, "Thông tin bài hát chưa hợp lệ.");
+      const ip = String(req.headers["x-forwarded-for"] || "x").split(",")[0].trim(), [ok] = await redis([["SET", `hn:pc:${ip}:${s.id}`, "1", "EX", 1800, "NX"]]);
+      if (ok) { delete s.t; await redis([["ZINCRBY", "hn:top", 1, s.id], ["HSET", "hn:topd", s.id, JSON.stringify(s)]]); }
+      return send(200, { ok: 1 });
     }
     if (a === "logout") { cookie(res, "hn=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0"); return send(200, { ok: 1 }); }
 
@@ -412,8 +426,8 @@ module.exports = async (req, res) => {
       await redis(cmds); return send(200, { ok: 1 });
     }
     // ----- danh sách phát -----
-    if (a === "plnew") {
-      needAdmin(); const name = listName(b.name); if (!name) throw httpErr(400, "Hãy nhập tên danh sách.");
+    if (a === "plnew") { // mỗi thành viên tự tạo danh sách phát riêng (ai cũng xem/nghe được)
+      const name = listName(b.name); if (!name) throw httpErr(400, "Hãy nhập tên danh sách.");
       const p = await myPub(); if (p.l.length >= 31) throw httpErr(400, "Tối đa 30 danh sách.");
       const id = crypto.randomBytes(3).toString("hex"); p.l.push({ id, name, c: 0 }); await setPub(me, p); return send(200, { lists: p.l, id });
     }

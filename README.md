@@ -4,7 +4,8 @@
 
 - Đăng ký / đăng nhập bằng **Gmail + mật khẩu** (Gmail và số điện thoại không được trùng). Phiên đăng nhập giữ **6 tháng**.
 - Mỗi người tự đổi tên, số điện thoại, Gmail, mật khẩu trong tab **Tài khoản**.
-- **Admin** có tab **Quản trị**: xem toàn bộ thành viên, Gmail, số điện thoại, mật khẩu; thêm thành viên; đặt lại mật khẩu; xoá thành viên; tạo danh sách phát.
+- Mỗi thành viên **tự tạo danh sách phát riêng**; ai cũng xem/nghe được, chỉ chủ danh sách thêm/xoá bài. Có mục **Nghe nhiều nhất**.
+- **Admin** có tab **Quản trị**: xem toàn bộ thành viên, Gmail, số điện thoại, mật khẩu; thêm thành viên; đặt lại mật khẩu; xoá thành viên; tạo danh sách chung hoặc tạo hộ cho thành viên.
 
 Cấu trúc (giữ đúng như vậy khi đưa lên GitHub, `index.html` nằm ngay ở gốc repo):
 
@@ -42,3 +43,12 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - Bỏ dòng “Tài khoản cũ đăng nhập bằng số điện thoại”; đăng nhập bằng Gmail. Phiên đăng nhập **6 tháng**.
   - Thêm nhạc: dán **link bài NhacCuaTui / Zing MP3** → app đọc tên bài + ca sĩ và tìm bản YouTube để chọn (máy chủ có thêm `find`).
     Dán link **.mp3** vẫn được (chạy nền tốt nhất); link mp3 của NhacCuaTui (`stream.nct.vn`) được báo ngày hết hạn.
+- **24/11/2026 (bản 13)** – mỗi danh sách phát thuộc về đúng một người:
+  - **Chưa đăng nhập**: trang chủ chỉ hiện **tên các thành viên** (không hiện nhạc hay danh sách của ai). Bấm vào tên → thấy các
+    danh sách phát của người đó → bấm danh sách để nghe. Nút **← Trang chủ** hoặc chữ **Nhac Hot** để quay lại.
+  - **Đã đăng nhập**: tab **Danh sách của bạn** chỉ có danh sách của chính mình (chưa có thì báo “Bạn chưa có danh sách phát nào”
+    + nút **Tạo danh sách đầu tiên**); tab **Thành viên khác** để xem danh sách của người khác.
+  - **Thành viên tự tạo danh sách riêng** (ví dụ “Nhạc trẻ” của A khác “Nhạc trẻ” của B). Ai cũng xem/nghe được, chỉ chủ danh sách
+    (và admin) thêm/xoá bài. Bấm ♥ để lưu bài của bất kỳ ai vào mục Yêu thích của mình.
+  - Mục mới **Nghe nhiều nhất**: bài được nghe trên 20 giây được tính 1 lượt (mỗi máy tối đa 1 lượt/bài/30 phút).
+  - Máy chủ: `plnew` cho mọi thành viên; thêm `top`, `played`.
