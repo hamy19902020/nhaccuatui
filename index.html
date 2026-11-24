@@ -183,7 +183,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .ptile[aria-pressed=true]{background:var(--lc);border-color:var(--lc);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--lc) 35%,transparent)}
 .ptile[aria-pressed=true] .pi{background:rgba(255,255,255,.25)}
 .ptile[aria-pressed=true] .pc{background:rgba(255,255,255,.25);color:#fff}
-.ptiles .cta{grid-column:1/-1;padding:14px}.ptiles .cta b{display:block;font-size:15px;margin-bottom:4px}
+.ptiles .cta{grid-column:1/-1;padding:14px;display:grid;gap:8px}.ptiles .cta p{margin:0}.ptiles .cta .btn.lg{min-height:52px;font-size:16px;white-space:normal}.ptiles .cta b{display:block;font-size:15px;margin-bottom:4px}
 .ptile.add{background:transparent;border:1.5px dashed var(--fill2)}.ptile.add .pi{background:var(--fill);color:var(--acc)}.ptile.add b{color:var(--acc)}
 .lhead .ttl h2{display:flex;align-items:center;gap:7px}
 .lhead .ttl h2::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--lc,var(--acc))}
@@ -514,7 +514,7 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
    <div class="gw" id="admResetsW" hidden><h3>Yêu cầu quên mật khẩu</h3><div class="grp card" id="admResets"></div><p class="foot">Bấm “Đặt về 123” – thành viên đăng nhập bằng 123 rồi app sẽ nhắc họ đổi mật khẩu mới.</p></div>
    <div class="stats" id="admStats"></div>
    <div class="usage card" id="usage" hidden></div>
-   <div class="gw"><h3>Danh sách phát chung</h3><div class="grp card" id="admLists"></div><p class="foot">Danh sách “chung”: ai cũng thêm nhạc được. Danh sách “riêng”: chỉ người được chọn (và admin) thêm nhạc. Thành viên không tự tạo danh sách.</p></div>
+   <div class="gw"><h3>Tên danh sách phát</h3><div class="grp card" id="admLists"></div><p class="foot">Admin tạo tên danh sách (ví dụ: Nhạc trẻ, Remix, Bolero). Thành viên chọn tên khi thêm nhạc – mỗi người có bản riêng của mình. Thành viên không tự tạo danh sách.</p></div>
    <div class="gw"><h3>Thành viên</h3>
     <div class="atools"><label class="search"><svg class="i s" aria-hidden="true"><use href="#search"/></svg><input id="admQ" type="search" placeholder="Tìm tên hoặc Gmail" autocomplete="off"></label><button class="btn green" id="admAdd"></button><button class="btn plain" id="admShow"></button></div>
     <div class="grp card" id="admList"></div>
@@ -801,7 +801,7 @@ function pickSrc(force){
 function setSrc(s){src=s;LS.set("hn.src",s);S.genre="all";qText="";$("q").value="";save();items=LS.get("hn.l."+srcKey())||[];loadingList=!items.length&&s.k!=="off";if(tab!=="home")goTab("home");else render();loadItems()}
 const srcName=()=>!src?"":src.name||(src.k==="g"?"Danh sách chung":src.k==="off"?"Đã lưu trên máy":"Danh sách");
 const glOf=id=>glists.find(l=>l.id===id)||{};
-const canAdd=()=>!!user&&!!src&&(src.k==="g"&&(!glOf(src.id).o||glOf(src.id).o===user.id||admin)||src.k==="u"&&src.u===user.id);
+const canAdd=()=>!!user&&!!src&&(src.k==="g"&&admin||src.k==="u"&&src.u===user.id&&src.p!=="fav");
 const canEdit=it=>!!user&&!!src&&(src.k==="g"?(it.by===user.id||admin):src.k==="u"&&src.u===user.id);
 async function loadGL(){try{const j=await api("lists");glists=j.lists;LS.set("hn.gl",glists)}catch(e){}if(src&&src.k==="g"&&!glists.some(l=>l.id===src.id))pickSrc(true);if(!src&&user)pickSrc();if(tab==="home")renderHome();if(tab==="admin")renderAdmin()}
 async function loadItems(){
@@ -848,7 +848,7 @@ function showMember(id){plMode="mem";selMem=id;LS.set("hn.pl",{plMode,selMem});i
 const PAL=["#ff2d75","#ff8a1f","#14b87a","#2f7bff","#8b5cf6","#06b6d4","#e11d48","#ca8a04","#0ea5e9","#16a34a","#d946ef","#f97316"];
 const COLORS=[["","Tự động"],["#ff2d75","Hồng"],["#e11d48","Đỏ"],["#ff8a1f","Cam"],["#ca8a04","Vàng"],["#14b87a","Xanh lá"],["#06b6d4","Xanh ngọc"],["#2f7bff","Xanh dương"],["#8b5cf6","Tím"],["#d946ef","Tím hồng"]];
 const colOf=(key,c)=>c||(String(key).endsWith(".fav")||key==="fav"?"#ff2d75":PAL[hue(key)%PAL.length]);
-const srcColor=()=>!src?"var(--acc)":src.k==="top"?"#ff6a3d":src.k==="g"?colOf("g."+src.id,glOf(src.id).col):src.k==="off"?"#14b87a":colOf("u."+src.u+"."+src.p);
+const srcColor=()=>!src?"var(--acc)":src.k==="top"?"#ff6a3d":src.k==="g"?colOf("g."+src.id,glOf(src.id).col):src.k==="off"?"#14b87a":lcol(src.u,{id:src.p});
 function ptile(label,icon,on,fn,col,count,add){
   const b=h("button","ptile"+(add?" add":""));b.style.setProperty("--lc",col);
   b.innerHTML='<span class="pi">'+ico(icon,icon==="heart")+'</span><b class="el"></b>'+(add?"":'<span class="pc"></span>');
@@ -861,6 +861,8 @@ function useSrc(ok,cands){ // giữ danh sách đang mở nếu đúng người 
 }
 function openSrc(s){src=s;const o=srcOwner(s);if(user&&o===user.id){plMode="mine";selMem=""}else{plMode="mem";selMem=o||""}LS.set("hn.pl",{plMode,selMem});setSrc(s)}
 const TOP={k:"top",name:"Nghe nhiều nhất"};
+const lcol=(uid,l)=>l.id==="fav"?"#ff2d75":glOf(l.id).id?colOf("g."+l.id,glOf(l.id).col):colOf("u."+uid+"."+l.id);
+const lname=l=>l.id==="fav"?"Yêu thích":(glOf(l.id).name||l.name);
 function specialAv(icon,bg){const a=h("div","av");a.innerHTML=ico(icon);a.style.background=bg;return a}
 function renderChips(){
   const P=$("plChips"),MC=$("memChips");P.replaceChildren();MC.replaceChildren();
@@ -873,7 +875,7 @@ function renderChips(){
   const mode=!user?"mem":plMode;
   $("plTabs").querySelectorAll("button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.m===mode);b.onclick=()=>{if(b.dataset.m==="mem"&&plMode==="mem")selMem="";plMode=b.dataset.m;LS.set("hn.pl",{plMode,selMem});renderHome()}});
   const k=()=>srcKey();
-  const uS=(m,l)=>({k:"u",u:m.id,p:l.id,name:l.id==="fav"?(user&&m.id===user.id?"Nhạc Yêu Thích":"Yêu thích của "+m.n):l.name,owner:m.n});
+  const uS=(m,l)=>({k:"u",u:m.id,p:l.id,name:l.id==="fav"?(user&&m.id===user.id?"Nhạc Yêu Thích":"Yêu thích của "+m.n):lname(l),owner:m.n});
   const gS=l=>({k:"g",id:l.id,name:l.name});
   const gTile=l=>ptile(l.name,"note",k()==="g."+l.id,()=>setSrc(gS(l)),colOf("g."+l.id,l.col),l.c);
   let showList=false;
@@ -881,14 +883,15 @@ function renderChips(){
     const me={id:user.id,n:user.name},fav=lists.find(l=>l.id==="fav")||{id:"fav",c:0},own=lists.filter(l=>l.id!=="fav"),ownG=glists.filter(l=>l.o===user.id);
     const cands=[...own.map(l=>uS(me,l)),...ownG.map(gS)];if((fav.c||0)>0)cands.push(uS(me,fav));if(offIds.size)cands.push({k:"off",name:"Đã lưu trên máy"});
     useSrc(s=>srcOwner(s)===user.id,cands);
-    if(!cands.length){
-      const c=h("div","card cta");c.append(h("b",null,"Bạn chưa có danh sách phát nào"),h("p",null,"Tạo một danh sách (ví dụ: Nhạc trẻ, Nhạc đi xe) rồi bấm “Thêm nhạc”. Hoặc bấm ♥ ở bài hát bất kỳ để lưu vào mục Yêu thích của bạn."),btn("acc","plus","Tạo danh sách đầu tiên",newList));P.append(c);
+    if(!cands.length){ // tài khoản mới: chỉ có 1 nút thêm nhạc
+      const c=h("div","card cta"),b=btn("acc lg wide","plus","Thêm Nhạc vào Danh Sách Phát Của Bạn",()=>openAdd());c.append(b,h("p",null,"Dán link bài hát rồi chọn danh sách có sẵn (Nhạc trẻ, Remix…). Bấm ♥ ở bài hát bất kỳ để lưu vào mục Yêu thích của bạn."));if(admin)c.append(btn("plain","edit","Admin: tạo tên danh sách mới",()=>glNew()));P.append(c);
     }else{
-      own.forEach(l=>P.append(ptile(l.name,"ilist",k()==="u."+user.id+"."+l.id,()=>setSrc(uS(me,l)),colOf("u."+user.id+"."+l.id),l.c)));
+      own.forEach(l=>P.append(ptile(lname(l),"ilist",k()==="u."+user.id+"."+l.id,()=>setSrc(uS(me,l)),lcol(user.id,l),l.c)));
       ownG.forEach(l=>P.append(gTile(l)));
       if((fav.c||0)>0)P.append(ptile("Yêu thích","heart",k()==="u."+user.id+".fav",()=>setSrc(uS(me,fav)),"#ff2d75",fav.c));
       if(offIds.size)P.append(ptile("Đã lưu trên máy","download",k()==="off",()=>setSrc({k:"off",name:"Đã lưu trên máy"}),"#14b87a",offIds.size));
-      P.append(ptile("Tạo danh sách","plus",false,newList,"var(--gray)",0,1));
+      P.append(ptile("Thêm nhạc","plus",false,()=>openAdd(),"var(--gray)",0,1));
+      if(admin)P.append(ptile("Tạo tên danh sách","edit",false,()=>glNew(),"var(--gray)",0,1));
       showList=!!src;
     }
   }else{ // xem thành viên: trước hết chỉ hiện TÊN, bấm vào tên mới thấy danh sách của người đó
@@ -913,10 +916,9 @@ function renderChips(){
         const m=others.find(x=>x.id===sel);who_.append(avatar(m.n,"sm"),h("b","el",m.n));
         const ml=m.l.filter(l=>l.id!=="fav"||l.c>0),mg=glists.filter(l=>l.o===m.id),cands=[...ml.map(l=>uS(m,l)),...mg.map(gS)].sort((a,b)=>(lcount(b)>0)-(lcount(a)>0));
         useSrc(s=>srcOwner(s)===m.id,cands);
-        ml.forEach(l=>P.append(ptile(l.id==="fav"?"Yêu thích":l.name,l.id==="fav"?"heart":"ilist",k()==="u."+m.id+"."+l.id,()=>setSrc(uS(m,l)),colOf("u."+m.id+"."+l.id),l.c)));
+        ml.forEach(l=>P.append(ptile(lname(l),l.id==="fav"?"heart":"ilist",k()==="u."+m.id+"."+l.id,()=>setSrc(uS(m,l)),lcol(m.id,l),l.c)));
         mg.forEach(l=>P.append(gTile(l)));
         if(!ml.length&&!mg.length)P.append(h("p","note",m.n+" chưa có danh sách phát nào."));
-        if(admin)P.append(ptile("Tạo cho "+m.n.split(/\s+/).pop(),"plus",false,()=>glNew(m.id),"var(--gray)",0,1));
       }
       showList=!!src&&srcOwner(src)===sel;
     }
@@ -937,7 +939,7 @@ function renderListHead(){
   const A=$("lActs");A.replaceChildren();if(!src)return;
   if(items.length){const p=btn("acc","play","Phát",()=>playList(false));p.setAttribute("aria-label","Phát cả danh sách");A.append(p);const s=h("button","ib bg");s.innerHTML=ico("shuf");s.setAttribute("aria-label","Trộn bài và phát");s.onclick=()=>playList(true);A.append(s)}
   if(canAdd())A.append(btn("green","plus","Thêm nhạc",()=>openAdd()));
-  else if(!user&&src.k==="g")A.append(btn("green","plus","Thêm nhạc",()=>needLogin("Hãy đăng nhập để thêm nhạc.")));
+
   if(src.k!=="off"&&src.k!=="top"){const m=h("button","ib bg");m.innerHTML=ico("more");m.setAttribute("aria-label","Tuỳ chọn danh sách");m.onclick=listMenu;A.append(m)}
 }
 function songRow(it,isCur,onPlay,extra){
@@ -953,7 +955,7 @@ function songRow(it,isCur,onPlay,extra){
 function renderList(){
   const L=$("list");L.replaceChildren();const v=visible();
   if(!configured){L.append(emptyBox("Chưa nối cơ sở dữ liệu nên chưa có danh sách."));return}
-  if(!src){if(user)L.append(emptyBox("Bạn chưa có danh sách phát nào.","Tạo danh sách",newList));else L.append(emptyBox("Chọn một thành viên ở trên để nghe danh sách của họ."));return}
+  if(!src){if(user)L.append(emptyBox("Bạn chưa có bài nào.","Thêm Nhạc vào Danh Sách Phát Của Bạn",()=>openAdd()));else L.append(emptyBox("Chọn một thành viên ở trên để nghe danh sách của họ."));return}
   if(loadingList&&!v.length){for(let i=0;i<4;i++)L.append(h("div","sk"));return}
   if(!v.length){L.append(emptyBox(items.length?"Không có bài nào khớp.":src.k==="top"?"Chưa có lượt nghe nào. Nghe một bài hơn 20 giây là được tính.":"Danh sách đang trống."+(canAdd()?" Bấm “Thêm nhạc” để thêm bài đầu tiên.":""),!items.length&&canAdd()?"Thêm nhạc":null,()=>openAdd(),"green"));return}
   const cur=curItem();
@@ -969,10 +971,10 @@ function listMenu(){
   if(!src)return;const g=src.k==="g",mineU=src.k==="u"&&user&&src.u===user.id&&src.p!=="fav";
   sheet(srcName(),g?"Danh sách chung":src.owner?"của "+src.owner:null,[
     {label:"Chia sẻ danh sách",icon:"share",fn:shareList},
-    admin&&g&&{label:"Sửa tên / màu / người dùng",icon:"edit",fn:()=>glRename(glists.find(l=>l.id===src.id)||{id:src.id,name:src.name})},
+    admin&&g&&{label:"Sửa tên / màu",icon:"edit",fn:()=>glRename(glists.find(l=>l.id===src.id)||{id:src.id,name:src.name})},
     admin&&g&&{label:"Xoá danh sách chung",icon:"trash",red:1,fn:()=>glDelete(glists.find(l=>l.id===src.id)||{id:src.id,name:src.name,c:items.length})},
-    mineU&&{label:"Đổi tên danh sách",icon:"edit",fn:()=>renameList()},
-    (mineU||admin&&src.k==="u"&&user&&src.u!==user.id&&src.p!=="fav")&&{label:"Xoá danh sách này",icon:"trash",red:1,fn:delList}
+    mineU&&!glOf(src.p).id&&{label:"Đổi tên danh sách",icon:"edit",fn:()=>renameList()},
+    (mineU||admin&&src.k==="u"&&user&&src.u!==user.id&&src.p!=="fav")&&{label:mineU&&glOf(src.p).id?"Xoá hết bài trong danh sách này của bạn":"Xoá danh sách này",icon:"trash",red:1,fn:delList}
   ]);
 }
 async function shareList(){
@@ -984,19 +986,13 @@ function renameList(){formSheet({title:"Đổi tên danh sách",btn:"Lưu",field
   fn:async v=>{if(!v.name)throw Error("Hãy nhập tên.");const j=await api("plren",{id:src.p,name:v.name});lists=j.lists;saveMe();src.name=v.name;render();say("Đã đổi tên.")}})}
 function delList(){confirmSheet("Xoá “"+srcName()+"”?","Toàn bộ "+items.length+" bài trong danh sách sẽ bị xoá.","Xoá danh sách",async()=>{
   try{const j=await api("pldel",{u:src.u,id:src.p});if(j.lists){lists=j.lists;saveMe()}say("Đã xoá danh sách.");pickSrc(true);render();loadItems()}catch(e){err(e.message)}})}
-function newList(){
-  if(!user)return needLogin("Hãy đăng nhập để tạo danh sách phát.");
-  formSheet({title:"Tạo danh sách phát",btn:"Tạo danh sách",note:"Danh sách là của riêng bạn (ví dụ: Nhạc trẻ, Nhạc đi xe). Mọi người đều xem và nghe được, nhưng chỉ bạn thêm/xoá bài.",
-    fields:[{id:"name",label:"Tên danh sách",ph:"Ví dụ: Nhạc trẻ",max:40,cap:"sentences"}],
-    fn:async v=>{if(!v.name)throw Error("Hãy nhập tên danh sách.");const j=await api("plnew",{name:v.name});lists=j.lists;saveMe();openSrc({k:"u",u:user.id,p:j.id,name:v.name,owner:user.name});loadMembers();say("Đã tạo danh sách. Bấm “Thêm nhạc” để thêm bài.")}});
-}
 /* --- danh sách chung (admin) --- */
 const ownerOpts=()=>[["","Mọi người (danh sách chung)"],...(aUsers||members.map(m=>({id:m.id,name:m.n}))).map(u=>[u.id,"Riêng cho "+u.name])];
-function glNew(o){formSheet({title:"Tạo danh sách phát",btn:"Tạo danh sách",note:"Chọn “Mọi người” để ai cũng thêm nhạc được, hoặc chọn một thành viên để danh sách chỉ dành cho người đó.",
-  fields:[{id:"name",label:"Tên danh sách",ph:"Ví dụ: Nhạc đi xe",max:40,cap:"sentences"},{id:"o",label:"Dành cho",options:ownerOpts(),value:typeof o==="string"?o:""},{id:"col",label:"Màu danh sách",options:COLORS}],
-  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên danh sách.");const j=await api("glnew",{name:v.name,o:v.o,col:v.col});glists.push(j.list);LS.set("hn.gl",glists);say("Đã tạo danh sách.");openSrc({k:"g",id:j.list.id,name:j.list.name});if(tab==="admin")renderAdmin()}})}
-function glRename(l){formSheet({title:"Sửa danh sách",btn:"Lưu",fields:[{id:"name",label:"Tên danh sách",value:l.name,max:40,cap:"sentences"},{id:"o",label:"Dành cho",options:ownerOpts(),value:l.o||""},{id:"col",label:"Màu danh sách",options:COLORS,value:l.col||""}],
-  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên.");const j=await api("glren",{id:l.id,name:v.name,o:v.o,col:v.col});glists=glists.map(x=>x.id===l.id?j.list:x);LS.set("hn.gl",glists);if(src&&src.k==="g"&&src.id===l.id)src.name=v.name;render();say("Đã đổi tên.")}})}
+function glNew(){formSheet({title:"Tạo tên danh sách phát",btn:"Tạo danh sách",note:"Thành viên sẽ chọn tên này khi thêm nhạc. Mỗi người có bản riêng của mình (Nhạc trẻ của A khác Nhạc trẻ của B).",
+  fields:[{id:"name",label:"Tên danh sách",ph:"Ví dụ: Nhạc trẻ",max:40,cap:"sentences"},{id:"col",label:"Màu danh sách",options:COLORS}],
+  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên danh sách.");const j=await api("glnew",{name:v.name,o:"",col:v.col});glists.push(j.list);LS.set("hn.gl",glists);say("Đã tạo danh sách “"+v.name+"”. Mọi người đã chọn được khi thêm nhạc.");render()}})}
+function glRename(l){formSheet({title:"Sửa tên danh sách",btn:"Lưu",note:"Tên mới hiện cho mọi thành viên đang dùng danh sách này.",fields:[{id:"name",label:"Tên danh sách",value:l.name,max:40,cap:"sentences"},{id:"col",label:"Màu danh sách",options:COLORS,value:l.col||""}],
+  fn:async v=>{if(!v.name)throw Error("Hãy nhập tên.");const j=await api("glren",{id:l.id,name:v.name,col:v.col});glists=glists.map(x=>x.id===l.id?j.list:x);LS.set("hn.gl",glists);if(src&&src.k==="g"&&src.id===l.id)src.name=v.name;render();say("Đã đổi tên.")}})}
 function glDelete(l){confirmSheet("Xoá “"+l.name+"”?","Danh sách chung cùng "+(l.c||0)+" bài sẽ bị xoá với mọi thành viên.","Xoá danh sách",async()=>{
   try{await api("gldel",{id:l.id});glists=glists.filter(x=>x.id!==l.id);LS.set("hn.gl",glists);if(src&&src.k==="g"&&src.id===l.id){pickSrc(true);loadItems()}render();say("Đã xoá danh sách.")}catch(e){err(e.message)}})}
 
@@ -1024,22 +1020,30 @@ function guessGenre(title,author){ // tự nhận thể loại theo tên bài + 
   if(!VN.test(t))return"quocte";
   return"tre";
 }
-function targets(){const t=[];glists.filter(l=>!l.o||user&&l.o===user.id||admin).forEach(l=>t.push(["g:"+l.id,l.name+(l.o?(user&&l.o===user.id?" (của bạn)":" ("+memName(l.o)+")"):" (chung)")]));if(user){t.push(["u:fav","Yêu thích của tôi"]);lists.filter(l=>l.id!=="fav").forEach(l=>t.push(["u:"+l.id,l.name]))}return t}
+function genreOf(target,title,author){ // thêm vào danh sách "Remix" → thể loại Remix; còn lại tự nhận theo tên bài
+  if(S.genre!=="all")return S.genre;const n=((targets().find(t=>t[0]===target)||[])[1]||"").toLowerCase();
+  const g=GENRES.find(([k,x])=>n.includes(x.toLowerCase())||k==="trutinh"&&/bolero|trữ tình/.test(n)||k==="x89"&&/8x|9x/.test(n)||k==="quocte"&&/nước ngoài|us-uk|quốc tế/.test(n));
+  return g?g[0]:guessGenre(title,author);
+}
+function targets(){ // danh sách admin đã tạo sẵn (bài vào bản của chính mình) + danh sách cũ của mình
+  const t=[],seen=new Set();glists.filter(l=>!l.o).forEach(l=>{seen.add(l.id);t.push(["u:"+l.id,l.name])});
+  if(user)lists.filter(l=>l.id!=="fav"&&!seen.has(l.id)).forEach(l=>t.push(["u:"+l.id,lname(l)]));return t}
 async function addTo(target,song){
   const[k,id]=target.split(":");
   if(k==="g"){const j=await api("gadd",{p:id,song});if(j.list){glists=glists.map(x=>x.id===id?j.list:x);LS.set("hn.gl",glists)}return j.song}
   const j=await api("add",{p:id,song});lists=j.lists;if(id==="fav")favIds.add(j.song.id);saveMe();return j.song;
 }
-function afterAdd(target,song){
+function afterAdd(target,song){ // mở đúng danh sách vừa thêm bài
   const here=src&&(src.k==="g"?"g:"+src.id:src.k==="u"&&user&&src.u===user.id?"u:"+src.p:"")===target;
-  if(here&&!items.some(i=>i.id===song.id)){items.push(song);LS.set("hn.l."+srcKey(),items)}render();
+  if(here){if(!items.some(i=>i.id===song.id)){items.push(song);LS.set("hn.l."+srcKey(),items)}render();return}
+  const[k,id]=target.split(":");if(k==="u"){const l=lists.find(x=>x.id===id)||{id,name:""};openSrc({k:"u",u:user.id,p:id,name:lname(l),owner:user.name})}else render();
 }
 function openAdd(){
   if(!user)return needLogin("Hãy đăng nhập để thêm nhạc.");
-  const T=targets();if(!T.length)return say("Chưa có danh sách nào để thêm nhạc.");
-  const def=src&&canAdd()?(src.k==="g"?"g:"+src.id:"u:"+src.p):T[0][0];
-  formSheet({title:"Thêm nhạc",btn:"Lưu bài hát",note:"Dán 1 trong 3 loại link: • YouTube (Chia sẻ → Sao chép đường liên kết) • link file .mp3 (nghe nền tốt nhất) • link bài hát NhacCuaTui / Zing MP3 (app tự tìm bản YouTube để bạn chọn). Thể loại app tự nhận, sửa lại được bằng nút ⋯.",
-    fields:[{id:"url",label:"Link bài hát",type:"url",im:"url",ph:"https://youtu.be/…  hoặc  https://…/bai.mp3",paste:1,clear:1},{id:"p",label:"Lưu vào danh sách",options:T,value:def}],
+  const T=targets();if(!T.length)return admin?(say("Hãy tạo tên danh sách trước (ví dụ: Nhạc trẻ, Remix)."),glNew()):panel("Chưa có danh sách phát",null,[h("p","note","Admin chưa tạo danh sách nào (ví dụ: Nhạc trẻ, Remix). Hãy nhờ admin tạo, sau đó bạn chỉ cần chọn danh sách khi thêm nhạc. Trong lúc chờ, bấm ♥ ở bài hát bất kỳ để lưu vào Yêu thích.")]);
+  const cur=src&&src.k==="u"&&user&&src.u===user.id?"u:"+src.p:"",def=T.some(t=>t[0]===cur)?cur:T[0][0];
+  formSheet({title:"Thêm nhạc vào danh sách của bạn",btn:"Lưu bài hát",note:"Chọn danh sách có sẵn – bài sẽ vào danh sách đó CỦA BẠN (Nhạc trẻ của bạn khác Nhạc trẻ của người khác). Dán 1 trong 3 loại link: • YouTube (Chia sẻ → Sao chép đường liên kết) • link file .mp3 (nghe nền tốt nhất) • link bài hát NhacCuaTui / Zing MP3 (app tự tìm bản YouTube để bạn chọn). Thể loại app tự nhận, sửa lại được bằng nút ⋯.",
+    fields:[{id:"url",label:"Link bài hát",type:"url",im:"url",ph:"https://youtu.be/…  hoặc  https://…/bai.mp3",paste:1,clear:1},{id:"p",label:"Chọn danh sách phát",options:T,value:def}],
     fn:async(v,els)=>{
       const p=parse(v.url);if(p.err)throw Error(p.err);
       if(p.find){ // NhacCuaTui / Zing: đọc tên bài + ca sĩ rồi tìm bản YouTube
@@ -1049,13 +1053,13 @@ function openAdd(){
         box.append(h("div",null,"Bài “"+full+"”. Bấm chọn bản YouTube đúng bài để thêm (nghe nền được):"));
         const L=h("div","finds");
         j.yt.forEach(c=>{const b=h("button","fcand"),im=h("img"),t=h("span");b.type="button";im.src=yThumb(c.id);im.alt="";t.append(h("b",null,c.title),h("small",null,(c.author||"")+(c.dur?" · "+fmt(c.dur):"")));b.append(im,t,h("em",null,"Thêm"));
-          b.onclick=async()=>{b.disabled=true;try{const genre=S.genre!=="all"?S.genre:guessGenre(j.title,j.artist);const song=await addTo(v.p,{type:"yt",ref:c.id,title:full,author:j.artist||c.author,genre});afterAdd(v.p,song);fMsg.className="msg ok";fMsg.textContent="Đã thêm: "+full+" · "+gName(genre)+". Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng.";els.url.value=""}catch(e){b.disabled=false;fMsg.className="msg";fMsg.textContent=e.status===409?"Bài này đã có trong danh sách.":e.message}};L.append(b)});
+          b.onclick=async()=>{b.disabled=true;try{const genre=genreOf(v.p,j.title,j.artist);const song=await addTo(v.p,{type:"yt",ref:c.id,title:full,author:j.artist||c.author,genre});afterAdd(v.p,song);fMsg.className="msg ok";fMsg.textContent="Đã thêm: "+full+" · "+gName(genre)+". Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng.";els.url.value=""}catch(e){b.disabled=false;fMsg.className="msg";fMsg.textContent=e.status===409?"Bài này đã có trong danh sách.":e.message}};L.append(b)});
         box.append(L);return{node:box};
       }
       fMsg.className="msg ok";fMsg.textContent="Đang lấy tên bài…";let title="",author="",da="";
       if(p.type==="yt"){try{const r=await fetch("https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+p.ref));const j=await r.json();title=j.title;author=j.author_name||""}catch(e){}if(set.da){da=await daTitle(p.ref);if(da)title=da}}
       if(!title)title=p.type==="yt"?"YouTube "+p.ref:decodeURIComponent(p.ref.split("/").pop().split("?")[0]).replace(/\.(mp3|m4a|aac|ogg|opus|wav)$/i,"").replace(/[-_]+/g," ").trim();
-      const genre=S.genre!=="all"?S.genre:guessGenre(title,author);
+      const genre=genreOf(v.p,title,author);
       const song=await addTo(v.p,{type:p.type,ref:p.ref,title,author,genre});afterAdd(v.p,song);
       const expNote=p.exp?" Lưu ý: link mp3 NhacCuaTui chỉ dùng được đến "+fmtDate(p.exp)+" (sau đó hết hạn). Muốn nghe lâu dài, hãy dán link trang bài hát NhacCuaTui để app tìm bản YouTube.":"";
       return{keep:"Đã thêm: "+title+" · "+gName(genre)+(da?" (tên đã sửa bởi DeArrow)":"")+"."+expNote+" Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng."};
@@ -1544,8 +1548,8 @@ function renderAdmin(){
     a.append(btn("green","lock","Đặt về "+RESET_PW,()=>adminReset(u)),btn("plain","edit","Mật khẩu khác",()=>adminSetPass(u)),btn("plain","x","Bỏ qua",async()=>{try{await api("rsdel",{id:r.id});resets=resets.filter(x=>x.id!==r.id);renderAdmin()}catch(e){err(e.message)}}));
     a.style.flexWrap="wrap";d.append(a);row.append(avatar(r.name||"?"),d);RW.append(row)});
   const GL=$("admLists");GL.replaceChildren();
-  glists.forEach(l=>{const r=cell("note",colOf("g."+l.id,l.col),l.name,(l.c||0)+" bài · "+(l.o?memName(l.o):"chung"),()=>sheet(l.name,(l.c||0)+" bài",[{label:"Mở để nghe",icon:"play",fn:()=>openSrc({k:"g",id:l.id,name:l.name})},{label:"Sửa tên / màu / người dùng",icon:"edit",fn:()=>glRename(l)},{label:"Xoá danh sách",icon:"trash",red:1,fn:()=>glDelete(l)}]));GL.append(r)});
-  GL.append(cell("plus","var(--green)","Tạo danh sách phát mới","",glNew));
+  glists.forEach(l=>{const r=cell("note",colOf("g."+l.id,l.col),l.name,l.o?"của "+memName(l.o):"mọi người chọn được",()=>sheet(l.name,"Tên danh sách để thành viên chọn khi thêm nhạc",[{label:"Mở để nghe",icon:"play",fn:()=>openSrc({k:"g",id:l.id,name:l.name})},{label:"Sửa tên / màu",icon:"edit",fn:()=>glRename(l)},{label:"Xoá danh sách",icon:"trash",red:1,fn:()=>glDelete(l)}]));GL.append(r)});
+  GL.append(cell("plus","var(--green)","Tạo tên danh sách mới","",()=>glNew()));
   $("admAdd").innerHTML=ico("useradd")+"<span>Thêm</span>";$("admShow").innerHTML=ico(showAll?"eyeoff":"eye")+"<span>"+(showAll?"Ẩn MK":"Hiện MK")+"</span>";
   const L=$("admList");L.replaceChildren();
   if(!aUsers){for(let i=0;i<3;i++)L.append(h("div","sk"));return}
@@ -1577,7 +1581,6 @@ function userMenu(u){
     {label:"Đặt về mật khẩu mặc định ("+RESET_PW+")",icon:"lock",fn:()=>adminReset(u)},
     {label:"Đổi sang mật khẩu khác",icon:"edit",fn:()=>adminSetPass(u)},
     {label:"Xem các danh sách của "+u.name,icon:"ilist",fn:()=>showMember(u.id)},
-    {label:"Tạo danh sách riêng cho "+u.name,icon:"plus",fn:()=>glNew(u.id)},
     !self&&!u.admin&&{label:"Xoá thành viên",icon:"trash",red:1,fn:()=>adminDel(u)}
   ]);
 }

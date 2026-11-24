@@ -426,8 +426,8 @@ module.exports = async (req, res) => {
       await redis(cmds); return send(200, { ok: 1 });
     }
     // ----- danh sách phát -----
-    if (a === "plnew") { // mỗi thành viên tự tạo danh sách phát riêng (ai cũng xem/nghe được)
-      const name = listName(b.name); if (!name) throw httpErr(400, "Hãy nhập tên danh sách.");
+    if (a === "plnew") {
+      needAdmin(); const name = listName(b.name); if (!name) throw httpErr(400, "Hãy nhập tên danh sách.");
       const p = await myPub(); if (p.l.length >= 31) throw httpErr(400, "Tối đa 30 danh sách.");
       const id = crypto.randomBytes(3).toString("hex"); p.l.push({ id, name, c: 0 }); await setPub(me, p); return send(200, { lists: p.l, id });
     }
@@ -443,10 +443,16 @@ module.exports = async (req, res) => {
       p.l = p.l.filter(x => x.id !== b.id); await redis([["DEL", skey(target, b.id)], ["HSET", PUB, target, JSON.stringify(p)], ["INCRBY", BYTES, -by]]);
       return send(200, { lists: target === me ? p.l : undefined });
     }
+    // Danh sách của thành viên: admin tạo sẵn TÊN danh sách (Nhạc trẻ, Remix…); khi thành viên thêm bài vào một tên,
+    // app tự tạo bản riêng của người đó (Nhạc trẻ của A khác Nhạc trẻ của B).
     const own = async pid => {
-      const p = await getPub(me);
-      if (!p && pid === "fav") { await setPub(me, { n: U.name, l: [FAV()] }); return; } // tạo thư viện cho tài khoản cũ
-      if (!p || !p.l.some(x => x.id === pid)) throw httpErr(404, "Không tìm thấy danh sách của bạn.");
+      const p0 = await getPub(me), p = p0 || { n: U.name, l: [FAV()] };
+      if (p.l.some(x => x.id === pid)) { if (!p0) await setPub(me, p); return; }
+      if (pid !== "fav") {
+        const [g] = await redis([["HGET", GL, pid]]);
+        if (g) { const G = JSON.parse(g); if (p.l.length >= 60) throw httpErr(400, "Bạn đã có quá nhiều danh sách."); p.l.push({ id: pid, name: G.name, c: 0 }); await setPub(me, p); return; }
+      }
+      throw httpErr(404, "Không tìm thấy danh sách này.");
     };
     if (a === "add") {
       const s = clean(b.song); if (!s) throw httpErr(400, "Thông tin bài hát chưa hợp lệ."); await own(String(b.p));

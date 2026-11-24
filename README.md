@@ -4,7 +4,8 @@
 
 - Đăng ký / đăng nhập bằng **Gmail + mật khẩu** (Gmail và số điện thoại không được trùng). Phiên đăng nhập giữ **6 tháng**.
 - Mỗi người tự đổi tên, số điện thoại, Gmail, mật khẩu trong tab **Tài khoản**.
-- Mỗi thành viên **tự tạo danh sách phát riêng**; ai cũng xem/nghe được, chỉ chủ danh sách thêm/xoá bài. Có mục **Nghe nhiều nhất**.
+- **Admin tạo sẵn tên danh sách** (Nhạc trẻ, Remix…). Thành viên chỉ dán link rồi chọn tên → bài vào danh sách đó **của riêng mình**
+  (Nhạc trẻ của A khác Nhạc trẻ của B). Ai cũng xem/nghe được. Bấm ♥ → vào **Yêu thích** của mình. Có mục **Nghe nhiều nhất**.
 - **Admin** có tab **Quản trị**: xem toàn bộ thành viên, Gmail, số điện thoại, mật khẩu; thêm thành viên; đặt lại mật khẩu; xoá thành viên; tạo danh sách chung hoặc tạo hộ cho thành viên.
 
 Cấu trúc (giữ đúng như vậy khi đưa lên GitHub, `index.html` nằm ngay ở gốc repo):
@@ -52,3 +53,10 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
     (và admin) thêm/xoá bài. Bấm ♥ để lưu bài của bất kỳ ai vào mục Yêu thích của mình.
   - Mục mới **Nghe nhiều nhất**: bài được nghe trên 20 giây được tính 1 lượt (mỗi máy tối đa 1 lượt/bài/30 phút).
   - Máy chủ: `plnew` cho mọi thành viên; thêm `top`, `played`.
+- **24/11/2026 (bản 14)** – thành viên không tự tạo danh sách:
+  - Tài khoản mới chỉ thấy nút **“+ Thêm Nhạc vào Danh Sách Phát Của Bạn”**. Dán link, **chọn danh sách admin đã tạo**
+    (Nhạc trẻ, Remix…) → app tự tạo bản riêng của người đó và mở ngay danh sách vừa thêm.
+  - Bấm ♥ ở bài bất kỳ → vào **Yêu thích** của mình (mục Yêu thích chỉ hiện khi đã có bài).
+  - Admin: **Quản trị → Tên danh sách phát → Tạo tên danh sách mới** (hoặc ô “Tạo tên danh sách” ở trang chủ). Đổi tên thì
+    mọi thành viên thấy tên mới. Danh sách cùng tên có cùng màu; thể loại bài tự theo tên danh sách.
+  - Máy chủ: `plnew` lại chỉ dành cho admin; `add` tự tạo bản riêng khi thành viên chọn một danh sách admin đã tạo.
