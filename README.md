@@ -82,3 +82,10 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
     máy chủ nhớ link âm thanh 2 giờ.
   - **Giữ màn hình sáng chạy được trên iPhone**: ngoài Wake Lock, app chạy thêm một đoạn video đen im lặng (cách của NoSleep)
     để màn hình không tự tối / tự khoá.
+- **24/11/2026 (bản 18)**:
+  - **Chạy nền mặc định TẮT** (máy đã dùng bản trước cũng được đặt lại 1 lần). Ghi chú rõ: nhạc .mp3 luôn chạy nền;
+    video YouTube không chạy nền được – bật “Chạy nền” để app thử phát bài YouTube bằng âm thanh.
+  - **Khoá máy → mở khoá: nhạc tự phát tiếp** (trước đây iPhone báo “tạm dừng” trễ ngay lúc mở khoá nên app tưởng người dùng
+    bấm dừng). Nếu máy không cho tự phát, nút ▶ nhấp nháy kèm lời nhắc “Bấm ▶ để nghe tiếp”.
+  - **Giữ màn hình sáng trên iPhone**: video giữ sáng không còn để “lặp tự động” (Safari bỏ qua video lặp) – dùng video 12 giây
+    có rãnh âm thanh câm, app tự tua lại; chạm màn hình là chạy lại nếu Safari lỡ dừng.
