@@ -1,10 +1,10 @@
 # Nhac Hot
 
-Ứng dụng nghe nhạc nhiều người dùng, giao diện kiểu iOS 26 (Liquid Glass).
+Ứng dụng nghe nhạc nhiều người dùng, giao diện kiểu iOS 26 (Liquid Glass). Tên miền: https://nhachot.vercel.app
 
-- Tên đăng nhập = **số điện thoại** (không trùng). Mỗi người có thư viện & danh sách phát riêng.
-- Mỗi người tự đổi tên, số điện thoại, mật khẩu trong tab **Tài khoản**.
-- **Admin** có tab **Quản trị**: xem toàn bộ thành viên, số điện thoại, mật khẩu; thêm thành viên; đặt lại mật khẩu; xoá thành viên.
+- Đăng ký / đăng nhập bằng **Gmail + mật khẩu** (Gmail và số điện thoại không được trùng). Phiên đăng nhập giữ **6 tháng**.
+- Mỗi người tự đổi tên, số điện thoại, Gmail, mật khẩu trong tab **Tài khoản**.
+- **Admin** có tab **Quản trị**: xem toàn bộ thành viên, Gmail, số điện thoại, mật khẩu; thêm thành viên; đặt lại mật khẩu; xoá thành viên; tạo danh sách phát.
 
 Cấu trúc (giữ đúng như vậy khi đưa lên GitHub, `index.html` nằm ngay ở gốc repo):
 
@@ -12,7 +12,7 @@ Cấu trúc (giữ đúng như vậy khi đưa lên GitHub, `index.html` nằm n
 index.html
 manifest.webmanifest   <- thông tin để "Thêm vào MH chính" có tên + icon đẹp
 sw.js                  <- giúp app mở nhanh, mở được khi mạng yếu
-qr.svg                 <- mã QR trỏ tới https://nhaccuatui.vercel.app/
+qr.svg                 <- mã QR dự phòng
 icon-192.png
 icon-512.png
 package.json
@@ -21,64 +21,24 @@ api/app.js             <- "cầu nối" chạy trên Vercel (BẮT BUỘC nằm 
 
 ## Vercel
 - Nối **Storage → Upstash Redis** vào dự án (Vercel tự thêm các biến kết nối).
-- **Tài khoản admin mặc định:** đăng nhập bằng email `ducanhitpt@gmail.com` (bấm "Đăng nhập bằng email" ở màn hình đăng nhập)
-  với mật khẩu mặc định chủ app đã chọn. Tài khoản tự tạo ở lần đăng nhập đầu tiên. Trong code chỉ lưu mật khẩu dạng băm.
-  Đăng nhập xong nên vào Tài khoản → Đổi mật khẩu. (Tuỳ chọn: đặt biến `ADMIN_EMAIL` / `ADMIN_PASSWORD` trên Vercel để dùng email/mật khẩu khác.)
-- Tuỳ chọn: biến `ADMIN_PHONE` = một số điện thoại cũng được làm admin.
-- Biến tuỳ chọn: `ADMIN_EMAIL` (admin của bản cũ), `SESSION_SECRET` (đừng đổi sau khi đã dùng,
-  vì mật khẩu lưu cho admin xem được mã hoá bằng chuỗi này), `DB_LIMIT_MB`, `CMD_LIMIT`.
-
-## Tài khoản cũ (đăng ký bằng email)
-Vẫn đăng nhập được: bấm "Tài khoản cũ đăng ký bằng email" ở màn hình đăng nhập.
-Sau khi đăng nhập, vào Tài khoản → Số điện thoại để gắn số, lần sau đăng nhập bằng số.
-Mật khẩu của tài khoản cũ sẽ hiện trong trang Quản trị sau lần đăng nhập kế tiếp của họ.
+- **Tài khoản admin mặc định:** đăng nhập bằng email `ducanhitpt@gmail.com` với mật khẩu mặc định chủ app đã chọn
+  (tự tạo ở lần đăng nhập đầu tiên). Đăng nhập xong nên vào Tài khoản → Đổi mật khẩu.
+  Tuỳ chọn: biến `ADMIN_EMAIL` / `ADMIN_PASSWORD` để dùng email/mật khẩu khác; `ADMIN_PHONE` để một số điện thoại cũng là admin.
+- Biến tuỳ chọn: `SESSION_SECRET` (đừng đổi sau khi đã dùng), `AUDIO_SOURCES` (nguồn Piped/Invidious), `DB_LIMIT_MB`, `CMD_LIMIT`.
 
 Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"configured":true`.
 
 ## Nhật ký cập nhật
-- **17/11/2026**: thêm `manifest.webmanifest` và `qr.svg` (trước đây thiếu); sửa lỗi tài khoản cũ
-  (chưa có thư viện) bấm "Tạo danh sách" / "Yêu thích" bị báo lỗi máy chủ; `sw.js` bản v5
-  (lưu cả icon, mở được khi mất mạng, tự xoá bộ nhớ cũ).
-- **17/11/2026 (bản 2)**: trang Đang phát có nút "Giữ màn hình luôn sáng", danh sách bài hát ngay dưới phần
-  điều khiển, và mục "Ứng dụng" (chia sẻ, mã QR, tạo icon) ở cuối. Thanh tab có thêm "Đang phát".
-  Trang chủ có icon Đăng nhập / Đăng ký và ô "Thể loại của bạn" (bấm để nghe theo thể loại, lấy từ
-  mọi danh sách của chính mình – máy chủ có thêm chức năng `mine`). Link chia sẻ luôn là
-  https://nhaccuatui.vercel.app/. Nút nhiều màu tươi hơn, chữ hamy19902020 nhỏ hơn.
-- **23/11/2026 (bản 3)**: Trang chủ chính là trang nghe nhạc (máy tính: trình phát bên trái, danh sách bên phải).
-  Chỉ còn 2 tab: **Nghe nhạc** và **Tài khoản** (gồm cài đặt, Mọi người, Ứng dụng/QR) + tab Quản trị cho admin.
-  **Danh sách phát chung** do admin tạo (Quản trị → Tạo danh sách phát mới); thành viên chọn danh sách rồi thêm nhạc,
-  chỉ người thêm hoặc admin mới sửa/xoá bài. Mỗi người vẫn có mục Yêu thích riêng.
-  Tính năng mới: phát trong nền + tự phát tiếp khi có mạng lại, điều khiển ở màn hình khoá, cửa sổ nổi (PiP, Chrome/Edge máy tính),
-  SponsorBlock, DeArrow, tốc độ 0.25x–2x, phụ đề + dịch tự động sang tiếng Việt, hàng đợi (phát tiếp theo), hẹn giờ tắt,
-  bình luận theo bài, lưu bài .mp3 để nghe khi mất mạng, đăng nhập bằng mã ghép nối 6 số, chuyển nhanh nhiều tài khoản,
-  vuốt trái/phải trên tên bài để chuyển bài, phím tắt (Space, ←/→, n, p).
-  Máy chủ có thêm: lists, gsongs, glnew/glren/gldel, gadd/gedit/gdel, cmts/cmt/cmdel, pairnew/pairuse, switch.
-- **23/11/2026 (bản 4)**: Tài khoản → **Kiểm tra kết nối** (mạng, máy chủ /api, biến Upstash, ADMIN_PHONE, ghi/đọc thử,
-  dung lượng, YouTube, SponsorBlock, DeArrow…) và **Xoá dữ liệu** (admin: theo thành viên / tháng / năm / toàn bộ, đếm trước rồi
-  mới xoá). Link chia sẻ + mã QR tự theo tên miền đang mở (không cần sửa code khi đổi tên miền).
-  Máy chủ có thêm: health, purge.
-- **23/11/2026 (bản 5)**: tài khoản admin mặc định bằng email; **Quên mật khẩu** (thành viên gửi yêu cầu, admin thấy ở tab Quản trị);
-  admin **Đặt về 123** hoặc đặt mật khẩu khác; ai đang dùng mật khẩu mặc định sẽ được nhắc đổi khi đăng nhập.
-  Máy chủ có thêm: forgot, rsdel; apass nhận `reset: true`.
-- **23/11/2026 (bản 6)**: đổi tên app thành **Nhac Hot**. Thành viên **đăng ký / đăng nhập bằng Gmail + mật khẩu** (tài khoản cũ dùng số điện
-  thoại vẫn đăng nhập được). Phiên đăng nhập giữ **30 ngày**. Kiểm tra kết nối cho mọi người xem phần cơ sở dữ liệu (admin xem thêm số liệu).
-  Trang nghe nhạc có 2 mục **Của bạn / Thành viên**: chọn một thành viên để thấy và nghe các danh sách của người đó.
-  Admin tạo danh sách **chung** (ai cũng thêm nhạc) hoặc **riêng cho một thành viên** (chỉ người đó + admin thêm nhạc).
-  Máy chủ có thêm: email (đổi Gmail); register/aadd/forgot dùng `email`; glnew/glren nhận `o` (người dùng danh sách).
-- **23/11/2026 (bản 7)**: tên miền **https://nhachot.vercel.app** (link chia sẻ + mã QR tự theo tên miền đang mở, qr.svg dự phòng
-  đã đổi sang nhachot). Đăng ký gồm **họ tên, số điện thoại, Gmail**. Giao diện **Sáng / Tối / Tự động** (Tài khoản → Giao diện,
-  hoặc nút mặt trời/trăng trên cùng). Mỗi danh sách có **màu riêng** (admin chọn màu khi tạo/sửa), xếp dạng ô nhiều hàng.
-  Kiểm tra kết nối chỉ còn trong **Cài đặt admin**. Sửa các chỗ chữ bị tràn.
-- **23/11/2026 (bản 8)**: màn hình Thêm nhạc chỉ còn **Link + Lưu vào danh sách**; thể loại tự nhận theo tên bài/kênh
-  (remix, bolero/trữ tình, 8x-9x, nhạc nước ngoài, còn lại là nhạc trẻ), sửa được bằng ⋯ → Sửa tên / thể loại.
-- **23/11/2026 (bản 9)**: nút **Cửa sổ** mở bảng điều khiển nổi (ảnh, tên bài, Phát/Dừng, Bài trước/sau), hết lỗi "cấu hình trình phát".
-  Danh sách phát dạng ô gọn có **số bài**; danh sách **không có bài thì ẩn**. Người **chưa đăng nhập** vẫn xem được Thành viên và nghe
-  danh sách của họ. Dán link Zing/NhacCuaTui → báo không phát được + nút tìm bài đó trên YouTube.
-  Phát nền ổn định hơn: tự phát lại khi bị dừng lúc tắt màn hình, tự tải lại khi kẹt >15 giây, giữ phiên âm thanh trên Android/máy tính
-  (Tài khoản → Giữ phát khi tắt màn hình).
-- **23/11/2026 (bản 10)**: **Nghe nền thật**: bài YouTube được phát bằng luồng âm thanh (như file mp3) lấy qua Piped/Invidious
-  (máy chủ có thêm `stream`), nên vẫn nghe khi tắt màn hình / chuyển app; nút **Nghe nền ⇄ Video** ở trình phát; lấy không được
-  thì tự phát bằng video. Đổi nguồn bằng biến `AUDIO_SOURCES`. Trang chủ khi chưa đăng nhập hiện **lưới thành viên**; bấm vào
-  thành viên để thấy danh sách có bài của họ, nút **← Trang chủ** để quay lại. Tab đầu đổi tên thành **Trang chủ**.
-- **23/11/2026 (bản 11)**: Tài khoản → **Thông tin của bạn**: sửa tên, **số điện thoại**, **Gmail**, mật khẩu. Chưa đăng nhập thì mở
-  sẵn tab **Của bạn** với nút **Đăng nhập để vào danh sách của bạn** (vẫn nghe được danh sách chung và tab Thành viên).
+- Bản 1–11 (16–23/11/2026): nhiều người dùng, admin, danh sách chung, nghe nền qua Piped/Invidious, cửa sổ nổi, SponsorBlock,
+  DeArrow, phụ đề, hàng đợi, bình luận, lưu nghe khi mất mạng, mã ghép nối, chuyển tài khoản, kiểm tra kết nối, xoá dữ liệu,
+  quên mật khẩu, giao diện Sáng/Tối/Tự động, đổi tên app thành Nhac Hot, đăng nhập bằng Gmail.
+- **24/11/2026 (bản 12)**:
+  - Trang chủ khi **chưa đăng nhập**: trình nghe nhạc ở trên → khung **“Đăng nhập để vào danh sách của bạn”** → **danh sách thành viên**
+    trong hệ thống (bấm tên để nghe các danh sách của người đó, nút **← Trang chủ** để quay lại). Bấm chữ **Nhac Hot** để về trang chủ.
+  - Đã đăng nhập: tab **Danh sách của bạn** và **Thành viên khác** ngay dưới trình phát; không còn nút Đăng ký.
+  - Chọn giao diện **Sáng / Tối / Tự động** ngay trên Trang chủ.
+  - Khung **Giữ màn hình sáng** và **Chạy nền** có ghi chú cách dùng ngay ở Trang chủ.
+  - Thanh tab dưới cùng gọn hơn, sát đáy màn hình điện thoại.
+  - Bỏ dòng “Tài khoản cũ đăng nhập bằng số điện thoại”; đăng nhập bằng Gmail. Phiên đăng nhập **6 tháng**.
+  - Thêm nhạc: dán **link bài NhacCuaTui / Zing MP3** → app đọc tên bài + ca sĩ và tìm bản YouTube để chọn (máy chủ có thêm `find`).
+    Dán link **.mp3** vẫn được (chạy nền tốt nhất); link mp3 của NhacCuaTui (`stream.nct.vn`) được báo ngày hết hạn.

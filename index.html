@@ -66,22 +66,26 @@ svg.s.f{fill:currentColor}
 .card{background:var(--card);-webkit-backdrop-filter:blur(22px) saturate(1.6);backdrop-filter:blur(22px) saturate(1.6);border:1px solid var(--gl);border-radius:var(--r);box-shadow:var(--sh)}
 /* bố cục */
 .app{max-width:1500px;margin:0 auto}
-#main{padding:calc(env(safe-area-inset-top) + 10px) max(14px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 84px) max(14px,env(safe-area-inset-left));min-width:0}
-body.mini #main{padding-bottom:calc(env(safe-area-inset-bottom) + 146px)}
+#main{padding:calc(env(safe-area-inset-top) + 10px) max(14px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 64px) max(14px,env(safe-area-inset-left));min-width:0}
+body.mini #main{padding-bottom:calc(env(safe-area-inset-bottom) + 122px)}
 #side{display:none}
 @media(min-width:700px){#main{max-width:760px;margin:0 auto;padding-left:24px;padding-right:24px}}
 .view{animation:vin .3s cubic-bezier(.2,.8,.2,1)}
 @keyframes vin{from{opacity:0;transform:translateY(8px)}}
 /* đầu trang */
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 12px;min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 8px;min-width:0}
 .top .ttl{min-width:0}
 .top h1{margin:0;font-size:21px;line-height:1.15;font-weight:700;letter-spacing:-.025em}
 .top h1 small{font-size:8.5px;font-weight:500;color:var(--tx2);margin-left:5px;letter-spacing:0;vertical-align:3px}
+.brandb{font:inherit;color:inherit;letter-spacing:inherit;padding:0;text-align:left}
 .top p{margin:1px 0 0;color:var(--tx2);font-size:12px;font-variant-numeric:tabular-nums}
-.hauth{display:flex;gap:8px;flex:none}
+.hauth{display:flex;gap:8px;flex:none;align-items:center}
 .hauth button{display:grid;justify-items:center;gap:2px;font-size:10px;font-weight:600;color:var(--tx2)}
 .hauth .ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.3)}
 .hauth .ic.l{background:var(--gBlue)}.hauth .ic.r{background:var(--gPink)}
+.themebar{display:flex;align-items:center;gap:8px;margin:0 2px 10px}
+.themebar>span{font-size:12px;font-weight:600;color:var(--tx2);flex:none}
+.themebar .theme3{flex:1;margin:0;max-width:330px}
 .vh{margin:4px 2px 14px}
 .vh h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.025em}
 .vh p{margin:2px 0 0;color:var(--tx2);font-size:13px}
@@ -139,8 +143,17 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .tools button b{font-size:12.5px;font-weight:700;color:var(--tc,var(--tx));line-height:17px;height:17px}
 .tools button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools button.on{background:var(--accS);color:var(--acc)}.tools button.on svg,.tools button.on b{color:var(--acc)}
+/* chế độ: giữ sáng + chạy nền (có ghi chú) */
+.modes{margin-top:10px;padding:2px 0;border-radius:18px;overflow:hidden}
+.mrow{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;text-align:left;position:relative}
+.mrow:active{transform:none;background:var(--fill)}
+.mrow+.mrow::before{content:"";position:absolute;top:0;left:48px;right:0;height:1px;background:var(--sep);transform:scaleY(.6)}
+.mrow .mt{flex:1;min-width:0;display:grid;gap:1px}
+.mrow .mt b{font-size:14px;font-weight:600}
+.mrow .mt small{font-size:11.5px;color:var(--tx2);line-height:1.35}
+.modes .foot{margin:0;padding:6px 12px 9px 48px;font-size:11px;color:var(--tx2);border-top:1px solid var(--sep)}
 /* ===== Danh sách ===== */
-.lhead{display:flex;align-items:flex-end;justify-content:space-between;gap:8px 10px;margin:4px 2px 8px;flex-wrap:wrap}
+.lhead{display:flex;align-items:flex-end;justify-content:space-between;gap:8px 10px;margin:6px 2px 8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--sep)}
 .lhead .lacts{margin-left:auto}
 .lhead h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.02em}
 .lhead p{margin:1px 0 0;color:var(--tx2);font-size:12px}
@@ -151,12 +164,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;min-height:30px;padding:0 11px;border-radius:999px;background:var(--fill);font-size:12.5px;font-weight:600;color:var(--tx);display:inline-flex;align-items:center;gap:5px;max-width:100%;min-width:0}
 .chip b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.plogin{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--gBlue);color:#fff;text-align:left;box-shadow:0 6px 16px rgba(47,107,255,.25)}
+.plogin{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:var(--gBlue);color:#fff;text-align:left;box-shadow:0 6px 16px rgba(47,107,255,.25)}
 .plogin>svg{font-size:20px;flex:none}.plogin>svg:last-child{font-size:14px;opacity:.8}
 .plogin span{flex:1;min-width:0;display:grid}.plogin b{font-size:14.5px;font-weight:700}.plogin small{font-size:12px;opacity:.9}
+.mtitle{grid-column:1/-1;margin:6px 2px 0;font-size:15px;font-weight:700;letter-spacing:-.015em}
 .mcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:2px 0 10px}
 .mcard{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:10px;border-radius:14px;background:var(--card);border:1px solid var(--sep);min-width:0}
 .mcard .av{grid-row:1/3}.mcard b{font-size:14px;font-weight:600;min-width:0}.mcard small{font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av.gav{background:var(--gPink)}
 .mhead{display:flex;align-items:center;gap:10px;padding:2px 0 8px;min-width:0}.mhead .btn{min-height:32px;padding:0 12px 0 8px;flex:none}
 .mwho{display:flex;align-items:center;gap:8px;min-width:0}.mwho b{font-size:15px;font-weight:700}
 .ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;padding:2px 0 10px}
@@ -176,7 +191,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .urow .lacts{justify-content:flex-start}
 .theme3{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--fill);margin:4px 12px 8px}
 .theme3 button{flex:1;min-height:34px;border-radius:9px;font-size:13px;font-weight:600;color:var(--tx2);display:flex;align-items:center;justify-content:center;gap:5px}
-.theme3 button[aria-pressed=true]{background:var(--card);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.theme3 button[aria-pressed=true]{background:var(--gPink);color:#fff;box-shadow:0 2px 8px rgba(255,45,117,.3)}
 .chip svg{font-size:13px}
 .chip span{opacity:.55;font-weight:500}
 .chip[aria-pressed=true]{background:var(--tx);color:var(--bg)}
@@ -209,6 +224,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .tx small{display:block;color:var(--tx2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;background:var(--gc)}
 .off{color:var(--green);margin-left:4px}
+.exp{color:var(--orange);font-weight:600}.exp.gone{color:var(--red)}
 .eq{position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;gap:2px}
 .eq i{width:3px;height:6px;background:#fff;border-radius:2px;animation:eq .9s ease-in-out infinite}
 .eq i:nth-child(2){animation-delay:-.3s}.eq i:nth-child(3){animation-delay:-.6s}
@@ -289,12 +305,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .warn{background:rgba(255,149,0,.14);color:var(--orange)}
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translate(-50%,-170%);z-index:80;background:rgba(18,18,20,.9);color:#fff;border-radius:999px;padding:9px 18px;font-size:13.5px;font-weight:600;max-width:min(92vw,460px);text-align:center;transition:transform .42s cubic-bezier(.3,.7,.4,1.2);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(0,0,0,.25);pointer-events:none}
 .toast.show{transform:translate(-50%,0)}
-/* ===== Thanh tab + trình phát thu nhỏ ===== */
-#tabbar{position:fixed;z-index:31;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 10px);display:flex;gap:2px;padding:4px;border-radius:999px;width:min(calc(100% - 28px),340px)}
-#tabbar button{flex:1;display:grid;justify-items:center;gap:0;padding:4px 2px;border-radius:999px;color:var(--tx);font-size:10px;font-weight:600;min-height:44px;align-content:center;min-width:0}
-#tabbar svg{font-size:19px}
+/* ===== Thanh tab (gọn, sát đáy màn hình) + trình phát thu nhỏ ===== */
+#tabbar{position:fixed;z-index:31;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 4px);display:flex;gap:2px;padding:3px;border-radius:999px;width:min(calc(100% - 40px),250px)}
+#tabbar button{flex:1;display:grid;justify-items:center;gap:0;padding:3px 2px;border-radius:999px;color:var(--tx);font-size:9.5px;font-weight:600;min-height:38px;align-content:center;min-width:0}
+#tabbar svg{font-size:17px}
 #tabbar button[aria-current=page]{color:var(--acc);background:var(--fill)}
-#mini{display:none;position:fixed;z-index:30;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 66px);border-radius:18px;padding:5px 6px 5px 5px;align-items:center;gap:2px;overflow:hidden;max-width:520px;margin:0 auto}
+#mini{display:none;position:fixed;z-index:30;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 52px);border-radius:18px;padding:5px 6px 5px 5px;align-items:center;gap:2px;overflow:hidden;max-width:520px;margin:0 auto}
 #mini.show{display:flex}
 #mini .m{flex:1;min-width:0;display:flex;align-items:center;gap:8px;text-align:left;min-height:40px}
 #mini .m:active{transform:none}
@@ -306,12 +322,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 #mProg{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--acc)}
 /* khi đang ở tab khác: giữ video chạy nhưng đưa ra ngoài màn hình */
 body.away #vHome{position:fixed;left:-300vw;top:0;width:360px;pointer-events:none;animation:none}
-body.away #vHome .lcol,body.away #vHome .top{display:none}
+body.away #vHome .lcol,body.away #vHome .top,body.away #vHome .themebar,body.away #vHome .modes{display:none}
 /* ===== Máy tính / iPad ngang ===== */
 @media(min-width:1000px){
  .app{display:grid;grid-template-columns:210px minmax(0,1fr)}
  #side{display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh;padding:20px 12px}
- #side .brand{font-size:19px;font-weight:700;letter-spacing:-.025em;padding:4px 10px 16px}
+ #side .brand{font-size:19px;font-weight:700;letter-spacing:-.025em;padding:4px 10px 16px;display:block;width:100%}
  #side .brand small{display:block;font-size:8.5px;font-weight:500;color:var(--tx2);letter-spacing:0}
  #sideNav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:12px;font-size:14px;font-weight:600;color:var(--tx);text-align:left}
  #sideNav button svg{font-size:17px;color:var(--acc)}
@@ -353,6 +369,14 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
 .selc{color:var(--tx2);pointer-events:none;padding-right:8px;font-size:12px}
 .msg{min-height:18px;margin:8px 4px 0;font-size:13px;color:var(--red)}
 .msg.ok{color:var(--green)}
+.msg.info{color:var(--tx)}
+.finds{display:grid;gap:6px;margin-top:8px}
+.fcand{display:flex;gap:10px;align-items:center;text-align:left;padding:6px;border-radius:12px;background:var(--fill);width:100%}
+.fcand img{width:64px;height:36px;border-radius:6px;object-fit:cover;flex:none;background:#000}
+.fcand span{min-width:0;display:grid;flex:1}
+.fcand b{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcand small{font-size:11.5px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcand em{flex:none;font-style:normal;font-size:12px;font-weight:700;color:#fff;background:var(--gGreen);padding:5px 10px;border-radius:999px}
 .links{display:grid;margin-top:4px}
 .link{color:var(--acc);font-size:13.5px;font-weight:600;min-height:34px;text-align:left}
 .shead{text-align:center;margin:4px 10px 12px}
@@ -413,6 +437,7 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
  <symbol id="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
  <symbol id="trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
  <symbol id="note" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zm11-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3z"/></symbol>
+ <symbol id="home" viewBox="0 0 24 24"><path d="M3 11 12 3.5l9 7.5M5.5 9.5V20h4.5v-6h4v6h4.5V9.5"/></symbol>
  <symbol id="person" viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM4 21a8 8 0 0 1 16 0"/></symbol>
  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6zM9 12l2 2 4-4"/></symbol>
  <symbol id="lock" viewBox="0 0 24 24"><path d="M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4"/></symbol>
@@ -441,14 +466,15 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
 </svg>
 
 <div class="app">
- <aside id="side"><div class="brand">Nhac Hot<small>hamy19902020</small></div><nav id="sideNav" aria-label="Điều hướng"></nav><button class="card" id="sideWho"></button></aside>
+ <aside id="side"><button class="brand brandb" id="sideBrand" aria-label="Về trang chủ">Nhac Hot<small>hamy19902020</small></button><nav id="sideNav" aria-label="Điều hướng"></nav><button class="card" id="sideWho"></button></aside>
 
  <main id="main">
   <div id="warn" class="warn" role="status" hidden></div>
   <div id="err" class="err" role="alert" hidden></div>
 
-  <section class="view" id="vHome" aria-label="Nghe nhạc">
-   <header class="top"><div class="ttl"><h1>Nhac Hot<small>hamy19902020</small></h1><p id="clk"></p></div><div class="hauth" id="homeAuth"></div></header>
+  <section class="view" id="vHome" aria-label="Trang chủ">
+   <header class="top"><div class="ttl"><h1><button class="brandb" id="brandHome" aria-label="Về trang chủ">Nhac Hot</button><small>hamy19902020</small></h1><p id="clk"></p></div><div class="hauth" id="homeAuth"></div></header>
+   <div class="themebar" id="themeBar"></div>
    <div class="hgrid">
     <div class="pcol">
      <div class="pcard card" id="player">
@@ -459,13 +485,14 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
       <div class="ctl"><button class="sm" id="bSh" aria-label="Trộn bài"></button><button class="md" id="bPv" aria-label="Bài trước"></button><button class="pl" id="bPl" aria-label="Phát"></button><button class="md" id="bNx" aria-label="Bài sau"></button><button class="sm" id="bRp" aria-label="Lặp lại"></button></div>
       <div class="tools" id="tools"></div>
      </div>
+     <div class="card modes" id="modes"></div>
     </div>
     <div class="lcol">
-     <div class="lhead" id="lhead"><div class="ttl"><h2 class="el" id="lTitle">Danh sách phát</h2><p class="el" id="lSub"></p></div><div class="lacts" id="lActs"></div></div>
-     <button class="lhint" id="loginHint" hidden>Đăng nhập thêm nhạc vào danh sách của bạn.</button>
+     <button class="lhint" id="loginHint" hidden>Đăng nhập để vào danh sách của bạn</button>
      <div class="seg2" id="plTabs"><button data-m="mine">Của bạn</button><button data-m="mem">Thành viên</button></div>
      <div class="chips" id="memChips" aria-label="Chọn thành viên"></div>
      <div class="ptiles" id="plChips" aria-label="Chọn danh sách phát"></div>
+     <div class="lhead" id="lhead"><div class="ttl"><h2 class="el" id="lTitle">Danh sách phát</h2><p class="el" id="lSub"></p></div><div class="lacts" id="lActs"></div></div>
      <div class="chips gch" id="gChips" aria-label="Thể loại"></div>
      <label class="search"><svg class="i s" aria-hidden="true"><use href="#search"/></svg><input id="q" type="search" placeholder="Tìm bài trong danh sách" autocomplete="off"></label>
      <div class="grp card" id="list"></div>
@@ -505,8 +532,8 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
 const GENRES=[["tre","Nhạc trẻ"],["remix","Remix"],["trutinh","Trữ tình"],["x89","8x · 9x"],["quocte","Nhạc nước ngoài"]];
 const GC={tre:"#ff2d75",remix:"#8b5cf6",trutinh:"#ff8a1f",x89:"#14b87a",quocte:"#2f7bff"};
 const FILLED=new Set(["play","pause","next","prev","more","skip"]);
-const SITE=location.origin;
-const RESET_PW="123"; // mật khẩu mặc định khi admin đặt lại // link chia sẻ luôn theo đúng tên miền đang mở
+const SITE=location.origin; // link chia sẻ luôn theo đúng tên miền đang mở
+const RESET_PW="123"; // mật khẩu mặc định khi admin đặt lại
 const $=id=>document.getElementById(id);
 const h=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const ico=(n,f)=>`<svg class="i${FILLED.has(n)?"":" s"}${f?" f":""}" aria-hidden="true"><use href="#${n}"/></svg>`;
@@ -527,6 +554,7 @@ function avatar(name,cls){const a=h("div","av"+(cls?" "+cls:""),initials(name));
 const gName=k=>(GENRES.find(g=>g[0]===k)||[,""])[1];
 const strip=({type,ref,title,author,genre})=>({type,ref,title,author,genre});
 const wide=()=>matchMedia("(min-width:1000px)").matches;
+const nctExp=u=>{if(!/stream\.nct\.vn/i.test(u||""))return 0;const m=String(u).match(/[?&]e=(\d{9,11})/);return m?+m[1]*1000:0}; // link mp3 NhacCuaTui có hạn dùng
 
 /* ===== Trạng thái ===== */
 let S=Object.assign({shuffle:false,repeat:"all",cur:null,pos:0,curSong:null,rate:1,genre:"all"},LS.get("hn.state")||{});
@@ -540,7 +568,8 @@ function applyTheme(){
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>{m.setAttribute("content",dark?"#000000":"#f2f2f7");m.removeAttribute("media")});
 }
 function setTheme(t){set.theme=t;saveSet();applyTheme();say("Giao diện: "+(THEMES.find(x=>x[0]===t)||[])[2]);render()}
-function themeBtn(){const b=h("button","ib bg"),cur=THEMES.find(x=>x[0]===set.theme)||THEMES[2];b.innerHTML=ico(cur[1]);b.setAttribute("aria-label","Giao diện: "+cur[2]+" (bấm để đổi)");b.title="Giao diện: "+cur[2];b.onclick=()=>{const i=THEMES.findIndex(x=>x[0]===set.theme);setTheme(THEMES[(i+1)%3][0])};b.style.alignSelf="center";return b}
+function themeSeg(){const g=h("div","theme3");THEMES.forEach(([k,i,n])=>{const b=h("button");b.innerHTML=ico(i)+"<span></span>";b.lastChild.textContent=n;b.setAttribute("aria-pressed",set.theme===k);b.onclick=()=>setTheme(k);g.append(b)});return g}
+function renderThemeBar(){const T=$("themeBar");T.replaceChildren(h("span",null,"Giao diện"),themeSeg())}
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(set.theme==="auto")applyTheme()});
 const saveSet=()=>LS.set("hn.set",set);
 const q0=LS.get("hn.q")||{};let queue=q0.items||[],qName=q0.name||"";
@@ -621,7 +650,7 @@ function formSheet(o){
   F.onsubmit=async ev=>{
     ev.preventDefault();go.disabled=true;msg.className="msg";msg.textContent="";
     const v={};o.fields.forEach(f=>{const x=els[f.id].value;v[f.id]=f.type==="password"?x:x.trim()});
-    try{const r=await o.fn(v,els);if(r&&r.node){msg.className="msg";msg.replaceChildren(r.node)}else if(r&&r.keep){msg.className="msg ok";msg.textContent=r.keep;o.fields.forEach(f=>{if(f.clear)els[f.id].value=""})}else d.close()}
+    try{const r=await o.fn(v,els);if(r&&r.node){msg.className="msg info";msg.replaceChildren(r.node)}else if(r&&r.keep){msg.className="msg ok";msg.textContent=r.keep;o.fields.forEach(f=>{if(f.clear)els[f.id].value=""})}else d.close()}
     catch(x){msg.className="msg";msg.textContent=x.message}
     go.disabled=false;
   };
@@ -643,23 +672,22 @@ function btn(cls,icon,text,fn){const b=h("button","btn "+cls);b.innerHTML=(icon?
 function emptyBox(text,btnText,fn,cls){const c=h("div","empty");c.innerHTML=ico("note");c.append(h("p",null,text));if(btnText)c.append(btn(cls||"acc","plus",btnText,fn));return c}
 
 /* ===== Tài khoản ===== */
-function remember(u,tok){if(!tok)return;accts=accts.filter(a=>a.id!==u.id);accts.unshift({id:u.id,name:u.name,login:u.phone||u.email||"",tok});accts=accts.slice(0,8);LS.set("hn.accts",accts)}
+function remember(u,tok){if(!tok)return;accts=accts.filter(a=>a.id!==u.id);accts.unshift({id:u.id,name:u.name,login:u.email||u.phone||"",tok});accts=accts.slice(0,8);LS.set("hn.accts",accts)}
 function openLogin(){
   let els;const ex=h("div","links");
   const mk=(t,fn)=>{const b=h("button","link",t);b.type="button";b.onclick=fn;ex.append(b)};
   mk("Chưa có tài khoản? Đăng ký",()=>openSignup());
   mk("Đăng nhập bằng mã ghép nối (6 số)",()=>openCodeLogin());
   mk("Quên mật khẩu?",()=>openForgot(els.email.value));
-  mk("Tài khoản cũ đăng nhập bằng số điện thoại",()=>{const e=els.email;e.type="tel";e.inputMode="tel";e.placeholder="Ví dụ: 0901 234 567";e.closest(".fld").firstChild.textContent="Số điện thoại";e.value="";e.focus()});
-  els=formSheet({title:"Đăng nhập",btn:"Đăng nhập",extra:ex,note:"Đăng nhập một lần, máy này sẽ nhớ trong 30 ngày.",
+  els=formSheet({title:"Đăng nhập",btn:"Đăng nhập",extra:ex,note:"Đăng nhập bằng Gmail. Đăng nhập một lần, máy này sẽ nhớ trong 6 tháng.",
     fields:[{id:"email",label:"Gmail",type:"email",im:"email",auto:"username",ph:"ten@gmail.com"},{id:"pass",label:"Mật khẩu",type:"password",auto:"current-password"}],
-    fn:async v=>{if(!v.email)throw Error("Hãy nhập Gmail.");if(!v.pass)throw Error("Hãy nhập mật khẩu.");const j=await api("login",{phone:v.email,password:v.pass});remember(j.user,j.tok);await afterAuth("Xin chào "+j.user.name+"!")}});
+    fn:async v=>{if(!v.email)throw Error("Hãy nhập Gmail.");if(!v.pass)throw Error("Hãy nhập mật khẩu.");const j=await api("login",{email:v.email,password:v.pass});remember(j.user,j.tok);await afterAuth("Xin chào "+j.user.name+"!")}});
 }
 function openForgot(em){
   const ex=h("div","links"),b=h("button","link","Quay lại đăng nhập");b.type="button";b.onclick=()=>openLogin();ex.append(b);
   formSheet({title:"Quên mật khẩu",btn:"Gửi yêu cầu cho admin",extra:ex,note:"Nhập Gmail đã đăng ký. Admin sẽ đặt lại mật khẩu về "+RESET_PW+" cho bạn. Sau đó đăng nhập bằng "+RESET_PW+" và đổi mật khẩu mới.",
     fields:[{id:"email",label:"Gmail",type:"email",im:"email",auto:"username",ph:"ten@gmail.com",value:em||""}],
-    fn:async v=>{if(!okEmail(v.email)&&!okPhone(normPhone(v.email)))throw Error("Gmail chưa đúng (ví dụ: ten@gmail.com).");await api("forgot",{email:v.email});
+    fn:async v=>{if(!okEmail(v.email))throw Error("Gmail chưa đúng (ví dụ: ten@gmail.com).");await api("forgot",{email:v.email});
       return{keep:"Đã gửi yêu cầu tới admin. Khi admin đặt lại xong, hãy đăng nhập bằng mật khẩu "+RESET_PW+" rồi đổi mật khẩu mới."}}});
 }
 let mcAsked=false;
@@ -682,13 +710,13 @@ function openSignup(){
       const j=await api("register",{name:v.name,phone:v.phone,email:v.email,password:v.pass});remember(j.user,j.tok);await afterAuth("Đã tạo tài khoản. Chào mừng "+v.name+"!");
     }});
 }
-async function afterAuth(msg){aUsers=null;mcAsked=false;await loadMe();askChangePass();if(!src)pickSrc();else if(src.k==="u"&&src.p==="fav"&&user)src={k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name};render();loadItems();loadMembers();if(admin)loadAdmin();say(msg)}
+async function afterAuth(msg){aUsers=null;mcAsked=false;await loadMe();askChangePass();plMode="mine";selMem="";LS.set("hn.pl",{plMode,selMem});if(!src)pickSrc();else if(src.k==="u"&&src.p==="fav"&&user)src={k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name};render();loadItems();loadMembers();if(admin)loadAdmin();say(msg)}
 const needLogin=msg=>{say(msg||"Hãy đăng nhập để dùng chức năng này.");openLogin()};
 function clearMe(){user=null;lists=[];favIds=new Set();admin=false;aUsers=null;LS.del("hn.me2")}
 function logout(){
   confirmSheet("Đăng xuất?","Tài khoản "+user.name+" sẽ được xoá khỏi máy này","Đăng xuất",async()=>{
     try{await api("logout",{})}catch(e){}
-    accts=accts.filter(a=>a.id!==user.id);LS.set("hn.accts",accts);clearMe();plMode="mine";selMem="";LS.del("hn.pl");tab="home";LS.set("hn.tab",tab);
+    accts=accts.filter(a=>a.id!==user.id);LS.set("hn.accts",accts);clearMe();plMode="mem";selMem="";LS.del("hn.pl");tab="home";LS.set("hn.tab",tab);
     if(src&&src.k==="u")pickSrc(true);render();loadItems();say("Đã đăng xuất.");
   },"logout");
 }
@@ -713,10 +741,10 @@ function changeEmail(){formSheet({title:"Đổi Gmail đăng nhập",btn:"Lưu G
   fields:[{id:"email",label:"Gmail mới",type:"email",im:"email",value:user.email||"",ph:"ten@gmail.com"},{id:"pass",label:"Mật khẩu hiện tại",type:"password",auto:"current-password"}],
   fn:async v=>{if(!okEmail(v.email))throw Error("Gmail chưa đúng (ví dụ: ten@gmail.com).");if(!v.pass)throw Error("Hãy nhập mật khẩu hiện tại.");
     const j=await api("email",{email:v.email,password:v.pass});user=j.user;saveMe();const a=accts.find(x=>x.id===user.id);if(a){a.login=user.email;LS.set("hn.accts",accts)}render();if(admin)loadAdmin();say("Đã đổi Gmail. Lần sau đăng nhập bằng Gmail mới.")}})}
-function changePhone(){formSheet({title:"Đổi số điện thoại",btn:"Lưu số mới",note:"Số mới sẽ là tên đăng nhập. Không được trùng với tài khoản khác.",
+function changePhone(){formSheet({title:"Đổi số điện thoại",btn:"Lưu số mới",note:"Số điện thoại không được trùng với tài khoản khác.",
   fields:[{id:"phone",label:"Số điện thoại mới",type:"tel",im:"tel",value:user.phone||"",ph:"Ví dụ: 0901 234 567"},{id:"pass",label:"Mật khẩu hiện tại",type:"password",auto:"current-password"}],
   fn:async v=>{if(!okPhone(normPhone(v.phone)))throw Error("Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");if(!v.pass)throw Error("Hãy nhập mật khẩu hiện tại.");
-    const j=await api("phone",{phone:v.phone,password:v.pass});user=j.user;saveMe();render();if(admin)loadAdmin();say("Đã đổi số. Lần sau đăng nhập bằng số mới.")}})}
+    const j=await api("phone",{phone:v.phone,password:v.pass});user=j.user;saveMe();render();if(admin)loadAdmin();say("Đã đổi số điện thoại.")}})}
 function changePass(){formSheet({title:"Đổi mật khẩu",btn:"Đổi mật khẩu",note:"Các máy khác đang đăng nhập tài khoản này sẽ phải đăng nhập lại.",
   fields:[{id:"old",label:"Mật khẩu hiện tại",type:"password",auto:"current-password"},{id:"pass",label:"Mật khẩu mới (ít nhất 4 ký tự)",type:"password",auto:"new-password"},{id:"pass2",label:"Nhập lại mật khẩu mới",type:"password",auto:"new-password"}],
   fn:async v=>{if(!v.old)throw Error("Hãy nhập mật khẩu hiện tại.");if(v.pass.length<4)throw Error("Mật khẩu mới tối thiểu 4 ký tự.");if(v.pass!==v.pass2)throw Error("Hai mật khẩu mới chưa giống nhau.");
@@ -733,13 +761,19 @@ async function showPair(){
 }
 
 /* ===== Điều hướng ===== */
-const TABS=[["home","note","Trang chủ"],["me","person","Tài khoản"],["admin","shield","Quản trị"]];
+const TABS=[["home","home","Trang chủ"],["me","person","Tài khoản"],["admin","shield","Quản trị"]];
 function buildNav(){[$("tabbar"),$("sideNav")].forEach(N=>{N.replaceChildren();TABS.forEach(([k,i,n])=>{const b=h("button");b.dataset.tab=k;b.innerHTML=ico(i)+"<span></span>";b.lastChild.textContent=n;b.onclick=()=>goTab(k);N.append(b)})})}
 function goTab(k){
   if(k==="admin"&&!admin)k="me";
   const same=tab===k;tab=k;LS.set("hn.tab",k);if(k==="home"&&same&&plMode==="mem"&&selMem){selMem="";LS.set("hn.pl",{plMode,selMem})}render();scrollTo({top:0,behavior:same?"smooth":"auto"});
   if(k==="home")loadItems();if(k==="me")loadMembers();if(k==="admin")loadAdmin();
 }
+function goHome(){ // bấm chữ "Nhac Hot": về trang chủ ban đầu
+  selMem="";plMode=user?"mine":"mem";LS.set("hn.pl",{plMode,selMem});
+  if(tab!=="home"){goTab("home");return}
+  renderHome();scrollTo({top:0,behavior:"smooth"});loadItems();loadMembers();
+}
+$("brandHome").onclick=goHome;$("sideBrand").onclick=goHome;
 function drawNav(){
   document.querySelectorAll("#tabbar [data-tab],#sideNav [data-tab]").forEach(b=>{b.setAttribute("aria-current",b.dataset.tab===tab?"page":"false");if(b.dataset.tab==="admin")b.hidden=!admin});
   const w=$("sideWho");w.replaceChildren();w.hidden=!user;
@@ -786,18 +820,25 @@ const visible=()=>{const q=qText.trim().toLowerCase();return items.filter(i=>(S.
 function setQueue(){queue=visible().slice();qName=srcName();LS.set("hn.q",{items:queue,name:qName});played.clear();hist=[]}
 function playList(sh){const v=visible();if(!v.length)return say("Danh sách đang trống.");S.shuffle=sh;setQueue();save();play((sh?v[Math.floor(Math.random()*v.length)]:v[0]).id)}
 
-/* ===== Trang Nghe nhạc ===== */
+/* ===== Trang chủ ===== */
 function authBtn(cls,icon,label,fn){const b=h("button");b.innerHTML='<span class="ic '+cls+'">'+ico(icon)+"</span><span></span>";b.lastChild.textContent=label;b.setAttribute("aria-label",label);b.onclick=fn;return b}
 function renderHome(){
-  clock();
-  const A=$("homeAuth");A.replaceChildren(themeBtn());
+  clock();renderThemeBar();renderModes();
+  const A=$("homeAuth");A.replaceChildren();
   if(user){const b=h("button");b.append(avatar(user.name));b.setAttribute("aria-label","Tài khoản của bạn");b.onclick=()=>goTab("me");A.append(b)}
   else A.append(authBtn("l","person","Đăng nhập",openLogin),authBtn("r","useradd","Đăng ký",openSignup));
   renderChips();renderListHead();renderList();
 }
+function renderModes(){ // 2 chế độ hay dùng, có ghi chú rõ ràng ngay ở trang chủ
+  const M=$("modes");if(!M)return;M.replaceChildren();
+  const row=(icon,color,title,sub,on,fn)=>{const b=h("button","mrow"),ci=h("span","ci"),t=h("span","mt");ci.innerHTML=ico(icon);ci.style.setProperty("--c",color);t.append(h("b",null,title),h("small",null,sub));b.append(ci,t,h("span","sw"+(on?" on":"")));b.setAttribute("role","switch");b.setAttribute("aria-checked",!!on);b.onclick=fn;return b};
+  M.append(
+    row("sun","var(--orange)","Giữ màn hình sáng","Dùng khi XEM VIDEO: màn hình không tự tắt nên video không bị dừng (tốn pin hơn).",!!wl,toggleWake),
+    row("note","var(--acc)","Chạy nền (chỉ nghe âm thanh)","Dùng cho bài .mp3 và bài YouTube: tắt màn hình, chuyển app vẫn nghe tiếp. Muốn xem hình video thì tắt mục này.",set.aud,switchMode),
+    h("p","foot",isIOS?"iPhone: nếu nhạc dừng khi khoá máy, bấm ▶ ngay trên màn hình khoá. Bài .mp3 chạy nền ổn định nhất.":"Bài .mp3 chạy nền ổn định nhất. Điều khiển Phát/Dừng ngay trên màn hình khoá."));
+}
 function chip(label,icon,on,fn,cls,count){const b=h("button","chip"+(cls?" "+cls:""));b.innerHTML=(icon?ico(icon,icon==="heart"):"")+"<b class='el'></b>"+(count!=null?"<span></span>":"");b.querySelector("b").textContent=label;b.querySelector("b").style.fontWeight="600";if(count!=null)b.lastChild.textContent=count;b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b}
 const memName=id=>(members.find(m=>m.id===id)||(aUsers||[]).find(u=>u.id===id)||{}).n||((aUsers||[]).find(u=>u.id===id)||{}).name||"thành viên";
-function memChip(m,on,fn){const b=h("button","chip"),n=m.l.reduce((a,l)=>a+(l.c||0),0)+glists.filter(l=>l.o===m.id).reduce((a,l)=>a+(l.c||0),0);b.append(avatar(m.n,"sm"),h("b","el",m.n),h("span",null,String(n)));b.querySelector("b").style.fontWeight="600";b.setAttribute("aria-pressed",!!on);b.onclick=fn;return b}
 function showMember(id){plMode="mem";selMem=id;LS.set("hn.pl",{plMode,selMem});if(tab!=="home")goTab("home");else renderHome()}
 const PAL=["#ff2d75","#ff8a1f","#14b87a","#2f7bff","#8b5cf6","#06b6d4","#e11d48","#ca8a04","#0ea5e9","#16a34a","#d946ef","#f97316"];
 const COLORS=[["","Tự động"],["#ff2d75","Hồng"],["#e11d48","Đỏ"],["#ff8a1f","Cam"],["#ca8a04","Vàng"],["#14b87a","Xanh lá"],["#06b6d4","Xanh ngọc"],["#2f7bff","Xanh dương"],["#8b5cf6","Tím"],["#d946ef","Tím hồng"]];
@@ -810,37 +851,45 @@ function ptile(label,icon,on,fn,col,count,add){
 }
 function renderChips(){
   const P=$("plChips"),MC=$("memChips");P.replaceChildren();MC.replaceChildren();const k=srcKey();
-  $("loginHint").hidden=!!user||!configured||!src;
+  $("loginHint").hidden=true;
   const has=(key,c)=>(c||0)>0||k===key; // chỉ hiện danh sách có bài (hoặc đang mở)
   const others=members.filter(m=>(!user||m.id!==user.id)&&(m.l.some(l=>has("u."+m.id+"."+l.id,l.c))||glists.some(l=>l.o===m.id&&has("g."+l.id,l.c))));
-  $("plTabs").firstElementChild.textContent="Của bạn";
-  $("plTabs").lastElementChild.textContent="Thành viên ("+others.length+")";
-  $("plTabs").hidden=!others.length;const mode=others.length?plMode:"mine";
+  const shared=glists.filter(l=>!l.o&&has("g."+l.id,l.c));
+  $("plTabs").firstElementChild.textContent="Danh sách của bạn";
+  $("plTabs").lastElementChild.textContent="Thành viên khác ("+others.length+")";
+  $("plTabs").hidden=!user; // chưa đăng nhập: không có tab, hiện thẳng danh sách thành viên
+  const mode=!user?"mem":plMode;
   $("plTabs").querySelectorAll("button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.m===mode);b.onclick=()=>{if(b.dataset.m==="mem"&&plMode==="mem")selMem="";plMode=b.dataset.m;LS.set("hn.pl",{plMode,selMem});renderChips()}});
   const G_=l=>has("g."+l.id,l.c)&&P.append(ptile(l.name+(l.o&&admin&&(!user||l.o!==user.id)?" · "+memName(l.o):""),"note",k==="g."+l.id,()=>setSrc({k:"g",id:l.id,name:l.name}),colOf("g."+l.id,l.col),l.c));
   if(mode==="mine"){
-    if(user&&has("u."+user.id+".fav",(lists.find(l=>l.id==="fav")||{}).c))P.append(ptile("Yêu thích","heart",k==="u."+user.id+".fav",()=>setSrc({k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name}),"#ff2d75",(lists.find(l=>l.id==="fav")||{}).c));
-    glists.filter(l=>!l.o||user&&l.o===user.id||admin).forEach(G_);
-    if(user)lists.filter(l=>l.id!=="fav"&&has("u."+user.id+"."+l.id,l.c)).forEach(l=>P.append(ptile(l.name,"ilist",k==="u."+user.id+"."+l.id,()=>setSrc({k:"u",u:user.id,p:l.id,name:l.name,owner:user.name}),colOf("u."+user.id+"."+l.id),l.c)));
+    if(has("u."+user.id+".fav",(lists.find(l=>l.id==="fav")||{}).c))P.append(ptile("Yêu thích","heart",k==="u."+user.id+".fav",()=>setSrc({k:"u",u:user.id,p:"fav",name:"Nhạc Yêu Thích",owner:user.name}),"#ff2d75",(lists.find(l=>l.id==="fav")||{}).c));
+    glists.filter(l=>!l.o||l.o===user.id||admin).forEach(G_);
+    lists.filter(l=>l.id!=="fav"&&has("u."+user.id+"."+l.id,l.c)).forEach(l=>P.append(ptile(l.name,"ilist",k==="u."+user.id+"."+l.id,()=>setSrc({k:"u",u:user.id,p:l.id,name:l.name,owner:user.name}),colOf("u."+user.id+"."+l.id),l.c)));
     if(offIds.size)P.append(ptile("Đã lưu trên máy","download",k==="off",()=>setSrc({k:"off",name:"Đã lưu trên máy"}),"#14b87a",offIds.size));
     if(admin)P.append(ptile("Tạo danh sách","plus",false,()=>glNew(),"var(--gray)",0,1));
-    if(!user&&configured){const b=h("button","plogin");b.innerHTML=ico("person")+"<span><b>Đăng nhập để vào danh sách của bạn</b><small>Nghe mục Yêu thích, danh sách riêng và thêm nhạc</small></span>"+ico("chev");b.onclick=openLogin;P.prepend(b)}
   }else{
-    if(!others.some(m=>m.id===selMem))selMem="";
+    const okSel=selMem==="__g"?!user&&shared.length:others.some(m=>m.id===selMem);if(!okSel)selMem="";
     const m=others.find(x=>x.id===selMem);
-    if(!m){ // trang chủ thành viên: lưới các thành viên đã đăng ký
-      others.forEach(x=>{const n=x.l.reduce((a,l)=>a+(l.c||0),0)+glists.filter(l=>l.o===x.id).reduce((a,l)=>a+(l.c||0),0),nl=x.l.filter(l=>l.c>0).length+glists.filter(l=>l.o===x.id&&l.c>0).length;
-        const b=h("button","mcard");b.append(avatar(x.n),h("b","el",x.n),h("small",null,n+" bài · "+nl+" danh sách"));b.onclick=()=>{selMem=x.id;LS.set("hn.pl",{plMode,selMem});renderChips();$("plTabs").scrollIntoView({behavior:"smooth",block:"start"})};MC.append(b)});
+    if(!selMem){ // danh sách thành viên trong hệ thống: bấm tên để nghe các danh sách của người đó
       MC.className="mcards";
+      if(!user&&configured){const b=h("button","plogin");b.innerHTML=ico("person")+"<span><b>Đăng nhập để vào danh sách của bạn</b><small>Nghe mục Yêu thích, danh sách riêng và thêm nhạc</small></span>"+ico("chev");b.onclick=openLogin;MC.append(b)}
+      if(others.length||shared.length&&!user)MC.append(h("div","mtitle",user?"Chọn thành viên để nghe":"Thành viên trong hệ thống – bấm tên để nghe"));
+      const pick=id=>{selMem=id;LS.set("hn.pl",{plMode,selMem});renderChips();(user?$("plTabs"):MC).scrollIntoView({behavior:"smooth",block:"start"})};
+      if(!user&&shared.length){const b=h("button","mcard"),av=h("div","av gav");av.innerHTML=ico("note");b.append(av,h("b","el","Danh sách chung"),h("small",null,shared.reduce((a,l)=>a+(l.c||0),0)+" bài · "+shared.length+" danh sách"));b.onclick=()=>pick("__g");MC.append(b)}
+      others.forEach(x=>{const n=x.l.reduce((a,l)=>a+(l.c||0),0)+glists.filter(l=>l.o===x.id).reduce((a,l)=>a+(l.c||0),0),nl=x.l.filter(l=>l.c>0).length+glists.filter(l=>l.o===x.id&&l.c>0).length;
+        const b=h("button","mcard");b.append(avatar(x.n),h("b","el",x.n),h("small",null,n+" bài · "+nl+" danh sách"));b.onclick=()=>pick(x.id);MC.append(b)});
+      if(configured&&!others.length&&(user||!shared.length))MC.append(h("p","note",user?"Chưa có thành viên khác thêm nhạc.":"Chưa có thành viên nào thêm nhạc."));
     }else{
       MC.className="mhead";const bk=h("button","btn plain");bk.innerHTML=ico("back")+"<span>Trang chủ</span>";bk.onclick=()=>{selMem="";LS.set("hn.pl",{plMode,selMem});renderChips()};
-      const who_=h("div","mwho");who_.append(avatar(m.n,"sm"),h("b","el",m.n));MC.append(bk,who_);
-      m.l.filter(l=>has("u."+m.id+"."+l.id,l.c)).forEach(l=>P.append(ptile(l.id==="fav"?"Yêu thích của "+m.n.split(/\s+/).pop():l.name,l.id==="fav"?"heart":"ilist",k==="u."+m.id+"."+l.id,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n}),colOf("u."+m.id+"."+l.id),l.c)));
-      glists.filter(l=>l.o===m.id).forEach(G_);
-      if(admin)P.append(ptile("Tạo cho "+m.n.split(/\s+/).pop(),"plus",false,()=>glNew(m.id),"var(--gray)",0,1));
+      const who_=h("div","mwho");
+      if(selMem==="__g"){const av=h("div","av sm gav");av.innerHTML=ico("note");who_.append(av,h("b","el","Danh sách chung"));MC.append(bk,who_);shared.forEach(G_)}
+      else{who_.append(avatar(m.n,"sm"),h("b","el",m.n));MC.append(bk,who_);
+        m.l.filter(l=>has("u."+m.id+"."+l.id,l.c)).forEach(l=>P.append(ptile(l.id==="fav"?"Yêu thích của "+m.n.split(/\s+/).pop():l.name,l.id==="fav"?"heart":"ilist",k==="u."+m.id+"."+l.id,()=>setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n}),colOf("u."+m.id+"."+l.id),l.c)));
+        glists.filter(l=>l.o===m.id).forEach(G_);
+        if(admin)P.append(ptile("Tạo cho "+m.n.split(/\s+/).pop(),"plus",false,()=>glNew(m.id),"var(--gray)",0,1));}
     }
   }
-  MC.hidden=mode!=="mem";$("loginHint").hidden=!!user||!configured||!src||mode==="mine";
+  MC.hidden=mode!=="mem";
   P.hidden=!P.children.length;
   $("lhead").style.setProperty("--lc",srcColor());
   const G=$("gChips");G.replaceChildren();
@@ -863,14 +912,15 @@ function songRow(it,isCur,onPlay,extra){
   if(it.type==="yt"){const im=h("img");im.src=yThumb(it.ref);im.alt="";im.loading="lazy";th.append(im)}else th.innerHTML=ico("note");
   if(isCur&&loaded){const eq=h("div","eq"+(playing?"":" paused"));eq.innerHTML="<i></i><i></i><i></i>";th.append(eq)}
   const tx=h("div","tx"),s=h("small"),dot=h("i","dot");dot.style.setProperty("--gc",GC[it.genre]||"var(--gray)");
-  s.append(dot,document.createTextNode(gName(it.genre)+(it.author?" · "+it.author:"")+(it.byn?" · thêm bởi "+it.byn:"")));
+  s.append(dot,document.createTextNode(gName(it.genre)+(it.type==="audio"?" · mp3":"")+(it.author?" · "+it.author:"")+(it.byn?" · thêm bởi "+it.byn:"")));
+  const ex=nctExp(it.ref);if(ex){const e=h("span","exp"+(ex<Date.now()?" gone":""),ex<Date.now()?" · link đã hết hạn":" · hạn "+fmtDate(ex));s.append(e)}
   if(offIds.has(it.id)){const o=h("span","off");o.innerHTML=ico("download");o.title="Đã lưu trên máy";s.append(o)}
   tx.append(h("b",null,it.title),s);t.append(th,tx);t.onclick=onPlay;row.append(t,...extra);return row;
 }
 function renderList(){
   const L=$("list");L.replaceChildren();const v=visible();
   if(!configured){L.append(emptyBox("Chưa nối cơ sở dữ liệu nên chưa có danh sách."));return}
-  if(!src){if(user)L.append(emptyBox(admin?"Chưa có danh sách phát nào. Hãy tạo danh sách đầu tiên.":"Admin chưa tạo danh sách phát nào. Bạn vẫn nghe được mục Yêu thích.",admin?"Tạo danh sách":null,glNew));else{const e=emptyBox("");e.querySelector("p").remove();const b=h("button","lhint","Đăng nhập thêm nhạc vào danh sách của bạn.");b.onclick=openLogin;e.append(b);L.append(e)}return}
+  if(!src){if(user)L.append(emptyBox(admin?"Chưa có danh sách phát nào. Hãy tạo danh sách đầu tiên.":"Admin chưa tạo danh sách phát nào. Bạn vẫn nghe được mục Yêu thích.",admin?"Tạo danh sách":null,glNew));else L.append(emptyBox("Chọn một thành viên ở trên để nghe danh sách của họ."));return}
   if(loadingList&&!v.length){for(let i=0;i<4;i++)L.append(h("div","sk"));return}
   if(!v.length){L.append(emptyBox(items.length?"Không có bài nào khớp.":"Danh sách đang trống."+(canAdd()?" Bấm “Thêm nhạc” để thêm bài đầu tiên.":""),!items.length&&canAdd()?"Thêm nhạc":null,()=>openAdd(),"green"));return}
   const cur=curItem();
@@ -913,16 +963,12 @@ function glDelete(l){confirmSheet("Xoá “"+l.name+"”?","Danh sách chung cù
 
 /* ===== Thêm / sửa / xoá / yêu thích ===== */
 function parse(u){
-  u=u.trim();let m;
-  if(/zingmp3\.vn|nhaccuatui\.(com|vn)/i.test(u)){
-    let q="";try{const seg=new URL(u).pathname.split("/").filter(Boolean),i=seg.findIndex(x=>/bai-hat|song|video|playlist|album/i.test(x));q=decodeURIComponent((seg[i+1]||seg[seg.length-1]||"").replace(/\.[\w-]+\.html?$|\.html?$/i,"")).replace(/[-_.]+/g," ").trim()}catch(e){}
-    return{err:"Link Zing MP3 / NhacCuaTui không phát được ở đây (2 trang này khoá nhạc, không cho app khác phát). Hãy dùng link YouTube của bài đó.",q};
-  }
-  if(false)return{err:"Zing MP3 và NhacCuaTui không phát được ở đây. Hãy dán link YouTube của bài đó."};
+  u=u.trim().replace(/&amp;/g,"&");let m;
+  if(/(^|\/\/|\.)(zingmp3\.vn|nhaccuatui\.(com|vn))\//i.test(u)&&!/stream\.nct\.vn/i.test(u))return{find:true,url:u}; // trang bài hát → tự tìm bản YouTube
   m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/i);
   if(m)return{type:"yt",ref:m[1]};
-  if(/^https?:\/\/.+\.(mp3|m4a|aac|ogg|opus|wav)(\?.*)?$/i.test(u))return{type:"audio",ref:u};
-  return{err:u?"Link chưa đúng. Hãy dán link video YouTube hoặc link file .mp3.":"Hãy dán link YouTube."};
+  if(/^https?:\/\/.+\.(mp3|m4a|aac|ogg|opus|wav)(\?.*)?$/i.test(u))return{type:"audio",ref:u,exp:nctExp(u)};
+  return{err:u?"Link chưa đúng. Hãy dán link YouTube, link file .mp3, hoặc link bài hát NhacCuaTui / Zing MP3.":"Hãy dán link bài hát."};
 }
 const daCache={};
 async function daTitle(ref){ // DeArrow: tên do cộng đồng sửa lại cho bớt "câu view"
@@ -945,23 +991,35 @@ async function addTo(target,song){
   if(k==="g"){const j=await api("gadd",{p:id,song});if(j.list){glists=glists.map(x=>x.id===id?j.list:x);LS.set("hn.gl",glists)}return j.song}
   const j=await api("add",{p:id,song});lists=j.lists;if(id==="fav")favIds.add(j.song.id);saveMe();return j.song;
 }
+function afterAdd(target,song){
+  const here=src&&(src.k==="g"?"g:"+src.id:src.k==="u"&&user&&src.u===user.id?"u:"+src.p:"")===target;
+  if(here&&!items.some(i=>i.id===song.id)){items.push(song);LS.set("hn.l."+srcKey(),items)}render();
+}
 function openAdd(){
   if(!user)return needLogin("Hãy đăng nhập để thêm nhạc.");
   const T=targets();if(!T.length)return say("Chưa có danh sách nào để thêm nhạc.");
   const def=src&&canAdd()?(src.k==="g"?"g:"+src.id:"u:"+src.p):T[0][0];
-  formSheet({title:"Thêm nhạc",btn:"Lưu bài hát",note:"Trong ứng dụng YouTube: bấm Chia sẻ → Sao chép đường liên kết, rồi dán vào ô dưới. Thể loại (Nhạc trẻ, Remix, Trữ tình…) app tự nhận theo tên bài, sửa lại được bằng nút ⋯ ở bài hát.",
-    fields:[{id:"url",label:"Link YouTube hoặc link file .mp3",type:"url",im:"url",ph:"https://youtu.be/…",paste:1,clear:1},{id:"p",label:"Lưu vào danh sách",options:T,value:def}],
-    fn:async v=>{
-      const p=parse(v.url);
-      if(p.err){if(p.q){const box=h("span");box.append(document.createTextNode(p.err+" "));const a=h("a",null,"Tìm “"+p.q+"” trên YouTube →");a.href="https://www.youtube.com/results?search_query="+encodeURIComponent(p.q);a.target="_blank";a.rel="noopener";a.style.cssText="color:var(--blue);font-weight:600";box.append(a);return{node:box}}throw Error(p.err)}
+  formSheet({title:"Thêm nhạc",btn:"Lưu bài hát",note:"Dán 1 trong 3 loại link: • YouTube (Chia sẻ → Sao chép đường liên kết) • link file .mp3 (nghe nền tốt nhất) • link bài hát NhacCuaTui / Zing MP3 (app tự tìm bản YouTube để bạn chọn). Thể loại app tự nhận, sửa lại được bằng nút ⋯.",
+    fields:[{id:"url",label:"Link bài hát",type:"url",im:"url",ph:"https://youtu.be/…  hoặc  https://…/bai.mp3",paste:1,clear:1},{id:"p",label:"Lưu vào danh sách",options:T,value:def}],
+    fn:async(v,els)=>{
+      const p=parse(v.url);if(p.err)throw Error(p.err);
+      if(p.find){ // NhacCuaTui / Zing: đọc tên bài + ca sĩ rồi tìm bản YouTube
+        fMsg.className="msg ok";fMsg.textContent="Đang đọc tên bài và tìm bản YouTube…";
+        const j=await api("find&url="+encodeURIComponent(p.url)),box=h("div"),full=j.title+(j.artist?" – "+j.artist:"");
+        if(!j.yt||!j.yt.length){box.append(document.createTextNode("Bài “"+full+"”: chưa tìm được bản YouTube. "));const a=h("a",null,"Tìm trên YouTube →");a.href="https://www.youtube.com/results?search_query="+encodeURIComponent(j.q);a.target="_blank";a.rel="noopener";a.style.cssText="color:var(--blue);font-weight:600";box.append(a);return{node:box}}
+        box.append(h("div",null,"Bài “"+full+"”. Bấm chọn bản YouTube đúng bài để thêm (nghe nền được):"));
+        const L=h("div","finds");
+        j.yt.forEach(c=>{const b=h("button","fcand"),im=h("img"),t=h("span");b.type="button";im.src=yThumb(c.id);im.alt="";t.append(h("b",null,c.title),h("small",null,(c.author||"")+(c.dur?" · "+fmt(c.dur):"")));b.append(im,t,h("em",null,"Thêm"));
+          b.onclick=async()=>{b.disabled=true;try{const genre=S.genre!=="all"?S.genre:guessGenre(j.title,j.artist);const song=await addTo(v.p,{type:"yt",ref:c.id,title:full,author:j.artist||c.author,genre});afterAdd(v.p,song);fMsg.className="msg ok";fMsg.textContent="Đã thêm: "+full+" · "+gName(genre)+". Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng.";els.url.value=""}catch(e){b.disabled=false;fMsg.className="msg";fMsg.textContent=e.status===409?"Bài này đã có trong danh sách.":e.message}};L.append(b)});
+        box.append(L);return{node:box};
+      }
       fMsg.className="msg ok";fMsg.textContent="Đang lấy tên bài…";let title="",author="",da="";
       if(p.type==="yt"){try{const r=await fetch("https://www.youtube.com/oembed?format=json&url="+encodeURIComponent("https://www.youtube.com/watch?v="+p.ref));const j=await r.json();title=j.title;author=j.author_name||""}catch(e){}if(set.da){da=await daTitle(p.ref);if(da)title=da}}
-      if(!title)title=p.type==="yt"?"YouTube "+p.ref:decodeURIComponent(p.ref.split("/").pop().split("?")[0]);
+      if(!title)title=p.type==="yt"?"YouTube "+p.ref:decodeURIComponent(p.ref.split("/").pop().split("?")[0]).replace(/\.(mp3|m4a|aac|ogg|opus|wav)$/i,"").replace(/[-_]+/g," ").trim();
       const genre=S.genre!=="all"?S.genre:guessGenre(title,author);
-      const song=await addTo(v.p,{type:p.type,ref:p.ref,title,author,genre});
-      const here=src&&(src.k==="g"?"g:"+src.id:src.k==="u"&&user&&src.u===user.id?"u:"+src.p:"")===v.p;
-      if(here&&!items.some(i=>i.id===song.id)){items.push(song);LS.set("hn.l."+srcKey(),items)}render();
-      return{keep:"Đã thêm: "+title+" · "+gName(genre)+(da?" (tên đã sửa bởi DeArrow)":"")+". Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng."};
+      const song=await addTo(v.p,{type:p.type,ref:p.ref,title,author,genre});afterAdd(v.p,song);
+      const expNote=p.exp?" Lưu ý: link mp3 NhacCuaTui chỉ dùng được đến "+fmtDate(p.exp)+" (sau đó hết hạn). Muốn nghe lâu dài, hãy dán link trang bài hát NhacCuaTui để app tìm bản YouTube.":"";
+      return{keep:"Đã thêm: "+title+" · "+gName(genre)+(da?" (tên đã sửa bởi DeArrow)":"")+"."+expNote+" Dán link khác để thêm tiếp, hoặc bấm ✕ để đóng."};
     }});
 }
 function openEdit(it){formSheet({title:"Sửa bài hát",btn:"Lưu thay đổi",fields:[{id:"title",label:"Tên bài",value:it.title,max:200,cap:"sentences"},{id:"genre",label:"Thể loại",options:GENRES,value:it.genre}],
@@ -1064,6 +1122,7 @@ function drawTools(){
     tbtn("tWake","sun",wl?"Đang sáng":"Giữ sáng","var(--orange)",toggleWake));
   [["tMode",set.aud],["tRate",S.rate!=1],["tCC",set.cc>0],["tSleep",!!sleepAt||sleepEnd],["tPip",!!pipWin],["tWake",!!wl]].forEach(([i,on])=>$(i).classList.toggle("on",on));
   if(!pipOk)$("tPip").title="Mở cách dùng cửa sổ nổi";
+  renderModes();
 }
 function drawBtns(){
   $("bPv").innerHTML=ico("prev");$("bNx").innerHTML=ico("next");$("mNx").innerHTML=ico("next");
@@ -1079,7 +1138,7 @@ function showNow(){
   $("mT").textContent=it?title:"";$("mS").textContent=it?(it.author||gName(it.genre)):"";
   const ma=it&&it.type==="yt"?yThumb(it.ref):"icon-192.png";if($("mArt").getAttribute("src")!==ma)$("mArt").src=ma;
   scr.classList.toggle("vid",isYT(it)&&loaded);scr.classList.toggle("aud",!!it&&(it.type!=="yt"||viaAudio));
-  const ph=$("ph");ph.innerHTML=ico("note")+"<span></span>";ph.lastChild.textContent=it?(it.type==="yt"?(loaded&&viaAudio?"Đang nghe nền · bấm “Video” bên dưới để xem hình":"Bấm ▶ để phát"):it.title):"Chọn một bài để bắt đầu";
+  const ph=$("ph");ph.innerHTML=ico("note")+"<span></span>";ph.lastChild.textContent=it?(it.type==="yt"?(loaded&&viaAudio?"Đang chạy nền (chỉ âm thanh) · tắt “Chạy nền” bên dưới để xem hình":"Bấm ▶ để phát"):it.title):"Chọn một bài để bắt đầu";
   if(it&&it.type==="yt"&&(!loaded||viaAudio)){scr.style.background=`#000 center/cover url("${yThumb(it.ref,"hq")}")`}else scr.style.background="";
   const fav=!!it&&favIds.has(it.id),hb=$("nHeart");hb.hidden=!it;hb.className="ib"+(fav?" on":"");hb.innerHTML=ico("heart",fav);$("nCmt").hidden=!it;
   pipUpd();
@@ -1137,7 +1196,6 @@ function watchdog(it){ // tự cứu khi bị dừng/kẹt: phát lại khi trì
   if(st===P.PAUSED&&document.hidden&&set.bg&&Date.now()-resumeT>2000){resumeT=Date.now();try{yt.playVideo()}catch(e){}}
   if(st===P.BUFFERING||st===-1||st===P.CUED){if(!bufT)bufT=Date.now();else if(Date.now()-bufT>15000&&navigator.onLine){bufT=0;try{loadYT(it.ref,S.pos)}catch(e){}}}else bufT=0;
 }
-/* --- điều khiển chung --- */
 /* --- Nghe nền: bài YouTube phát bằng luồng ÂM THANH (như file mp3) nên điện thoại cho phát khi tắt màn hình --- */
 let viaAudio=false,auReal=false,auRetry="";const stCache={};
 const isYT=it=>!!it&&it.type==="yt"&&!viaAudio; // đang dùng trình phát video YouTube?
@@ -1146,12 +1204,12 @@ function auSet(url,at,ref){auReal=true;au.loop=false;au.dataset.ref=ref||"";au.s
 function auHold(){auReal=false;au.loop=true;au.src=kaUrl();au.play().catch(()=>{})} // giữ quyền phát (iPhone) trong lúc chờ lấy âm thanh
 function startVideo(it,at){viaAudio=false;auReal=false;au.pause();au.removeAttribute("src");keepAlive(true);ytReady?loadYT(it.ref,at):pending={ref:it.ref,at};showNow()}
 async function playYtAudio(it,at,fresh){
-  let st;try{st=await getStream(it.ref,fresh)}catch(e){if(S.cur!==it.id)return;say("Bài này chưa nghe nền được – đang phát bằng video.");return startVideo(it,at)}
+  let st;try{st=await getStream(it.ref,fresh)}catch(e){if(S.cur!==it.id)return;say("Bài này chưa chạy nền được – đang phát bằng video.");return startVideo(it,at)}
   if(S.cur!==it.id||!viaAudio)return;auSet(st.url,at,it.ref);prefetchNext();
 }
 function prefetchNext(){if(!set.aud||S.shuffle)return;const i=queue.findIndex(x=>x.id===S.cur),n=queue[i+1]||(S.repeat!=="off"?queue[0]:null);if(n&&n.type==="yt")getStream(n.ref).catch(()=>{})}
 function switchMode(){
-  set.aud=!set.aud;saveSet();drawTools();say(set.aud?"Nghe nền: chỉ phát âm thanh, vẫn nghe khi tắt màn hình.":"Video: xem hình, có thể bị dừng khi tắt màn hình.");
+  set.aud=!set.aud;saveSet();drawTools();say(set.aud?"Chạy nền: BẬT – chỉ phát âm thanh, vẫn nghe khi tắt màn hình.":"Chạy nền: TẮT – xem video (nên bật Giữ màn hình sáng).");
   const it=curItem();if(it&&it.type==="yt"&&loaded){const t=curTime()[0],was=wantPlay;play(it.id,t,true);if(!was)setTimeout(doPause,900)}
 }
 function stopAll(){try{ytReady&&yt.stopVideo()}catch(e){}auReal=false;au.pause();au.removeAttribute("src");if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=""}setPlaying(false)}
@@ -1189,7 +1247,11 @@ au.addEventListener("play",()=>{if(!auReal)return;wantPlay=true;setPlaying(true)
 au.addEventListener("pause",()=>{if(!auReal)return;setPlaying(false);setTimeout(()=>{if(wantPlay&&au.paused&&document.hidden&&set.bg)au.play().catch(()=>{})},350)});
 au.addEventListener("error",()=>{if(!auReal||!au.getAttribute("src"))return;
   if(viaAudio){const it=curItem();if(!it)return;if(!navigator.onLine){netWait=true;say("Mất mạng – sẽ tự phát tiếp khi có sóng lại.");return}
-    if(auRetry!==it.id){auRetry=it.id;auReal=false;return playYtAudio(it,S.pos,true)} /* thử lấy lại âm thanh 1 lần */say("Âm thanh nghe nền bị lỗi – chuyển sang video.");return startVideo(it,S.pos)}if(!navigator.onLine){netWait=true;say("Mất mạng – sẽ tự phát tiếp khi có sóng lại.");return}say("File nhạc lỗi. Chuyển bài sau.");setTimeout(()=>step(1),1200)});
+    if(auRetry!==it.id){auRetry=it.id;auReal=false;return playYtAudio(it,S.pos,true)} /* thử lấy lại âm thanh 1 lần */say("Âm thanh chạy nền bị lỗi – chuyển sang video.");return startVideo(it,S.pos)}
+  if(!navigator.onLine){netWait=true;say("Mất mạng – sẽ tự phát tiếp khi có sóng lại.");return}
+  const it=curItem(),ex=it&&nctExp(it.ref);
+  if(ex&&ex<Date.now()+60000){say("Link mp3 NhacCuaTui của bài này đã hết hạn. Hãy thêm lại bằng link trang bài hát NhacCuaTui (app tự tìm bản YouTube).");setTimeout(()=>step(1),2500);return}
+  say("File nhạc lỗi. Chuyển bài sau.");setTimeout(()=>step(1),1200)});
 function curTime(){const it=curItem();if(!it||!loaded)return[0,0];if(isYT(it)){try{return[yt.getCurrentTime()||0,yt.getDuration()||0]}catch(e){return[0,0]}}return[au.currentTime||0,au.duration||0]}
 function seekTo(t){const it=curItem();if(!it||!loaded)return;if(isYT(it)){ytReady&&yt.seekTo(Math.max(0,t),true)}else if(au.duration)au.currentTime=Math.max(0,Math.min(t,au.duration-.2))}
 let seeking=false,lastDur=0,posT=0;
@@ -1279,12 +1341,6 @@ async function openPip(){
   pipWin.addEventListener("pagehide",()=>{pipWin=null;drawTools()});
   pipUpd();drawTools();
 }
-/* --- phóng to --- */
-function goFull(){
-  const el=$("screen"),f=el.requestFullscreen||el.webkitRequestFullscreen;
-  if(document.fullscreenElement){document.exitFullscreen();return}
-  if(f){const r=f.call(el);if(r&&r.catch)r.catch(()=>say("Không phóng to được trên máy này."))}else say("Trên iPhone: bấm nút toàn màn hình ở góc dưới bên phải của video.");
-}
 /* --- màn hình khoá / tai nghe / đồng hồ --- */
 function setMedia(it){
   if(!("mediaSession" in navigator))return;
@@ -1312,8 +1368,8 @@ async function lockOn(){try{wl=await navigator.wakeLock.request("screen");wl.add
 async function toggleWake(){
   if(!("wakeLock" in navigator))return say("Trình duyệt này chưa hỗ trợ giữ màn hình sáng (iPhone cần iOS 16.4 trở lên).");
   if(wl){set.wl=false;saveSet();try{await wl.release()}catch(e){}wl=null;say("Giữ màn hình sáng: TẮT.")}
-  else{await lockOn();set.wl=!!wl;saveSet();say(wl?"Giữ màn hình sáng: BẬT.":"Máy không cho giữ sáng lúc này (có thể đang bật tiết kiệm pin).")}
-  drawTools();
+  else{await lockOn();set.wl=!!wl;saveSet();say(wl?"Giữ màn hình sáng: BẬT – màn hình sẽ không tự tắt.":"Máy không cho giữ sáng lúc này (có thể đang bật tiết kiệm pin).")}
+  drawTools();if(tab==="me")renderMe();
 }
 
 /* ===== Tab Tài khoản (gồm Mọi người + Ứng dụng + Cài đặt) ===== */
@@ -1326,35 +1382,33 @@ function toggleCell(icon,color,label,on,fn,sub){const b=cell(icon,color,label,""
 function renderMe(){
   const B=$("meBody");B.replaceChildren();
   if(!user){
-    const c=h("div","card prof");const a=h("div","av lg");a.innerHTML=ico("person");const d=h("div");d.append(h("b",null,"Chưa đăng nhập"),h("small",null,"Đăng nhập bằng số điện thoại của bạn"));c.append(a,d);B.append(c);
+    const c=h("div","card prof");const a=h("div","av lg");a.innerHTML=ico("person");const d=h("div");d.append(h("b",null,"Chưa đăng nhập"),h("small",null,"Đăng nhập bằng Gmail của bạn"));c.append(a,d);B.append(c);
     const r=h("div","row2");r.style.marginBottom="18px";r.append(btn("blue lg","person","Đăng nhập",openLogin),btn("acc lg","useradd","Đăng ký",openSignup));B.append(r);
     B.append(group(null,[cell("key","var(--purple)","Đăng nhập bằng mã ghép nối","",openCodeLogin,0,"Lấy mã 6 số từ máy đã đăng nhập")]));
   }else{
     const c=h("div","card prof"),d=h("div");d.style.minWidth="0";const nm=h("b",null,user.name);if(admin)nm.append(h("span","badge","Admin"));
     d.append(nm,h("small",null,who(user)));c.append(avatar(user.name,"lg"),d);B.append(c);
-    B.append(group("Thông tin của bạn",[cell("person","var(--blue)","Tên hiển thị",user.name,changeName),cell("phone","var(--teal)","Số điện thoại",user.phone?fmtPhone(user.phone):"Chưa có – bấm để thêm",changePhone),cell("chat","var(--green)","Gmail đăng nhập",user.email||"Chưa có – bấm để thêm",changeEmail),cell("lock","var(--orange)","Đổi mật khẩu","",changePass),cell("key","var(--purple)","Đăng nhập máy khác bằng mã","",showPair,0,"Tạo mã 6 số, không cần gõ mật khẩu")]));
+    B.append(group("Thông tin của bạn",[cell("person","var(--blue)","Tên hiển thị",user.name,changeName),cell("phone","var(--teal)","Số điện thoại",user.phone?fmtPhone(user.phone):"Chưa có – bấm để thêm",changePhone),cell("chat","var(--green)","Gmail đăng nhập",user.email||"Chưa có – bấm để thêm",changeEmail),cell("lock","var(--orange)","Đổi mật khẩu","",changePass),cell("key","var(--purple)","Đăng nhập máy khác bằng mã","",showPair,0,"Tạo mã 6 số, không cần gõ mật khẩu")],"Máy này giữ đăng nhập trong 6 tháng."));
     const others=accts.filter(a=>a.id!==user.id);
-    B.append(group("Tài khoản trên máy này",[...others.map(a=>{const b=cell("swap","var(--teal)",a.name,fmtPhone(a.login),()=>switchTo(a),0,"Bấm để chuyển sang");return b}),cell("useradd","var(--green)","Thêm tài khoản khác","",addAccount)],"Chuyển nhanh giữa các tài khoản mà không cần đăng nhập lại."));
+    B.append(group("Tài khoản trên máy này",[...others.map(a=>{const b=cell("swap","var(--teal)",a.name,a.login,()=>switchTo(a),0,"Bấm để chuyển sang");return b}),cell("useradd","var(--green)","Thêm tài khoản khác","",addAccount)],"Chuyển nhanh giữa các tài khoản mà không cần đăng nhập lại."));
   }
   B.append(group("Nghe nhạc",[
+    toggleCell("note","var(--acc)","Chạy nền (chỉ nghe âm thanh)",set.aud,()=>{switchMode();renderMe()},"Dùng cho bài .mp3 và YouTube: tắt màn hình, chuyển app vẫn nghe. Tắt để xem video"),
+    toggleCell("sun","var(--orange)","Giữ màn hình sáng",!!wl,toggleWake,"Dùng khi xem video: màn hình không tự tắt"),
     !isIOS&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
-    toggleCell("note","var(--acc)","Nghe nền (chỉ âm thanh)",set.aud,()=>{switchMode();renderMe()},"Bài YouTube phát như file nhạc nên vẫn nghe khi tắt màn hình, chuyển app. Tắt để xem video"),
     toggleCell("redo","var(--green)","Tự phát lại khi bị dừng",set.bg,()=>{set.bg=!set.bg;saveSet();keepAlive(set.bg&&wantPlay);renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
     toggleCell("skip","var(--green)","SponsorBlock",set.sb,()=>{set.sb=!set.sb;saveSet();drawSegs();renderMe()},"Tự bỏ qua đoạn tài trợ, nhắc đăng ký, đoạn không phải nhạc"),
     toggleCell("tag","var(--blue)","DeArrow",set.da,()=>{set.da=!set.da;saveSet();showNow();renderMe()},"Dùng tên bài do cộng đồng sửa, bớt “giật tít”"),
-    toggleCell("sun","var(--orange)","Giữ màn hình sáng",!!wl,toggleWake),
     cell("download","var(--teal)","Bài đã lưu trên máy",offIds.size+" bài",()=>offIds.size?setSrc({k:"off",name:"Đã lưu trên máy"}):say("Chưa lưu bài nào. Bấm ⋯ ở bài hát (file .mp3) → Lưu để nghe khi mất mạng."))
-  ],isIOS?"iPhone/iPad: hãy mở app bằng Safari (không mở từ icon ngoài màn hình) thường nghe nền tốt hơn. Nếu nhạc dừng khi khoá máy, bấm ▶ ngay trên màn hình khoá. Bài thêm bằng link file .mp3 phát nền ổn định nhất.":"Khi khoá máy nhạc vẫn chạy. Điều khiển Phát/Dừng/Bài sau ngay trên màn hình khoá hoặc thanh thông báo."));
+  ],isIOS?"iPhone/iPad: hãy mở app bằng Safari (không mở từ icon ngoài màn hình) thường chạy nền tốt hơn. Nếu nhạc dừng khi khoá máy, bấm ▶ ngay trên màn hình khoá. Bài thêm bằng link file .mp3 chạy nền ổn định nhất.":"Khi khoá máy nhạc vẫn chạy. Điều khiển Phát/Dừng/Bài sau ngay trên màn hình khoá hoặc thanh thông báo."));
   if(configured&&members.length){
     const w=h("div","gw"),g=h("div","grp card");w.append(h("h3",null,"Mọi người · "+members.length+" thành viên"));
     members.forEach(m=>{const r=h("div","mem"),d=h("div","md");d.append(h("b","el",m.n+(user&&m.id===user.id?" (bạn)":"")));const ch=h("div","chips");
       m.l.forEach(l=>ch.append(chip(l.name,l.id==="fav"?"heart":"ilist",false,()=>{if(!user||m.id!==user.id){plMode="mem";selMem=m.id;LS.set("hn.pl",{plMode,selMem})}setSrc({k:"u",u:m.id,p:l.id,name:l.id==="fav"?"Yêu thích của "+m.n:l.name,owner:m.n})},null,l.c||0)));
       glists.filter(l=>l.o===m.id).forEach(l=>ch.append(chip(l.name,"note",false,()=>{showMember(m.id);setSrc({k:"g",id:l.id,name:l.name})},null,l.c||0)));d.append(ch);r.append(avatar(m.n),d);g.append(r)});
-    w.append(g,h("p","foot","Bấm vào danh sách của ai đó để nghe. Ở trang Nghe nhạc, chọn mục “Thành viên” cũng xem được."));B.append(w);
+    w.append(g,h("p","foot","Bấm vào danh sách của ai đó để nghe. Ở Trang chủ, chọn mục “Thành viên khác” cũng xem được."));B.append(w);
   }
-  {const w=h("div","gw");w.append(h("h3",null,"Giao diện"));const t=h("div","theme3");
-   THEMES.forEach(([k,i,n])=>{const b=h("button");b.innerHTML=ico(i)+"<span></span>";b.lastChild.textContent=n;b.setAttribute("aria-pressed",set.theme===k);b.onclick=()=>setTheme(k);t.append(b)});
-   w.append(t,h("p","foot","Tự động: theo chế độ sáng/tối của điện thoại hoặc máy tính."));B.append(w)}
+  {const w=h("div","gw");w.append(h("h3",null,"Giao diện"));const t=themeSeg();w.append(t,h("p","foot","Tự động: theo chế độ sáng/tối của điện thoại hoặc máy tính. Đổi nhanh ngay ở Trang chủ."));B.append(w)}
   if(admin)B.append(group("Cài đặt admin",[cell("wifi","var(--blue)","Kiểm tra kết nối","",runHealth,0,"Máy chủ, cơ sở dữ liệu Upstash, YouTube, SponsorBlock…"),
     cell("trash","var(--red)","Xoá dữ liệu","",openPurge,0,"Theo thành viên, theo tháng, theo năm hoặc toàn bộ")]));
   const w=h("div","gw");w.append(h("h3",null,"Ứng dụng"));const A=h("div","card appc"),t=h("div","t"),im=h("img");im.src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data="+encodeURIComponent(SITE+"/");im.onerror=()=>{im.onerror=null;im.src="qr.svg"};im.alt="Mã QR mở Nhac Hot";const d=h("div");
@@ -1395,7 +1449,7 @@ async function runHealth(){
       if(!j.isAdmin)R(3,"Số liệu chi tiết",j.loggedIn?"Chỉ tài khoản admin mới xem được dung lượng và số thành viên":"Đăng nhập bằng tài khoản admin để xem thêm dung lượng và số thành viên (không phải lỗi)");
     }catch(e){R(0,"Cơ sở dữ liệu",e.message)}
   }
-  try{const t0=performance.now(),j=await api("stream&v=dQw4w9WgXcQ");R(1,"Nguồn âm thanh nghe nền","Lấy được qua "+j.src+" sau "+Math.round(performance.now()-t0)+" ms")}catch(e){R(2,"Nguồn âm thanh nghe nền","Chưa lấy được lúc này – app sẽ tự phát bằng video. Có thể đổi nguồn bằng biến AUDIO_SOURCES trên Vercel")}
+  try{const t0=performance.now(),j=await api("stream&v=dQw4w9WgXcQ");R(1,"Nguồn âm thanh chạy nền","Lấy được qua "+j.src+" sau "+Math.round(performance.now()-t0)+" ms")}catch(e){R(2,"Nguồn âm thanh chạy nền","Chưa lấy được lúc này – app sẽ tự phát bằng video. Có thể đổi nguồn bằng biến AUDIO_SOURCES trên Vercel")}
   R(ytReady?1:window.YT?2:0,"Trình phát YouTube",ytReady?"Sẵn sàng":window.YT?"Đang tải…":"Không tải được (mạng chặn youtube.com?)");
   for(const[nm,u,on]of[["SponsorBlock (bỏ qua quảng cáo tài trợ)","https://sponsor.ajay.app/api/skipSegments?videoID=dQw4w9WgXcQ",set.sb],["DeArrow (sửa tên bài)","https://sponsor.ajay.app/api/branding?videoID=dQw4w9WgXcQ",set.da]]){
     try{const r=await tfetch(u,6000),ok=r.ok||r.status===404;R(ok?1:2,nm,ok?"Kết nối được · "+(on?"đang bật":"đang tắt trong cài đặt"):"Máy chủ cộng đồng báo lỗi "+r.status+" – thử lại sau")}
@@ -1492,7 +1546,7 @@ function adminAdd(){formSheet({title:"Thêm thành viên",btn:"Tạo tài khoả
     if(v.phone&&!okPhone(normPhone(v.phone)))throw Error("Số điện thoại chưa đúng (10 số, bắt đầu bằng số 0).");await api("aadd",{name:v.name,email:v.email,phone:v.phone,password:v.pass});await loadAdmin();loadMembers();say("Đã tạo tài khoản cho "+v.name+".")}})}
 function adminSetPass(u){formSheet({title:"Đặt lại mật khẩu",btn:"Lưu mật khẩu mới",note:u.name+" sẽ phải đăng nhập lại bằng mật khẩu mới trên mọi máy.",
   fields:[{id:"pass",label:"Mật khẩu mới (ít nhất 4 ký tự)",type:"text",ph:"Ví dụ: 1234"}],
-  fn:async v=>{if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");const j=await api("apass",{id:u.id,password:v.pass});resets=resets.filter(x=>x.id!==u.id);if(j.tok&&user)remember(user,j.tok);else accts=accts.filter(a=>a.id!==u.id),LS.set("hn.accts",accts);await loadAdmin();say("Đã đặt lại mật khẩu cho "+u.name+".")}})}
+  fn:async v=>{if(v.pass.length<4)throw Error("Mật khẩu tối thiểu 4 ký tự.");const j=await api("apass",{id:u.id,password:v.pass});resets=resets.filter(x=>x.id!==u.id);if(j.tok&&user)remember(user,j.tok);else{accts=accts.filter(a=>a.id!==u.id);LS.set("hn.accts",accts)}await loadAdmin();say("Đã đặt lại mật khẩu cho "+u.name+".")}})}
 function adminReset(u){confirmSheet("Đặt mật khẩu của "+u.name+" về "+RESET_PW+"?","Họ sẽ phải đăng nhập lại bằng "+RESET_PW+" và được nhắc đổi mật khẩu mới.","Đặt về "+RESET_PW,async()=>{
   try{const j=await api("apass",{id:u.id,reset:true});if(j.tok&&user)remember(user,j.tok);resets=resets.filter(x=>x.id!==u.id);await loadAdmin();say("Đã đặt mật khẩu của "+u.name+" về "+RESET_PW+".")}catch(e){err(e.message)}},"lock")}
 function adminDel(u){confirmSheet("Xoá "+u.name+"?","Tài khoản và "+u.songs+" bài cá nhân sẽ bị xoá vĩnh viễn. Bài họ đã thêm vào danh sách chung vẫn giữ lại.","Xoá thành viên này",async()=>{
@@ -1517,6 +1571,7 @@ async function shareApp(){
 /* ===== Khởi động ===== */
 async function init(){
   applyTheme();buildNav();
+  if(!user){plMode="mem";selMem=""}
   const qs=new URLSearchParams(location.search);
   if(qs.get("g"))src={k:"g",id:qs.get("g"),name:""};else if(qs.get("u")&&qs.get("p"))src={k:"u",u:qs.get("u"),p:qs.get("p"),name:"",owner:""};
   if(qs.toString()){history.replaceState(null,"",location.pathname);tab="home"}
@@ -1524,13 +1579,14 @@ async function init(){
   if(set.wl&&"wakeLock" in navigator)lockOn();
   render();
   await loadMe();
+  if(!user){plMode="mem";selMem=""}
   if(!configured){render();return}
   await loadGL();render();loadItems();loadMembers();if(admin)loadAdmin();
 }
 init();
 setInterval(()=>{ // đồng bộ mỗi phút khi trang đang mở
   if(document.hidden||inflight||!configured||document.querySelector("dialog[open]"))return;
-  if(tab==="home")loadItems();else if(tab==="me")loadMembers();else if(tab==="admin")loadAdmin();
+  if(tab==="home"){loadItems();loadMembers()}else if(tab==="me")loadMembers();else if(tab==="admin")loadAdmin();
 },60000);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>

@@ -1,10 +1,10 @@
-// api/app.js – Nhạc Của Tui – "cầu nối" trên Vercel: tài khoản (tên đăng nhập = số điện thoại) + danh sách phát, lưu trong Upstash Redis.
+// api/app.js – Nhac Hot – "cầu nối" trên Vercel: tài khoản (Gmail / số điện thoại) + danh sách phát, lưu trong Upstash Redis.
 // Biến môi trường (Vercel → Settings → Environment Variables):
 //   UPSTASH_REDIS_REST_URL / _TOKEN   (hoặc KV_REST_API_URL / KV_REST_API_TOKEN) – Vercel tự thêm khi nối Upstash
-//   ADMIN_PHONE                       NÊN ĐẶT: số điện thoại của admin (ví dụ 0901234567)
-//   ADMIN_EMAIL                       tuỳ chọn: email admin của bản cũ (vẫn được tính là admin)
-//                                     (không đặt cả hai thì người tạo tài khoản đầu tiên sau khi cập nhật sẽ là admin)
+//   ADMIN_EMAIL / ADMIN_PASSWORD      tuỳ chọn: email + mật khẩu admin (mặc định ducanhitpt@gmail.com)
+//   ADMIN_PHONE                       tuỳ chọn: một số điện thoại cũng được làm admin
 //   SESSION_SECRET                    tuỳ chọn: chuỗi bí mật (không đặt thì tự suy ra từ token Upstash). Đừng đổi sau khi đã dùng.
+//   AUDIO_SOURCES                     tuỳ chọn: nguồn Piped/Invidious để nghe nền và tìm bài trên YouTube
 //   DB_LIMIT_MB / CMD_LIMIT           tuỳ chọn: hạn mức dung lượng (256 MB) và số lệnh/tháng (500000) của gói Free
 const crypto = require("crypto");
 const E = process.env;
@@ -29,9 +29,10 @@ const ENV_PHONE = E.ADMIN_PHONE ? normPhone(E.ADMIN_PHONE) : "";
 const ENV_EMAIL = cleanEmail(E.ADMIN_EMAIL || "ducanhitpt@gmail.com");
 const DEF_PASS_HASH = "f9a94e2cf4d26650a3b21edf50292e0d:b506f6c301aea42f6315840174870cc78c8bf1b3b4cc54db50817587a5947ab54a7fc0403a219ad7d932ddded261fe2bb3f92941d33de2381b052178e8b91954";
 const RESET_PW = "123"; // mật khẩu mặc định khi admin đặt lại cho thành viên
+const SESSION_DAYS = 180; // phiên đăng nhập giữ 6 tháng
 const isAdmin = (id, U, aid) => (ENV_PHONE && U.phone === ENV_PHONE) || (!!U.email && U.email === ENV_EMAIL) || (!!aid && aid === id);
 
-// Nguồn lấy luồng ÂM THANH của bài YouTube để nghe nền (như file mp3). Đổi được bằng biến AUDIO_SOURCES trên Vercel,
+// Nguồn lấy luồng ÂM THANH của bài YouTube để nghe nền (như file mp3), và để tìm bài trên YouTube. Đổi được bằng biến AUDIO_SOURCES trên Vercel,
 // dạng "piped:https://...,inv:https://..." (Piped / Invidious là các trang xem YouTube mã nguồn mở).
 const AUDIO_SRC = (E.AUDIO_SOURCES || "piped:https://pipedapi.kavin.rocks,piped:https://pipedapi.adminforge.de,piped:https://api.piped.private.coffee,piped:https://pipedapi.leptons.xyz,inv:https://inv.nadeko.net,inv:https://invidious.nerdvpn.de,inv:https://yewtu.be,inv:https://invidious.privacyredirect.com")
   .split(",").map(x => x.trim()).filter(Boolean);
@@ -40,10 +41,16 @@ async function getJson(u, ms) {
   try { const r = await fetch(u, { signal: c.signal, headers: { "User-Agent": "Mozilla/5.0 NhacHot", Accept: "application/json" } }); if (!r.ok) throw new Error(String(r.status)); return await r.json(); }
   finally { clearTimeout(t); }
 }
+async function getText(u, ms) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(u, { signal: c.signal, headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36", Accept: "text/html", "Accept-Language": "vi,en;q=0.8" } }); if (!r.ok) throw new Error(String(r.status)); return (await r.text()).slice(0, 400000); }
+  finally { clearTimeout(t); }
+}
 const byRate = (x, y) => (Number(y.bitrate) || 0) - (Number(x.bitrate) || 0);
+const srcParts = s => { const i = s.indexOf(":"), kind = s.slice(0, i), base = s.slice(i + 1).replace(/\/$/, ""); return { kind, base, host: new URL(base).host }; };
 async function resolveAudio(id) {
   return Promise.any(AUDIO_SRC.map(async s => {
-    const i = s.indexOf(":"), kind = s.slice(0, i), base = s.slice(i + 1).replace(/\/$/, ""), host = new URL(base).host;
+    const { kind, base, host } = srcParts(s);
     if (kind === "piped") {
       const j = await getJson(`${base}/streams/${id}`, 7000), a = (j.audioStreams || []).filter(x => x.url); if (!a.length) throw new Error("no audio");
       const p = a.filter(x => /mp4|m4a/i.test((x.mimeType || "") + (x.format || ""))).sort(byRate)[0] || a.sort(byRate)[0];
@@ -53,6 +60,25 @@ async function resolveAudio(id) {
     const p = a.filter(x => /mp4/.test(x.type)).sort(byRate)[0] || a.sort(byRate)[0];
     return { url: p.url.startsWith("/") ? base + p.url : p.url, mime: (p.type || "").split(";")[0], src: host, dur: Number(j.lengthSeconds) || 0 };
   }));
+}
+// Tìm bài trên YouTube (qua Piped / Invidious) – dùng khi người dùng dán link NhacCuaTui / Zing MP3
+async function searchYT(q) {
+  return Promise.any(AUDIO_SRC.map(async s => {
+    const { kind, base } = srcParts(s); let out = [];
+    if (kind === "piped") {
+      const j = await getJson(`${base}/search?q=${encodeURIComponent(q)}&filter=videos`, 7000);
+      out = (j.items || []).filter(x => x.type === "stream" && /[?&]v=/.test(x.url || "")).map(x => ({ id: (x.url.match(/[?&]v=([\w-]{11})/) || [])[1], title: x.title, author: x.uploaderName || "", dur: x.duration || 0 }));
+    } else {
+      const j = await getJson(`${base}/api/v1/search?q=${encodeURIComponent(q)}&type=video`, 7000);
+      out = (Array.isArray(j) ? j : []).filter(x => x.videoId).map(x => ({ id: x.videoId, title: x.title, author: x.author || "", dur: x.lengthSeconds || 0 }));
+    }
+    out = out.filter(x => x.id && x.dur !== 0 && !(x.dur > 1200)).slice(0, 4); if (!out.length) throw new Error("empty"); return out;
+  }));
+}
+const unEnt = s => String(s || "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).trim();
+function slugName(u) { // lấy tên bài từ đường dẫn kiểu /bai-hat/ten-bai-ca-si.abc123.html
+  try { const seg = new URL(u).pathname.split("/").filter(Boolean), i = seg.findIndex(x => /bai-hat|song|video/i.test(x)), s = seg[i + 1] || seg[seg.length - 1] || "";
+    if (!/[-_]/.test(s)) return ""; return decodeURIComponent(s.replace(/\.[\w-]+\.html?$|\.html?$/i, "")).replace(/[-_.]+/g, " ").trim(); } catch { return ""; }
 }
 
 let used = 0; // số lệnh Redis đã dùng trong tháng (ước tính)
@@ -74,7 +100,7 @@ const okPass = p => { p = String(p || ""); if (p.length < 4) throw httpErr(400, 
 const setPass = (U, p) => { U.pass = hash(p); U.pw = enc(p); U.sv = (U.sv || 0) + 1; delete U.rec; delete U.mc; delete U.dflt; };
 const sign = v => crypto.createHmac("sha256", SECRET).update(v).digest("base64url");
 const cookie = (res, c) => res.setHeader("Set-Cookie", [].concat(res.getHeader("Set-Cookie") || [], c));
-const setSession = (res, uid, v) => { const p = Buffer.from(JSON.stringify({ u: uid, v: v || 0, x: Date.now() + 30 * 864e5 })).toString("base64url"), t = `${p}.${sign(p)}`; cookie(res, `hn=${t}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`); return t; };
+const setSession = (res, uid, v) => { const p = Buffer.from(JSON.stringify({ u: uid, v: v || 0, x: Date.now() + SESSION_DAYS * 864e5 })).toString("base64url"), t = `${p}.${sign(p)}`; cookie(res, `hn=${t}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`); return t; };
 function getSession(req) { const m = (req.headers.cookie || "").match(/(?:^|;\s*)hn=([^;]+)/); return m ? parseTok(m[1]) : null; }
 function parseTok(t) {
   const [p, s] = String(t || "").split("."); if (!p || !s) return null;
@@ -97,7 +123,7 @@ async function recount(uid, pid) {
   if (l) { l.c = n; await setPub(uid, p); } return p ? p.l : [];
 }
 const clean = x => (x && ["yt", "audio"].includes(x.type) && x.ref && x.title && GENRES.includes(x.genre))
-  ? { id: sha(x.ref, "sha1").toString("hex").slice(0, 12), type: x.type, ref: String(x.ref).slice(0, 300), title: String(x.title).slice(0, 200), author: String(x.author || "").slice(0, 100), genre: x.genre, t: Date.now() } : null;
+  ? { id: sha(x.ref, "sha1").toString("hex").slice(0, 12), type: x.type, ref: String(x.ref).slice(0, 400), title: String(x.title).slice(0, 200), author: String(x.author || "").slice(0, 100), genre: x.genre, t: Date.now() } : null;
 const listName = n => String(n || "").trim().slice(0, 40);
 const pubUser = (id, U) => ({ id, name: U.name, phone: U.phone || "", email: U.email || "", mc: !!(U.mc || U.dflt) });
 
@@ -182,6 +208,21 @@ module.exports = async (req, res) => {
       try { const r = await resolveAudio(v); await redis([["SET", key, JSON.stringify(r), "EX", 3000]]); return send(200, r); }
       catch (e) { await redis([["SET", key, "x", "EX", 300]]); throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); }
     }
+    if (a === "find") { // link NhacCuaTui / Zing MP3 → lấy tên bài + ca sĩ (từ thẻ tiêu đề công khai của trang) → tìm bản YouTube tương ứng
+      const u = String(q.url || "").trim().slice(0, 600); let U_; try { U_ = new URL(u); } catch { throw httpErr(400, "Link chưa đúng."); }
+      if (!/(^|\.)(nhaccuatui\.(com|vn)|zingmp3\.vn)$/i.test(U_.hostname)) throw httpErr(400, "Chỉ hỗ trợ link bài hát NhacCuaTui hoặc Zing MP3.");
+      const key = "hn:find:" + sha(U_.origin + U_.pathname, "sha1").toString("hex").slice(0, 20), [c] = await redis([["GET", key]]); if (c) return send(200, JSON.parse(c));
+      let title = "", artist = "";
+      try {
+        const html = await getText(U_.origin + U_.pathname, 8000), m = html.match(/<meta[^>]+property=["']og:title["'][^>]*content=["']([^"']+)/i) || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*property=["']og:title/i) || html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        if (m) { const parts = unEnt(m[1]).split(/\s+[|]\s+/)[0].split(/\s+-\s+/).filter(x => !/mp3|lyric|lời bài hát|nhaccuatui|zing/i.test(x)); title = parts[0] || ""; artist = parts.slice(1).join(", "); }
+      } catch { }
+      if (!title) title = slugName(u);
+      if (!title) throw httpErr(404, "Không đọc được tên bài từ link này. Hãy dán link YouTube của bài đó.");
+      let yt = []; try { yt = await searchYT((title + " " + artist).trim()); } catch { }
+      const out = { title, artist, yt, q: (title + " " + artist).trim() };
+      await redis([["SET", key, JSON.stringify(out), "EX", yt.length ? 7 * 86400 : 600]]); return send(200, out);
+    }
     if (a === "lists") { // danh sách phát chung
       const [h] = await redis([["HGETALL", GL]]), out = [];
       for (let i = 0; i < (h || []).length; i += 2) { try { out.push(JSON.parse(h[i + 1])); } catch { } }
@@ -196,7 +237,7 @@ module.exports = async (req, res) => {
       const [r] = await redis([["LRANGE", ckey(String(q.id || "").slice(0, 20)), 0, 199]]);
       return send(200, { items: (r || []).map(x => { try { return JSON.parse(x); } catch { return null; } }).filter(Boolean) });
     }
-    if (a === "mine") { // toàn bộ bài hát trong mọi danh sách của chính mình (để chia theo thể loại ở Trang chủ)
+    if (a === "mine") { // toàn bộ bài hát trong mọi danh sách của chính mình
       const m = await need(), [pv] = await redis([["HGET", PUB, m.id]]), P = pv ? JSON.parse(pv) : { l: [FAV()] };
       const r = await redis(P.l.map(l => ["HGETALL", skey(m.id, l.id)])), seen = {}, songs = [];
       r.forEach((h, k) => { for (let i = 0; i < (h || []).length; i += 2) { try { const s = JSON.parse(h[i + 1]); if (!seen[s.id]) { seen[s.id] = 1; s.from = P.l[k].id; songs.push(s); } } catch { } } });
