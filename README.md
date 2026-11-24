@@ -75,3 +75,10 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - Chế độ **YouTube** (trình phát gốc): khi rời app, app tự chuyển sang luồng âm thanh từ đúng giây đang xem; quay lại thì video chạy tiếp.
   - Đang tắt màn hình mà hết bài / bấm “Bài sau” ở màn hình khoá → bài mới vẫn phát được trong nền ở cả 3 chế độ.
   - Mở khoá quyền phát âm thanh ngay lần chạm đầu tiên (iPhone/Android cần thao tác người dùng thì mới cho phát nền về sau).
+- **24/11/2026 (bản 17)** – làm gọn, ưu tiên nghe nhạc YouTube khi khoá máy / chuyển app:
+  - Bỏ chế độ Video HQ, chọn chất lượng/codec, lượt thích/không thích. Trở lại **1 nút bật/tắt “Chạy nền”**
+    (mặc định BẬT: bài YouTube phát bằng âm thanh như file mp3 → khoá máy, mở app khác vẫn nghe; TẮT: xem video YouTube).
+  - **Phát nhanh hơn**: lấy sẵn âm thanh của bài vừa thêm, bài đầu danh sách, bài đang dở khi mở app và bài kế tiếp;
+    máy chủ nhớ link âm thanh 2 giờ.
+  - **Giữ màn hình sáng chạy được trên iPhone**: ngoài Wake Lock, app chạy thêm một đoạn video đen im lặng (cách của NoSleep)
+    để màn hình không tự tối / tự khoá.

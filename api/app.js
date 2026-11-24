@@ -220,11 +220,11 @@ module.exports = async (req, res) => {
       const [nu, ng, np, by, ad, da] = await redis([["HLEN", USERS], ["HLEN", GL], ["HLEN", PHONES], ["GET", BYTES], ["GET", ADMIN], ["HGET", USERS, uidOf(ENV_EMAIL)]]), DA = da ? JSON.parse(da) : null;
       return send(200, { ...base, counts: { users: nu, glists: ng, phones: np, mb: Math.max(0, Number(by) || 0) / 1048576, cmds: used, limitMb: LIMIT, limitCmd: CMD_LIMIT }, adminMode: ENV_PHONE ? "ADMIN_PHONE" : "ADMIN_EMAIL", adminEmail: ENV_EMAIL, adminDefaultPw: !!(DA && DA.dflt), adminEmailCreated: !!DA });
     }
-    if (a === "stream") { // luồng âm thanh để nghe nền (có lưu tạm 50 phút)
+    if (a === "stream") { // luồng âm thanh để nghe nền (như file mp3), lưu tạm 2 giờ
       const v = String(q.v || ""); if (!/^[\w-]{11}$/.test(v)) throw httpErr(400, "Mã video chưa đúng.");
       const key = "hn:st:" + v;
       if (!q.fresh) { const [c] = await redis([["GET", key]]); if (c === "x") throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); if (c) return send(200, JSON.parse(c)); }
-      try { const r = await resolveAudio(v); await redis([["SET", key, JSON.stringify(r), "EX", 3000]]); return send(200, r); }
+      try { const r = await resolveAudio(v); await redis([["SET", key, JSON.stringify(r), "EX", 7200]]); return send(200, r); } // nhớ 2 giờ → mở lại bài là phát ngay
       catch (e) { await redis([["SET", key, "x", "EX", 300]]); throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); }
     }
     if (a === "video") { // video chất lượng cao để phát bằng trình phát của app (lưu tạm 50 phút)
