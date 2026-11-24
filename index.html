@@ -138,19 +138,20 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .ctl .md{width:46px;height:46px;display:grid;place-items:center;font-size:24px;border-radius:50%}
 @keyframes pulse{50%{transform:scale(1.12);box-shadow:0 0 0 10px rgba(255,45,117,.25)}}.ctl .pl.pulse{animation:pulse 1s ease-in-out infinite}
 .ctl .pl{width:58px;height:58px;border-radius:50%;font-size:26px;background:var(--gPink);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(255,45,117,.32)}
-.tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;margin-top:6px;border-top:1px solid var(--sep);padding-top:6px}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-top:6px;border-top:1px solid var(--sep);padding-top:6px}
 .tools button{display:grid;justify-items:center;gap:2px;padding:5px 0 4px;border-radius:12px;font-size:10px;font-weight:600;color:var(--tx2);min-width:0}
 .tools button svg{font-size:17px;color:var(--tc,var(--tx))}
 .tools button b{font-size:12.5px;font-weight:700;color:var(--tc,var(--tx));line-height:17px;height:17px}
 .tools button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools button.on{background:var(--accS);color:var(--acc)}.tools button.on svg,.tools button.on b{color:var(--acc)}
-@media(min-width:430px){.tools{grid-template-columns:repeat(7,minmax(0,1fr))}}
+@media(min-width:430px){.tools{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .segs b{position:absolute;top:-1px;width:2px;height:6px;background:var(--bg);border-radius:1px}
 /* chế độ: giữ sáng + chạy nền (có ghi chú) */
 .modes{margin-top:10px;padding:2px 0;border-radius:18px;overflow:hidden}
 .mrow{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;text-align:left;position:relative}
 .mrow:active{transform:none;background:var(--fill)}
 .mrow+.mrow::before{content:"";position:absolute;top:0;left:48px;right:0;height:1px;background:var(--sep);transform:scaleY(.6)}
+.tip{margin:8px 10px 6px;padding:10px 12px;border-radius:14px;background:rgba(255,149,0,.12);display:grid;gap:6px;font-size:12.5px}.tip b{font-size:14px;color:var(--orange)}.tip p{margin:0;color:var(--tx);line-height:1.45}.tip .btn{justify-self:start;min-height:30px;font-size:12.5px}
 .mrow .mt{flex:1;min-width:0;display:grid;gap:1px}
 .mrow .mt b{font-size:14px;font-weight:600}
 .mrow .mt small{font-size:11.5px;color:var(--tx2);line-height:1.35}
@@ -841,8 +842,11 @@ function renderHome(){
 function renderModes(){ // các chế độ hay dùng, có ghi chú rõ ràng ngay ở trang chủ
   const M=$("modes");if(!M)return;M.replaceChildren();
   const row=(icon,color,title,sub,on,fn)=>{const b=h("button","mrow"),ci=h("span","ci"),t=h("span","mt");ci.innerHTML=ico(icon);ci.style.setProperty("--c",color);t.append(h("b",null,title),h("small",null,sub));b.append(ci,t,h("span","sw"+(on?" on":"")));b.setAttribute("role","switch");b.setAttribute("aria-checked",!!on);b.onclick=fn;return b};
+  if(!set.tipLock&&matchMedia("(pointer:coarse)").matches){ // hướng dẫn chỉnh máy 1 lần để nhạc không dừng giữa chừng
+    const t=h("div","tip");t.append(h("b",null,"Để nhạc không bị dừng giữa chừng"),h("p",null,isIOS?"iPhone tự khoá màn hình là video YouTube dừng. Vào Cài đặt → Màn hình & Độ sáng → Tự động khoá → chọn “Không bao giờ” (hoặc 10 phút) khi nghe nhạc. Nhớ tắt Chế độ nguồn điện thấp (Cài đặt → Pin).":"Màn hình tắt là video YouTube có thể dừng. Vào Cài đặt → Màn hình → Thời gian chờ màn hình → chọn 10 phút hoặc 30 phút khi nghe nhạc. Và Cài đặt → Ứng dụng → Chrome → Pin → Không hạn chế."));
+    const ok=btn("plain","","Đã hiểu, ẩn hướng dẫn",()=>{set.tipLock=1;saveSet();renderModes()});t.append(ok);M.append(t);
+  }
   M.append(
-    row("sun","var(--orange)","Giữ màn hình sáng","Màn hình không tự tối và không tự khoá (dùng khi xem video, tốn pin hơn).",wakeOn,toggleWake),
     row("note","var(--acc)","Chạy nền (chỉ âm thanh)","Nhạc .mp3 luôn chạy nền được (khoá máy, mở app khác vẫn nghe). Video YouTube KHÔNG chạy nền được – bật mục này để app thử phát bài YouTube bằng âm thanh (có lúc không lấy được).",set.aud,switchMode),
     h("p","foot",isIOS?"iPhone: mở bằng Safari chạy nền tốt nhất; nếu bị dừng, bấm ▶ ngay trên màn hình khoá.":"Điều khiển Phát/Dừng/Bài sau ngay trên màn hình khoá hoặc thanh thông báo."));
 }
@@ -1165,9 +1169,8 @@ function drawTools(){
     tbtn("tSleep","moon",sleepEnd?"Hết bài":sleepAt?rem+" phút":"Hẹn giờ","var(--orange)",openSleep),
     tbtn("tQueue","queue","Hàng đợi","var(--green)",openQueue),
     tbtn("tPip","pip",pipWin?"Đóng nổi":"Cửa sổ","var(--teal)",openPip),
-    tbtn("tMode",set.aud?"note":"full",set.aud?"Chạy nền":"Video","var(--acc)",switchMode),
-    tbtn("tWake","sun",wakeOn?"Đang sáng":"Giữ sáng","var(--orange)",toggleWake));
-  [["tMode",set.aud],["tRate",S.rate!=1],["tCC",set.cc>0],["tSleep",!!sleepAt||sleepEnd],["tPip",!!pipWin],["tWake",wakeOn]].forEach(([i,on])=>$(i).classList.toggle("on",on));
+    tbtn("tMode","note",set.aud?"Nền: bật":"Nền: tắt","var(--acc)",switchMode));
+  [["tMode",set.aud],["tRate",S.rate!=1],["tCC",set.cc>0],["tSleep",!!sleepAt||sleepEnd],["tPip",!!pipWin]].forEach(([i,on])=>$(i).classList.toggle("on",on));
   if(!pipOk)$("tPip").title="Mở cách dùng cửa sổ nổi";
   renderModes();
 }
@@ -1294,7 +1297,7 @@ async function playAudio(it,at){
 function doPlay(){const it=curItem();if(!it)return toggle();wantPlay=true;keepAlive(isYT(it));if(!loaded||viaAudio&&!auReal)return play(it.id,S.pos,true);if(isYT(it)){if(ytReady)yt.playVideo()}else au.play().catch(()=>{if(viaAudio)reAud(it,S.pos,true)})}
 function doPause(){wantPlay=false;keepAlive(false);try{ytReady&&yt.pauseVideo()}catch(e){}au.pause()}
 function toggle(){const it=curItem();if(!it){if(visible().length)return playList(S.shuffle);if(queue.length)return play(queue[0].id);return say("Hãy chọn một bài để nghe.")}playing?doPause():doPlay()}
-function setPlaying(p){playing=p;if(p)$("bPl").classList.remove("pulse");drawBtns();pipUpd();document.querySelectorAll(".eq").forEach(e=>e.classList.toggle("paused",!p));if("mediaSession" in navigator)navigator.mediaSession.playbackState=p?"playing":"paused"}
+function setPlaying(p){playing=p;autoWake(p);if(p)$("bPl").classList.remove("pulse");drawBtns();pipUpd();document.querySelectorAll(".eq").forEach(e=>e.classList.toggle("paused",!p));if("mediaSession" in navigator)navigator.mediaSession.playbackState=p?"playing":"paused"}
 function pick(dir){
   const v=queue;if(!v.length)return null;const i=v.findIndex(x=>x.id===S.cur);
   if(S.shuffle&&dir>0){let pool=v.filter(x=>!played.has(x.id));
@@ -1418,7 +1421,7 @@ document.addEventListener("keydown",e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){if(wantPlay&&set.bg&&!set.aud)ytToBg();if(wantPlay&&set.bg)[400,1200].forEach(ms=>setTimeout(()=>{const it=curItem();if(!wantPlay||!it||!document.hidden)return;if(isYT(it)){try{if(ytReady&&yt.getPlayerState()===YT.PlayerState.PAUSED)yt.playVideo()}catch(e){}}else if(auReal&&au.paused)au.play().catch(()=>{})},ms))}
   else{lastShow=Date.now();bgToYt();if(wantPlay&&!playing)[300,1200].forEach(ms=>setTimeout(()=>{if(wantPlay&&!playing)doPlay()},ms));
-    setTimeout(()=>{if(wantPlay&&!playing){$("bPl").classList.add("pulse");say("Bấm ▶ để nghe tiếp")}},2600);if(set.wl)lockOn();
+    setTimeout(()=>{if(wantPlay&&!playing){$("bPl").classList.add("pulse");say("Bấm ▶ để nghe tiếp")}},2600);autoWake(playing||wantPlay);
     if(!inflight&&configured)loadMe().then(()=>{loadGL();loadItems()})}
 });
 addEventListener("offline",()=>{if(wantPlay)say("Mất mạng – nhạc sẽ tự phát tiếp khi có sóng lại.")});
@@ -1429,27 +1432,12 @@ addEventListener("online",()=>{
 });
 addEventListener("pointerdown",function unlock(){removeEventListener("pointerdown",unlock,true);if(auReal||!au.paused)return;try{au.src=kaUrl();au.loop=true;const p=au.play();if(p)p.then(()=>{if(!auReal){au.pause();au.removeAttribute("src")}}).catch(()=>{})}catch(e){}},true);
 /* --- giữ màn hình sáng --- */
-let wl=null,wakeOn=false,nsv=null;
-const NOSLEEP="data:video/mp4;base64,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";
-function noSleep(on){ // iPhone: video đen 12 giây (có rãnh âm thanh câm) chạy liên tục → Safari giữ màn hình sáng.
-  // Không dùng loop vì Safari không giữ sáng cho video lặp tự động – app tự tua lại trước khi hết.
-  try{if(on){if(!nsv){nsv=document.createElement("video");nsv.setAttribute("playsinline","");nsv.setAttribute("webkit-playsinline","");nsv.setAttribute("muted","");nsv.setAttribute("title","Nhac Hot");nsv.muted=true;nsv.preload="auto";nsv.src=NOSLEEP;nsv.setAttribute("aria-hidden","true");
-        nsv.style.cssText="position:fixed;left:0;top:0;width:2px;height:2px;pointer-events:none;z-index:1;background:#000";document.body.append(nsv);
-        nsv.addEventListener("timeupdate",()=>{if(nsv.currentTime>9)nsv.currentTime=Math.random()*.5});nsv.addEventListener("ended",()=>{if(wakeOn){nsv.currentTime=0;nsv.play().catch(()=>{})}})}
-      const p=nsv.play();return p?p.then(()=>true,()=>false):Promise.resolve(true)}
-    if(nsv)nsv.pause()}catch(e){}return Promise.resolve(false);
-}
-addEventListener("pointerdown",()=>{if(wakeOn&&nsv&&nsv.paused)nsv.play().catch(()=>{})},true); // nếu Safari lỡ dừng, chạm màn hình là chạy lại
-async function lockOn(){
-  let ok=false;
-  if("wakeLock" in navigator){try{wl=await navigator.wakeLock.request("screen");ok=true;wl.addEventListener("release",()=>{wl=null;if(wakeOn&&!document.hidden)lockOn()})}catch(e){wl=null}}
-  if(isIOS||!ok)ok=(await noSleep(true))||ok; // iPhone (nhất là khi mở từ icon ngoài màn hình): Wake Lock hay không ăn → dùng thêm video im lặng
-  wakeOn=ok;drawTools();return ok;
-}
-async function toggleWake(){
-  if(wakeOn){set.wl=false;saveSet();wakeOn=false;try{wl&&await wl.release()}catch(e){}wl=null;noSleep(false);say("Giữ màn hình sáng: TẮT.")}
-  else{const ok=await lockOn();set.wl=ok;saveSet();say(ok?"Giữ màn hình sáng: BẬT – màn hình sẽ không tự tối, không tự khoá.":"Máy không cho giữ sáng lúc này (hãy tắt Chế độ nguồn điện thấp / tiết kiệm pin rồi thử lại).")}
-  drawTools();if(tab==="me")renderMe();
+let wl=null;
+async function autoWake(on){ // không còn nút: đang phát nhạc thì app tự xin máy giữ sáng; máy không cho thì thôi, không báo lỗi
+  try{
+    if(on&&!wl&&!document.hidden&&"wakeLock" in navigator){wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",()=>{wl=null})}
+    else if(!on&&wl){const w=wl;wl=null;await w.release()}
+  }catch(e){wl=null}
 }
 
 /* ===== Tab Tài khoản (gồm Mọi người + Ứng dụng + Cài đặt) ===== */
@@ -1474,7 +1462,6 @@ function renderMe(){
   }
   B.append(group("Nghe nhạc",[
     toggleCell("note","var(--acc)","Chạy nền (chỉ âm thanh)",set.aud,()=>{switchMode();renderMe()},"Nhạc .mp3 luôn chạy nền. Video YouTube không chạy nền được – bật để app thử phát bài YouTube bằng âm thanh"),
-    toggleCell("sun","var(--orange)","Giữ màn hình sáng",wakeOn,toggleWake,"Màn hình không tự tối, không tự khoá"),
     !isIOS&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
     toggleCell("redo","var(--green)","Tự phát lại khi bị dừng",set.bg,()=>{set.bg=!set.bg;saveSet();keepAlive(set.bg&&wantPlay);renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
     toggleCell("skip","var(--green)","SponsorBlock",set.sb,()=>{set.sb=!set.sb;saveSet();drawSegs();renderMe()},"Tự bỏ qua đoạn tài trợ, nhắc đăng ký, đoạn không phải nhạc"),
@@ -1657,7 +1644,6 @@ async function init(){
   const fromLink=!!src&&!!(qs.get("g")||qs.get("u"));
   if(qs.toString()){history.replaceState(null,"",location.pathname);tab="home"}
   if(src)items=LS.get("hn.l."+srcKey())||[];
-  if(set.wl)lockOn();
   render();
   await loadMe();
   if(!user){plMode="mem";selMem=""}

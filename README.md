@@ -89,3 +89,9 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
     bấm dừng). Nếu máy không cho tự phát, nút ▶ nhấp nháy kèm lời nhắc “Bấm ▶ để nghe tiếp”.
   - **Giữ màn hình sáng trên iPhone**: video giữ sáng không còn để “lặp tự động” (Safari bỏ qua video lặp) – dùng video 12 giây
     có rãnh âm thanh câm, app tự tua lại; chạm màn hình là chạy lại nếu Safari lỡ dừng.
+- **25/11/2026 (bản 19)**:
+  - **Bỏ nút “Giữ màn hình sáng”** (trên iPhone web app không chặn được việc máy tự khoá). Thay vào đó app **tự xin giữ sáng
+    âm thầm khi đang phát** (Wake Lock của máy – Android và iPhone đời mới có tác dụng), dừng phát thì tự nhả.
+  - Trang chủ có khung **“Để nhạc không bị dừng giữa chừng”** hướng dẫn chỉnh Tự động khoá / Thời gian chờ màn hình
+    (bấm “Đã hiểu, ẩn hướng dẫn” để ẩn).
+  - Nút công cụ ghi rõ “Nền: bật / Nền: tắt”.
