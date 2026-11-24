@@ -61,6 +61,25 @@ async function resolveAudio(id) {
     return { url: p.url.startsWith("/") ? base + p.url : p.url, mime: (p.type || "").split(";")[0], src: host, dur: Number(j.lengthSeconds) || 0 };
   }));
 }
+// Video chất lượng cao (144p → 4K) + âm thanh riêng + chương (chapters) – để phát bằng trình phát của app (cửa sổ nổi thật, chọn chất lượng/codec)
+async function resolveVideo(id) {
+  return Promise.any(AUDIO_SRC.map(async s => {
+    const { kind, base, host } = srcParts(s);
+    if (kind === "piped") {
+      const j = await getJson(`${base}/streams/${id}`, 8000), a = (j.audioStreams || []).filter(x => x.url); if (!a.length) throw new Error("no audio");
+      const au = a.filter(x => /mp4|m4a/i.test((x.mimeType || "") + (x.format || ""))).sort(byRate)[0] || a.sort(byRate)[0];
+      const videos = (j.videoStreams || []).filter(x => x.url && x.videoOnly).map(x => ({ url: x.url, h: Number(x.height) || parseInt(x.quality) || 0, fps: Number(x.fps) || 30, mime: String(x.mimeType || "video/mp4").split(";")[0], codec: String(x.codec || "") }));
+      if (!videos.length) throw new Error("no video");
+      return { audio: { url: au.url, mime: (au.mimeType || "").split(";")[0] }, videos, chapters: (j.chapters || []).map(c => ({ t: c.title, s: Number(c.start) || 0 })), src: host, dur: j.duration || 0 };
+    }
+    const j = await getJson(`${base}/api/v1/videos/${id}?local=true&fields=adaptiveFormats,lengthSeconds`, 8000), af = (j.adaptiveFormats || []).filter(x => x.url);
+    const fix = u => u.startsWith("/") ? base + u : u, a = af.filter(x => /^audio\//.test(x.type || ""));
+    const au = a.filter(x => /mp4/.test(x.type)).sort(byRate)[0] || a.sort(byRate)[0]; if (!au) throw new Error("no audio");
+    const videos = af.filter(x => /^video\//.test(x.type || "")).map(x => ({ url: fix(x.url), h: parseInt(x.resolution || x.qualityLabel) || 0, fps: Number(x.fps) || 30, mime: x.type.split(";")[0], codec: (x.type.match(/codecs="([^"]+)"/) || [])[1] || "" }));
+    if (!videos.length) throw new Error("no video");
+    return { audio: { url: fix(au.url), mime: au.type.split(";")[0] }, videos, chapters: [], src: host, dur: Number(j.lengthSeconds) || 0 };
+  }));
+}
 // Tìm bài trên YouTube (qua Piped / Invidious) – dùng khi người dùng dán link NhacCuaTui / Zing MP3
 async function searchYT(q) {
   return Promise.any(AUDIO_SRC.map(async s => {
@@ -207,6 +226,13 @@ module.exports = async (req, res) => {
       if (!q.fresh) { const [c] = await redis([["GET", key]]); if (c === "x") throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); if (c) return send(200, JSON.parse(c)); }
       try { const r = await resolveAudio(v); await redis([["SET", key, JSON.stringify(r), "EX", 3000]]); return send(200, r); }
       catch (e) { await redis([["SET", key, "x", "EX", 300]]); throw httpErr(502, "Bài này chưa lấy được âm thanh nghe nền."); }
+    }
+    if (a === "video") { // video chất lượng cao để phát bằng trình phát của app (lưu tạm 50 phút)
+      const v = String(q.v || ""); if (!/^[\w-]{11}$/.test(v)) throw httpErr(400, "Mã video chưa đúng.");
+      const key = "hn:vs:" + v;
+      if (!q.fresh) { const [c] = await redis([["GET", key]]); if (c === "x") throw httpErr(502, "Bài này chưa lấy được video chất lượng cao."); if (c) return send(200, JSON.parse(c)); }
+      try { const r = await resolveVideo(v); await redis([["SET", key, JSON.stringify(r), "EX", 3000]]); return send(200, r); }
+      catch (e) { await redis([["SET", key, "x", "EX", 300]]); throw httpErr(502, "Bài này chưa lấy được video chất lượng cao."); }
     }
     if (a === "find") { // link NhacCuaTui / Zing MP3 → lấy tên bài + ca sĩ (từ thẻ tiêu đề công khai của trang) → tìm bản YouTube tương ứng
       const u = String(q.url || "").trim().slice(0, 600); let U_; try { U_ = new URL(u); } catch { throw httpErr(400, "Link chưa đúng."); }

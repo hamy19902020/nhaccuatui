@@ -60,3 +60,18 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - Admin: **Quản trị → Tên danh sách phát → Tạo tên danh sách mới** (hoặc ô “Tạo tên danh sách” ở trang chủ). Đổi tên thì
     mọi thành viên thấy tên mới. Danh sách cùng tên có cùng màu; thể loại bài tự theo tên danh sách.
   - Máy chủ: `plnew` lại chỉ dành cho admin; `add` tự tạo bản riêng khi thành viên chọn một danh sách admin đã tạo.
+- **24/11/2026 (bản 15)** – tính năng kiểu NewTube (ứng dụng YouTube nâng cao cho Android) làm cho web:
+  - **Chế độ phát** (Trang chủ, nút công cụ, hoặc Tài khoản): **Nghe nền** (chỉ âm thanh) · **Video HQ** · **YouTube** (trình phát gốc).
+  - **Video HQ**: hình lấy từ luồng video riêng, tiếng lấy từ luồng âm thanh nghe nền, app tự giữ khớp nhau.
+    Chất lượng **144p → 4K, mặc định 1080p** (nút **Chất lượng**). **Chọn codec**: Tự động / H.264 / VP9 / AV1
+    (app báo codec nào máy không hỗ trợ). Tắt màn hình: hình tạm dừng cho đỡ tốn dữ liệu, **tiếng vẫn chạy**.
+  - **Cửa sổ nổi thật** (Picture-in-Picture) cho Video HQ trên Android Chrome, iPhone/iPad Safari và máy tính.
+  - **Chương (chapters)**: vạch chương trên thanh tua + tên chương đang phát.
+  - **Return YouTube Dislike**: hiện lượt thích / không thích (tắt được trong Tài khoản).
+  - Tự phát tiếp khi có mạng lại, SponsorBlock, DeArrow… vẫn giữ như cũ và chạy cả với Video HQ.
+  - Máy chủ có thêm: `video` (danh sách chất lượng + codec + chương, lưu tạm 50 phút).
+- **24/11/2026 (bản 16)** – **chạy nền cho mọi video YouTube** (giống Background Playback của NewTube):
+  - Mặc định chế độ **Video HQ**: tắt màn hình / chuyển app → video vẫn chạy tiếp (nghe tiếng), mở lại → hình chạy tiếp đúng chỗ.
+  - Chế độ **YouTube** (trình phát gốc): khi rời app, app tự chuyển sang luồng âm thanh từ đúng giây đang xem; quay lại thì video chạy tiếp.
+  - Đang tắt màn hình mà hết bài / bấm “Bài sau” ở màn hình khoá → bài mới vẫn phát được trong nền ở cả 3 chế độ.
+  - Mở khoá quyền phát âm thanh ngay lần chạm đầu tiên (iPhone/Android cần thao tác người dùng thì mới cho phát nền về sau).
