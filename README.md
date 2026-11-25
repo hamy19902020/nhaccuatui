@@ -95,3 +95,10 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - Trang chủ có khung **“Để nhạc không bị dừng giữa chừng”** hướng dẫn chỉnh Tự động khoá / Thời gian chờ màn hình
     (bấm “Đã hiểu, ẩn hướng dẫn” để ẩn).
   - Nút công cụ ghi rõ “Nền: bật / Nền: tắt”.
+- **25/11/2026 (bản 20) – hỗ trợ trình duyệt Cốc Cốc:**
+  - Mở app bằng **Cốc Cốc** sẽ tự hiện 2 nút nhỏ dưới trình phát: **Phát nền** và **Tự động ghim**. Trình duyệt khác thì ẩn 2 nút này
+    (trên điện thoại chỉ hiện 1 dòng gợi ý nhỏ “Nghe nền tốt hơn bằng Cốc Cốc”, bấm ✕ để ẩn).
+  - Trong Cốc Cốc app luôn phát bằng **một khung video YouTube duy nhất**, hết bài tự chuyển bằng `loadVideoById` (không tải lại trang),
+    để Cốc Cốc nhận diện và tự ghim video thành cửa sổ nổi khi vuốt về màn hình chính. Vẫn giữ điều khiển ở màn hình khoá (mediaSession).
+  - Nút **Tự động ghim** hướng dẫn: Menu (≡) → Cài đặt → Ghim & phát video trong nền → bật Tự động ghim video.
+  - Kiểm tra kết nối có thêm dòng “Trình duyệt Cốc Cốc”.

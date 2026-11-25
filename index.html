@@ -143,6 +143,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .tools button svg{font-size:17px;color:var(--tc,var(--tx))}
 .tools button b{font-size:12.5px;font-weight:700;color:var(--tc,var(--tx));line-height:17px;height:17px}
 .tools button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccbar{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--sep)}
+.ccbar .ccb{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--fill);color:var(--tx2)}
+.ccbar .ccb svg{font-size:13px}.ccbar .ccb.p{color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.ccbar.ccad{justify-content:flex-start;font-size:11.5px;color:var(--tx2)}.ccbar.ccad>span{flex:1;min-width:0}.ccbar.ccad .ib{width:26px;height:26px;font-size:11px}
 .tools button.on{background:var(--accS);color:var(--acc)}.tools button.on svg,.tools button.on b{color:var(--acc)}
 @media(min-width:430px){.tools{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .segs b{position:absolute;top:-1px;width:2px;height:6px;background:var(--bg);border-radius:1px}
@@ -490,6 +494,7 @@ dialog::backdrop{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(3px);bac
       <div class="bar"><div class="segs" id="segs"></div><input type="range" id="sk" min="0" max="1000" value="0" aria-label="Tua bài hát"><div class="times"><span id="cu">0:00</span><span class="sk10"><button id="bB10" aria-label="Lùi 10 giây">−10s</button><button id="bF10" aria-label="Tới 10 giây">+10s</button></span><span id="du">0:00</span></div></div>
       <div class="ctl"><button class="sm" id="bSh" aria-label="Trộn bài"></button><button class="md" id="bPv" aria-label="Bài trước"></button><button class="pl" id="bPl" aria-label="Phát"></button><button class="md" id="bNx" aria-label="Bài sau"></button><button class="sm" id="bRp" aria-label="Lặp lại"></button></div>
       <div class="tools" id="tools"></div>
+      <div id="ccBar" hidden></div>
      </div>
      <div class="card modes" id="modes"></div>
     </div>
@@ -568,6 +573,8 @@ const nctExp=u=>{if(!/stream\.nct\.vn/i.test(u||""))return 0;const m=String(u).m
 let S=Object.assign({shuffle:false,repeat:"all",cur:null,pos:0,curSong:null,rate:1,genre:"all"},LS.get("hn.state")||{});
 const save=()=>LS.set("hn.state",S);
 const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1;
+const isCC=/coc_coc|coccoc/i.test(navigator.userAgent)||((navigator.userAgentData&&navigator.userAgentData.brands)||[]).some(b=>/coc ?coc/i.test(b.brand));
+const isAndroid=/Android/i.test(navigator.userAgent),isMobile=isAndroid||isIOS;
 let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto",ka:!isIOS,aud:false},LS.get("hn.set")||{});set.hq=false;if(!set.m17){set.aud=false;set.m17=1;LS.set("hn.set",set)}
 const THEMES=[["light","sun","Sáng"],["dark","moon","Tối"],["auto","auto","Tự động"]];
 function applyTheme(){
@@ -792,7 +799,7 @@ function render(){
   document.body.classList.toggle("away",tab!=="home");
   $("vMe").hidden=tab!=="me";$("vAdmin").hidden=tab!=="admin";
   drawNav();renderHome();if(tab==="me")renderMe();if(tab==="admin")renderAdmin();
-  drawBtns();drawTools();showNow();
+  drawBtns();drawTools();drawCC();showNow();
 }
 
 /* ===== Nguồn danh sách: chung (admin tạo) / cá nhân / đã lưu trên máy ===== */
@@ -1201,7 +1208,7 @@ $("mOpen").onclick=()=>goTab("home");
 /* --- YouTube --- */
 window.onYouTubeIframeAPIReady=()=>{
   yt=new YT.Player("yt",{width:"100%",height:"100%",playerVars:{playsinline:1,rel:0,modestbranding:1,iv_load_policy:3,hl:"vi",cc_lang_pref:"vi",cc_load_policy:set.cc?1:0,origin:location.origin},events:{
-    onReady:()=>{ytReady=true;if(pending){const p=pending;pending=null;loadYT(p.ref,p.at)}},onStateChange:onYtState,onError:onYtError}});
+    onReady:()=>{ytReady=true;ccIframe();if(pending){const p=pending;pending=null;loadYT(p.ref,p.at)}},onStateChange:onYtState,onError:onYtError}});
 };
 const loadYT=(ref,at)=>yt.loadVideoById({videoId:ref,startSeconds:at||0});
 function onYtState(e){
@@ -1233,7 +1240,7 @@ let ka=null,kaU="";
 function kaUrl(){if(kaU)return kaU;const sr=8000,n=sr,b=new ArrayBuffer(44+n*2),v=new DataView(b),w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
   w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);
   for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.round(90*Math.sin(2*Math.PI*20*i/sr)),true);return kaU=URL.createObjectURL(new Blob([b],{type:"audio/wav"}))}
-function keepAlive(on){try{if(on&&set.ka&&set.bg&&!isIOS){if(!ka){ka=new Audio(kaUrl());ka.loop=true;ka.setAttribute("playsinline","")}if(ka.paused)ka.play().catch(()=>{})}else if(ka&&!ka.paused)ka.pause()}catch(e){}}
+function keepAlive(on){try{if(on&&set.ka&&set.bg&&!isIOS&&!isCC){if(!ka){ka=new Audio(kaUrl());ka.loop=true;ka.setAttribute("playsinline","")}if(ka.paused)ka.play().catch(()=>{})}else if(ka&&!ka.paused)ka.pause()}catch(e){}}
 let bufT=0,resumeT=0;
 function watchdog(it){ // tự cứu khi bị dừng/kẹt: phát lại khi trình duyệt tự dừng lúc tắt màn hình, tải lại khi kẹt quá lâu
   if(wantPlay&&viaAudio&&auReal&&it){ // nghe nền: tự phát lại / lấy lại âm thanh khi kẹt
@@ -1254,7 +1261,7 @@ function auSet(url,at,ref){auReal=true;au.loop=false;au.dataset.ref=ref||"";au.s
 function auHold(){auReal=false;au.loop=true;au.src=kaUrl();au.play().catch(()=>{})} // giữ quyền phát (iPhone) trong lúc chờ lấy âm thanh
 let handoff=false,lastShow=0; // lastShow: lúc vừa mở màn hình / mở khoá // đang chạy nền thay cho trình phát YouTube
 function ytToBg(){
-  const it=curItem();if(handoff||!it||!isYT(it)||!wantPlay||!set.bg||!document.hidden)return;
+  const it=curItem();if(isCC||handoff||!it||!isYT(it)||!wantPlay||!set.bg||!document.hidden)return;
   let t=S.pos;try{t=yt.getCurrentTime()||t}catch(e){}
   const c=stCache[it.ref];if(!c||Date.now()-c.t>100*60000)return void getStream(it.ref).then(()=>ytToBg()).catch(()=>{});
   handoff=true;viaAudio=true;try{yt.pauseVideo()}catch(e){}auSet(c.url,t,it.ref);showNow();
@@ -1283,7 +1290,7 @@ function play(id,at=0,nopush){
   if(!nopush&&S.cur&&S.cur!==id)hist.push(S.cur);
   counted.delete(id);handoff=false;loaded=true;wantPlay=true;netWait=false;keepAlive(false);stopAll();if(auRetry!==id)auRetry="";S.cur=id;S.curSong=it;played.add(id);S.pos=at;ccDone="";
   if(it.type==="yt"){
-    if(!set.aud&&document.hidden&&set.bg){viaAudio=true;handoff=true;auHold();playYtAudio(it,at)}
+    if(!set.aud&&document.hidden&&set.bg&&!isCC){viaAudio=true;handoff=true;auHold();playYtAudio(it,at)}
     else if(set.aud){viaAudio=true;const c=stCache[it.ref];if(c&&Date.now()-c.t<100*60000){auSet(c.url,at,it.ref);prefetchNext()}else{auHold();playYtAudio(it,at)}}
     else startVideo(it,at);
     if(set.sb)sbGet(it.ref);if(set.da)daTitle(it.ref).then(()=>{if(curItem()===it){showNow();setMedia(it)}})}
@@ -1462,7 +1469,7 @@ function renderMe(){
   }
   B.append(group("Nghe nhạc",[
     toggleCell("note","var(--acc)","Chạy nền (chỉ âm thanh)",set.aud,()=>{switchMode();renderMe()},"Nhạc .mp3 luôn chạy nền. Video YouTube không chạy nền được – bật để app thử phát bài YouTube bằng âm thanh"),
-    !isIOS&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
+    !isIOS&&!isCC&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
     toggleCell("redo","var(--green)","Tự phát lại khi bị dừng",set.bg,()=>{set.bg=!set.bg;saveSet();keepAlive(set.bg&&wantPlay);renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
     toggleCell("skip","var(--green)","SponsorBlock",set.sb,()=>{set.sb=!set.sb;saveSet();drawSegs();renderMe()},"Tự bỏ qua đoạn tài trợ, nhắc đăng ký, đoạn không phải nhạc"),
     toggleCell("tag","var(--blue)","DeArrow",set.da,()=>{set.da=!set.da;saveSet();showNow();renderMe()},"Dùng tên bài do cộng đồng sửa, bớt “giật tít”"),
@@ -1524,6 +1531,7 @@ async function runHealth(){
     catch(e){R(2,nm,"Không kết nối được lúc này (không ảnh hưởng việc nghe nhạc)")}}
   R("mediaSession" in navigator?1:2,"Điều khiển ở màn hình khoá","mediaSession" in navigator?"Hỗ trợ · phát trong nền đang "+(set.bg?"bật":"tắt"):"Trình duyệt này không hỗ trợ");
   R("wakeLock" in navigator?1:2,"Giữ màn hình sáng","wakeLock" in navigator?"Hỗ trợ":"Chưa hỗ trợ (iPhone cần iOS 16.4 trở lên)");
+  R(isCC?1:3,"Trình duyệt Cốc Cốc",isCC?"Đang mở bằng Cốc Cốc – dùng nút Phát nền + bật Tự động ghim video":"Không phải Cốc Cốc – nên mở bằng Cốc Cốc để nghe nền và tự ghim video");
   R("documentPictureInPicture" in window?1:3,"Cửa sổ nổi của app","documentPictureInPicture" in window?"Hỗ trợ":"Máy này dùng nút cửa sổ nổi có sẵn của video");
   const sw=!!(navigator.serviceWorker&&navigator.serviceWorker.controller);R(sw?1:3,"Chế độ ứng dụng (mở nhanh)",sw?"Đang hoạt động":"Sẽ bật sau lần mở thứ hai");
   R(1,"Tên miền đang dùng",location.host+(standalone?" · đang mở từ icon ngoài màn hình":""));
@@ -1619,12 +1627,49 @@ function adminReset(u){confirmSheet("Đặt mật khẩu của "+u.name+" về "
 function adminDel(u){confirmSheet("Xoá "+u.name+"?","Tài khoản và "+u.songs+" bài cá nhân sẽ bị xoá vĩnh viễn. Bài họ đã thêm vào danh sách chung vẫn giữ lại.","Xoá thành viên này",async()=>{
   try{await api("adel",{id:u.id});await loadAdmin();loadMembers();say("Đã xoá "+u.name+".")}catch(e){err(e.message)}})}
 
+/* ===== Cốc Cốc: trình duyệt tự ghim video + phát nền cho khung YouTube ===== */
+const CC_PLAY="https://play.google.com/store/apps/details?id=com.coccoc.trinhduyet",CC_IOS="https://apps.apple.com/app/id1170593919";
+function openInCC(){
+  if(isAndroid){location.href="intent://"+location.host+"/#Intent;scheme=https;package=com.coccoc.trinhduyet;S.browser_fallback_url="+encodeURIComponent(CC_PLAY)+";end";return}
+  copyText(SITE+"/","Đã sao chép link app. Mở Cốc Cốc rồi dán link vào ô địa chỉ.");
+}
+function ccGuide(){
+  const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
+  panel("Bật Tự động ghim video",isCC?"Làm 1 lần trong Cốc Cốc":"Cần mở app bằng trình duyệt Cốc Cốc",[
+    h("p","note","Bật xong, khi đang nghe mà vuốt về màn hình chính, Cốc Cốc tự bung cửa sổ video nổi và nhạc không bị ngắt."),
+    ol("Bấm biểu tượng <b>Menu (≡)</b> ở góc dưới bên phải trình duyệt Cốc Cốc.","Chọn <b>Cài đặt</b>.","Vào mục <b>Ghim &amp; phát video trong nền</b>.","Bật <b>Tự động ghim video</b>."),
+    h("p","note","Tạo icon ngoài màn hình bằng Cốc Cốc: mở app trong Cốc Cốc → bấm Menu (≡) → chọn Thêm vào màn hình chính. Icon này luôn mở app bằng Cốc Cốc."),
+    !isCC&&btn("blue wide","ext",isAndroid?"Mở app bằng Cốc Cốc":"Sao chép link để mở trong Cốc Cốc",openInCC),
+    !isCC&&btn("plain wide","download","Cài trình duyệt Cốc Cốc",()=>open(isIOS?CC_IOS:CC_PLAY,"_blank"))].filter(Boolean));
+}
+function ccPlayBg(){ // "Phát nền": phát bằng khung video YouTube (1 trình phát duy nhất) để Cốc Cốc nhận diện và tự ghim khi rời app
+  if(set.aud){set.aud=false;saveSet()}
+  const it=curItem();
+  if(!it){if(visible().length)playList(false);else return say("Hãy chọn một bài để nghe.")}
+  else if(viaAudio||!loaded)play(it.id,curTime()[0]||S.pos,true);else doPlay();
+  drawTools();drawCC();say("Đang phát. Giờ vuốt về màn hình chính – Cốc Cốc sẽ ghim video và phát tiếp.");
+}
+function ccBtn(icon,label,fn,cls){const b=h("button","ccb"+(cls?" "+cls:""));b.innerHTML=ico(icon)+"<span></span>";b.lastChild.textContent=label;b.onclick=fn;return b}
+function drawCC(){
+  const B=$("ccBar");if(!B)return;B.replaceChildren();
+  if(isCC){B.className="ccbar";B.hidden=false;B.append(ccBtn("play","Phát nền",ccPlayBg,"p"),ccBtn("pip","Tự động ghim",ccGuide));return}
+  B.hidden=!isMobile||LS.get("hn.ccHide")===1;if(B.hidden)return; // trình duyệt khác: chỉ 1 dòng gợi ý nhỏ, ẩn được
+  B.className="ccbar ccad";const t=h("span",null,"Nghe nền tốt hơn bằng Cốc Cốc");
+  const x=h("button","ib");x.innerHTML=ico("x");x.setAttribute("aria-label","Ẩn gợi ý");x.onclick=()=>{LS.set("hn.ccHide",1);drawCC()};
+  B.append(t,ccBtn(isAndroid?"ext":"copy",isAndroid?"Mở":"Sao chép link",openInCC,"p"),ccBtn("download","Cài",()=>open(isIOS?CC_IOS:CC_PLAY,"_blank")),x);
+}
+function ccIframe(){ // cho Cốc Cốc nhận diện khung video: cho phép tự phát, cửa sổ nổi, toàn màn hình
+  try{const f=yt&&yt.getIframe&&yt.getIframe();if(f){f.setAttribute("allow","autoplay; encrypted-media; picture-in-picture; fullscreen; accelerometer; gyroscope; clipboard-write; web-share");f.setAttribute("allowfullscreen","");f.title="Nhac Hot – trình phát video"}}catch(e){}
+}
+if(isCC&&!LS.get("hn.ccInit")){set.aud=false;set.ka=false;saveSet();LS.set("hn.ccInit",1)}
+
 /* ===== Cài icon + chia sẻ ===== */
 let dip=null;
 const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();dip=e});
 addEventListener("appinstalled",()=>{dip=null;say("Đã tạo icon ứng dụng.")});
 async function install(){
+  if(isCC)return panel("Tạo icon ngoài màn hình (Cốc Cốc)",null,[h("p","note","Bấm biểu tượng Menu (≡) ở góc dưới bên phải Cốc Cốc → chọn Thêm vào màn hình chính → bấm Thêm. Icon này luôn mở app bằng Cốc Cốc nên nghe nền và tự ghim video ổn định."),btn("blue wide","pip","Cách bật Tự động ghim video",ccGuide)]);
   if(dip){dip.prompt();try{await dip.userChoice}catch(e){}dip=null;return}
   const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
   panel("Tạo icon ngoài màn hình",null,[h("p","note","iPhone / iPad (Safari):"),ol("Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên lên) ở thanh dưới Safari.","Kéo xuống, chọn <b>Thêm vào MH chính</b>.","Bấm <b>Thêm</b> ở góc trên bên phải."),h("p","note","Android (Chrome):"),ol("Bấm nút <b>⋮</b> ở góc trên bên phải.","Chọn <b>Thêm vào màn hình chính</b> hoặc <b>Cài đặt ứng dụng</b>.")]);
