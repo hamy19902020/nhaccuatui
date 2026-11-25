@@ -106,3 +106,6 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - Bỏ khung “Để nhạc không bị dừng giữa chừng”.
   - Trong Cốc Cốc có 3 nút nhỏ: **Chạy nền** (phát + chỉ vào video: chạm video → bấm nút giữa trên thanh xanh để thu nhỏ),
     **Ẩn địa chỉ** (công tắc bật/tắt toàn màn hình, ẩn thanh địa chỉ), **Hướng dẫn**.
+- **25/11/2026 (bản 22):** Cốc Cốc nay dùng user-agent giống hệt Chrome nên app không tự nhận ra được → trên **Android luôn hiện
+  3 nút** Chạy nền · Ẩn địa chỉ · Hướng dẫn. Bấm “Chạy nền” lần đầu là app nhớ máy này dùng Cốc Cốc. Tắt/bật các nút ở
+  Tài khoản → Nghe nhạc → “Nút Cốc Cốc dưới trình phát”.
