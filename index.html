@@ -144,8 +144,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 .tools button b{font-size:12.5px;font-weight:700;color:var(--tc,var(--tx));line-height:17px;height:17px}
 .tools button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ccbar{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--sep)}
-.ccbar .ccb{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;background:var(--fill);color:var(--tx2)}
+.ccbar .ccb{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:999px;font-size:12px;white-space:nowrap;flex:none;font-weight:600;background:var(--fill);color:var(--tx2)}
 .ccbar .ccb svg{font-size:13px}.ccbar .ccb.p{color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.ccbar .ccb.on{color:#fff;background:var(--blue)}
+.ccbar .ccb .sw{width:26px;height:16px;border-radius:9px;margin-left:2px}.ccbar .ccb .sw::after{width:12px;height:12px;top:2px;left:2px}.ccbar .ccb .sw.on::after{left:12px}.ccbar .ccb.on .sw.on{background:rgba(255,255,255,.4)}
+#ccHint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:3;pointer-events:none;display:grid;justify-items:center;gap:6px;width:max-content;max-width:92%;animation:vin .3s}
+#ccHint .pill{display:flex;gap:16px;padding:7px 16px;border-radius:999px;background:linear-gradient(90deg,#8fc23a,#3aa65c);color:#fff}
+#ccHint .pill svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+#ccHint .pill svg.m{opacity:1;filter:drop-shadow(0 0 4px #fff);animation:ccp 1s ease-in-out infinite}
+@keyframes ccp{50%{transform:scale(1.25)}}
+#ccHint span{font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.65);padding:5px 10px;border-radius:10px;text-align:center;line-height:1.35}
 .ccbar.ccad{justify-content:flex-start;font-size:11.5px;color:var(--tx2)}.ccbar.ccad>span{flex:1;min-width:0}.ccbar.ccad .ib{width:26px;height:26px;font-size:11px}
 .tools button.on{background:var(--accS);color:var(--acc)}.tools button.on svg,.tools button.on b{color:var(--acc)}
 @media(min-width:430px){.tools{grid-template-columns:repeat(6,minmax(0,1fr))}}
@@ -575,6 +583,7 @@ const save=()=>LS.set("hn.state",S);
 const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1;
 const isCC=/coc_coc|coccoc/i.test(navigator.userAgent)||((navigator.userAgentData&&navigator.userAgentData.brands)||[]).some(b=>/coc ?coc/i.test(b.brand));
 const isAndroid=/Android/i.test(navigator.userAgent),isMobile=isAndroid||isIOS;
+const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto",ka:!isIOS,aud:false},LS.get("hn.set")||{});set.hq=false;if(!set.m17){set.aud=false;set.m17=1;LS.set("hn.set",set)}
 const THEMES=[["light","sun","Sáng"],["dark","moon","Tối"],["auto","auto","Tự động"]];
 function applyTheme(){
@@ -849,10 +858,6 @@ function renderHome(){
 function renderModes(){ // các chế độ hay dùng, có ghi chú rõ ràng ngay ở trang chủ
   const M=$("modes");if(!M)return;M.replaceChildren();
   const row=(icon,color,title,sub,on,fn)=>{const b=h("button","mrow"),ci=h("span","ci"),t=h("span","mt");ci.innerHTML=ico(icon);ci.style.setProperty("--c",color);t.append(h("b",null,title),h("small",null,sub));b.append(ci,t,h("span","sw"+(on?" on":"")));b.setAttribute("role","switch");b.setAttribute("aria-checked",!!on);b.onclick=fn;return b};
-  if(!set.tipLock&&matchMedia("(pointer:coarse)").matches){ // hướng dẫn chỉnh máy 1 lần để nhạc không dừng giữa chừng
-    const t=h("div","tip");t.append(h("b",null,"Để nhạc không bị dừng giữa chừng"),h("p",null,isIOS?"iPhone tự khoá màn hình là video YouTube dừng. Vào Cài đặt → Màn hình & Độ sáng → Tự động khoá → chọn “Không bao giờ” (hoặc 10 phút) khi nghe nhạc. Nhớ tắt Chế độ nguồn điện thấp (Cài đặt → Pin).":"Màn hình tắt là video YouTube có thể dừng. Vào Cài đặt → Màn hình → Thời gian chờ màn hình → chọn 10 phút hoặc 30 phút khi nghe nhạc. Và Cài đặt → Ứng dụng → Chrome → Pin → Không hạn chế."));
-    const ok=btn("plain","","Đã hiểu, ẩn hướng dẫn",()=>{set.tipLock=1;saveSet();renderModes()});t.append(ok);M.append(t);
-  }
   M.append(
     row("note","var(--acc)","Chạy nền (chỉ âm thanh)","Nhạc .mp3 luôn chạy nền được (khoá máy, mở app khác vẫn nghe). Video YouTube KHÔNG chạy nền được – bật mục này để app thử phát bài YouTube bằng âm thanh (có lúc không lấy được).",set.aud,switchMode),
     h("p","foot",isIOS?"iPhone: mở bằng Safari chạy nền tốt nhất; nếu bị dừng, bấm ▶ ngay trên màn hình khoá.":"Điều khiển Phát/Dừng/Bài sau ngay trên màn hình khoá hoặc thanh thông báo."));
@@ -1531,7 +1536,7 @@ async function runHealth(){
     catch(e){R(2,nm,"Không kết nối được lúc này (không ảnh hưởng việc nghe nhạc)")}}
   R("mediaSession" in navigator?1:2,"Điều khiển ở màn hình khoá","mediaSession" in navigator?"Hỗ trợ · phát trong nền đang "+(set.bg?"bật":"tắt"):"Trình duyệt này không hỗ trợ");
   R("wakeLock" in navigator?1:2,"Giữ màn hình sáng","wakeLock" in navigator?"Hỗ trợ":"Chưa hỗ trợ (iPhone cần iOS 16.4 trở lên)");
-  R(isCC?1:3,"Trình duyệt Cốc Cốc",isCC?"Đang mở bằng Cốc Cốc – dùng nút Phát nền + bật Tự động ghim video":"Không phải Cốc Cốc – nên mở bằng Cốc Cốc để nghe nền và tự ghim video");
+  R(isCC?1:3,"Trình duyệt Cốc Cốc",isCC?"Đang mở bằng Cốc Cốc – bấm Chạy nền, chạm video rồi bấm nút giữa để thu nhỏ":"Không phải Cốc Cốc – nên mở bằng Cốc Cốc để nghe nền và tự ghim video");
   R("documentPictureInPicture" in window?1:3,"Cửa sổ nổi của app","documentPictureInPicture" in window?"Hỗ trợ":"Máy này dùng nút cửa sổ nổi có sẵn của video");
   const sw=!!(navigator.serviceWorker&&navigator.serviceWorker.controller);R(sw?1:3,"Chế độ ứng dụng (mở nhanh)",sw?"Đang hoạt động":"Sẽ bật sau lần mở thứ hai");
   R(1,"Tên miền đang dùng",location.host+(standalone?" · đang mở từ icon ngoài màn hình":""));
@@ -1635,24 +1640,45 @@ function openInCC(){
 }
 function ccGuide(){
   const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
-  panel("Bật Tự động ghim video",isCC?"Làm 1 lần trong Cốc Cốc":"Cần mở app bằng trình duyệt Cốc Cốc",[
-    h("p","note","Bật xong, khi đang nghe mà vuốt về màn hình chính, Cốc Cốc tự bung cửa sổ video nổi và nhạc không bị ngắt."),
-    ol("Bấm biểu tượng <b>Menu (≡)</b> ở góc dưới bên phải trình duyệt Cốc Cốc.","Chọn <b>Cài đặt</b>.","Vào mục <b>Ghim &amp; phát video trong nền</b>.","Bật <b>Tự động ghim video</b>."),
-    h("p","note","Tạo icon ngoài màn hình bằng Cốc Cốc: mở app trong Cốc Cốc → bấm Menu (≡) → chọn Thêm vào màn hình chính. Icon này luôn mở app bằng Cốc Cốc."),
+  panel("Nghe nền trên Cốc Cốc",isCC?"App thu nhỏ, nhạc vẫn chạy":"Cần mở app bằng trình duyệt Cốc Cốc",[
+    h("p","note","Cách 1 – nhanh nhất (máy nào cũng có):"),
+    ol("Bấm nút <b>Chạy nền</b> dưới trình phát.","<b>Chạm 1 lần vào khung video</b> – Cốc Cốc hiện thanh màu xanh lá có 3 nút.","Bấm <b>nút ở giữa</b> (hình 2 ô vuông chồng nhau). Video thu thành cửa sổ nổi nhỏ.","Vuốt về màn hình chính hoặc mở app khác – nhạc vẫn chạy, hết bài tự sang bài sau."),
+    h("p","note","Cách 2 – tự ghim mỗi lần (chỉ có ở Cốc Cốc bản mới; không thấy thì cập nhật Cốc Cốc trên CH Play, hoặc dùng Cách 1):"),
+    ol("Bấm <b>Menu (≡)</b> ở góc dưới bên phải Cốc Cốc → <b>Cài đặt</b>.","Tìm mục <b>Ghim &amp; phát video trong nền</b> (có máy ghi là <b>Video</b> hoặc <b>Phát video trong nền</b>) → bật <b>Tự động ghim video</b>."),
+    h("p","note","Ẩn thanh địa chỉ: bật nút “Ẩn địa chỉ” dưới trình phát (bấm lại để tắt). Hoặc tạo icon: Menu (≡) → Thêm vào màn hình chính → Thêm; mở app từ icon đó sẽ không có thanh địa chỉ."),
     !isCC&&btn("blue wide","ext",isAndroid?"Mở app bằng Cốc Cốc":"Sao chép link để mở trong Cốc Cốc",openInCC),
     !isCC&&btn("plain wide","download","Cài trình duyệt Cốc Cốc",()=>open(isIOS?CC_IOS:CC_PLAY,"_blank"))].filter(Boolean));
 }
-function ccPlayBg(){ // "Phát nền": phát bằng khung video YouTube (1 trình phát duy nhất) để Cốc Cốc nhận diện và tự ghim khi rời app
+let ccHintT=0;
+function ccHint(){ // chỉ vào video: chạm video → bấm nút giữa trên thanh xanh của Cốc Cốc
+  const S_=$("screen");let x=$("ccHint");if(x)x.remove();x=h("div");x.id="ccHint";
+  const sv=(d,c)=>'<svg viewBox="0 0 24 24"'+(c?' class="m"':"")+'>'+d+"</svg>";
+  x.innerHTML='<div class="pill">'+sv('<path d="M12 4v14M6 12l6 6 6-6"/>')+sv('<rect x="3" y="4" width="13" height="10" rx="2"/><rect x="11" y="11" width="10" height="8" rx="2" fill="currentColor"/>',1)+sv('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')+"</div><span>Chạm vào video → bấm nút ở giữa<br>để thu nhỏ, nhạc vẫn chạy nền</span>";
+  S_.append(x);S_.scrollIntoView({behavior:"smooth",block:"center"});clearTimeout(ccHintT);ccHintT=setTimeout(()=>x.remove(),9000);
+  addEventListener("blur",function bl(){removeEventListener("blur",bl);x.remove()}); // chạm vào video (khung YouTube) → ẩn gợi ý
+}
+function ccPlayBg(){ // "Chạy nền": phát bằng khung video YouTube (1 trình phát duy nhất) rồi chỉ cách thu nhỏ của Cốc Cốc
   if(set.aud){set.aud=false;saveSet()}
   const it=curItem();
   if(!it){if(visible().length)playList(false);else return say("Hãy chọn một bài để nghe.")}
   else if(viaAudio||!loaded)play(it.id,curTime()[0]||S.pos,true);else doPlay();
-  drawTools();drawCC();say("Đang phát. Giờ vuốt về màn hình chính – Cốc Cốc sẽ ghim video và phát tiếp.");
+  drawTools();drawCC();setTimeout(ccHint,300);
 }
-function ccBtn(icon,label,fn,cls){const b=h("button","ccb"+(cls?" "+cls:""));b.innerHTML=ico(icon)+"<span></span>";b.lastChild.textContent=label;b.onclick=fn;return b}
+const isFull=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+async function ccFull(){ // bật/tắt toàn màn hình: ẩn thanh địa chỉ của Cốc Cốc
+  try{if(isFull())await(document.exitFullscreen||document.webkitExitFullscreen).call(document);
+    else{const r=document.documentElement;await(r.requestFullscreen?r.requestFullscreen({navigationUI:"hide"}):r.webkitRequestFullscreen())}}
+  catch(e){say("Máy chưa cho toàn màn hình. Hãy tạo icon: Menu (≡) → Thêm vào màn hình chính.")}
+  set.full=isFull();saveSet();drawCC();
+}
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>drawCC()));
+function ccBtn(icon,label,fn,cls){const b=h("button","ccb"+(cls?" "+cls:""));b.innerHTML=(icon?ico(icon):"")+"<span></span>";b.lastChild.textContent=label;b.onclick=fn;return b}
 function drawCC(){
   const B=$("ccBar");if(!B)return;B.replaceChildren();
-  if(isCC){B.className="ccbar";B.hidden=false;B.append(ccBtn("play","Phát nền",ccPlayBg,"p"),ccBtn("pip","Tự động ghim",ccGuide));return}
+  if(isCC){B.className="ccbar";B.hidden=false;
+    const f=ccBtn("full",standalone?"Đang mở từ icon":"Ẩn địa chỉ",standalone?()=>say("Đang mở từ icon – không có thanh địa chỉ."):ccFull,isFull()?"on":"");
+    if(!standalone){const w=h("span","sw"+(isFull()?" on":""));f.append(w);f.setAttribute("role","switch");f.setAttribute("aria-checked",isFull())}
+    B.append(ccBtn("play","Chạy nền",ccPlayBg,"p"),f,ccBtn("","Hướng dẫn",ccGuide));return}
   B.hidden=!isMobile||LS.get("hn.ccHide")===1;if(B.hidden)return; // trình duyệt khác: chỉ 1 dòng gợi ý nhỏ, ẩn được
   B.className="ccbar ccad";const t=h("span",null,"Nghe nền tốt hơn bằng Cốc Cốc");
   const x=h("button","ib");x.innerHTML=ico("x");x.setAttribute("aria-label","Ẩn gợi ý");x.onclick=()=>{LS.set("hn.ccHide",1);drawCC()};
@@ -1665,11 +1691,10 @@ if(isCC&&!LS.get("hn.ccInit")){set.aud=false;set.ka=false;saveSet();LS.set("hn.c
 
 /* ===== Cài icon + chia sẻ ===== */
 let dip=null;
-const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();dip=e});
 addEventListener("appinstalled",()=>{dip=null;say("Đã tạo icon ứng dụng.")});
 async function install(){
-  if(isCC)return panel("Tạo icon ngoài màn hình (Cốc Cốc)",null,[h("p","note","Bấm biểu tượng Menu (≡) ở góc dưới bên phải Cốc Cốc → chọn Thêm vào màn hình chính → bấm Thêm. Icon này luôn mở app bằng Cốc Cốc nên nghe nền và tự ghim video ổn định."),btn("blue wide","pip","Cách bật Tự động ghim video",ccGuide)]);
+  if(isCC)return panel("Tạo icon ngoài màn hình (Cốc Cốc)",null,[h("p","note","Bấm biểu tượng Menu (≡) ở góc dưới bên phải Cốc Cốc → chọn Thêm vào màn hình chính → bấm Thêm. Mở app từ icon này sẽ không còn thanh địa chỉ."),btn("blue wide","pip","Cách nghe nền trên Cốc Cốc",ccGuide)]);
   if(dip){dip.prompt();try{await dip.userChoice}catch(e){}dip=null;return}
   const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
   panel("Tạo icon ngoài màn hình",null,[h("p","note","iPhone / iPad (Safari):"),ol("Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên lên) ở thanh dưới Safari.","Kéo xuống, chọn <b>Thêm vào MH chính</b>.","Bấm <b>Thêm</b> ở góc trên bên phải."),h("p","note","Android (Chrome):"),ol("Bấm nút <b>⋮</b> ở góc trên bên phải.","Chọn <b>Thêm vào màn hình chính</b> hoặc <b>Cài đặt ứng dụng</b>.")]);

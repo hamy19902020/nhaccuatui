@@ -102,3 +102,7 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
     để Cốc Cốc nhận diện và tự ghim video thành cửa sổ nổi khi vuốt về màn hình chính. Vẫn giữ điều khiển ở màn hình khoá (mediaSession).
   - Nút **Tự động ghim** hướng dẫn: Menu (≡) → Cài đặt → Ghim & phát video trong nền → bật Tự động ghim video.
   - Kiểm tra kết nối có thêm dòng “Trình duyệt Cốc Cốc”.
+- **25/11/2026 (bản 21) – Cốc Cốc gọn hơn:**
+  - Bỏ khung “Để nhạc không bị dừng giữa chừng”.
+  - Trong Cốc Cốc có 3 nút nhỏ: **Chạy nền** (phát + chỉ vào video: chạm video → bấm nút giữa trên thanh xanh để thu nhỏ),
+    **Ẩn địa chỉ** (công tắc bật/tắt toàn màn hình, ẩn thanh địa chỉ), **Hướng dẫn**.
