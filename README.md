@@ -122,3 +122,11 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - **Hướng dẫn** và **Tạo icon** mở ngay bên dưới 3 nút (không dùng hộp thoại nữa), bấm lại hoặc ✕ để đóng.
   - **Tự sang bài sau khi đang ghim video / cửa sổ nổi:** đổi bài ngay trong cùng khung video (không dừng trình phát nữa) nên cửa sổ
     nổi không bị đóng. Android mặc định phát bằng khung video (tắt được ở Tài khoản → “Nút Ghim video dưới trình phát”).
+- **25/11/2026 (bản 26) – hàng đợi chạy liên tục khi nghe nền:**
+  - Bấm **Ghim video**: cả danh sách đang mở vào **Hàng đợi**, nạp thẳng vào trình phát YouTube dạng playlist → hết bài chính trình phát
+    tự sang bài sau, kể cả khi đang ghim video trên Cốc Cốc / thoát ra màn hình chính / khoá máy. App tự cập nhật tên bài theo.
+    Nút Bài sau/Bài trước, Trộn, Lặp cũng điều khiển ngay trong playlist (không làm mất cửa sổ ghim).
+  - Gọn lại: bỏ nút “Nền: bật/tắt” và “Cửa sổ” ở hàng công cụ (đã có công tắc Chạy nền bên dưới và nút Ghim video), bỏ nút “Tạo icon”.
+    Hàng công cụ: Tốc độ · Phụ đề · Hẹn giờ · Hàng đợi (có số bài).
+  - 3 nút dưới trình phát: **Ghim video** · **Ẩn trình duyệt** (công tắc) · **Hướng dẫn** (chỉ Cốc Cốc, có hình thanh xanh, lưu ý để
+    cửa sổ nhỏ chạy ngoài màn hình chính, khoá máy được). Máy tính: Ghim video mở cửa sổ điều khiển nổi.
