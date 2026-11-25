@@ -112,3 +112,8 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
 - **25/11/2026 (bản 23):** iPhone/iPad cũng hiện 3 nút: **Chạy nền** (chỉ cách: chạm video → phóng to → bấm nút cửa sổ nhỏ góc
   trên trái để video thành cửa sổ nổi, nhạc vẫn chạy), **Tạo icon** (iPhone không cho web ẩn thanh địa chỉ → mở từ icon thì không
   có thanh địa chỉ), **Hướng dẫn** (riêng cho iPhone).
+- **25/11/2026 (bản 24) – nút Chạy nền chạy trên mọi máy:**
+  - **Máy tính:** Chạy nền = phát + mở cửa sổ điều khiển nổi (Chrome/Edge/Cốc Cốc). Ẩn địa chỉ = bật/tắt toàn màn hình.
+  - **iPhone/iPad:** Chạy nền = phát bài YouTube bằng âm thanh (khoá máy vẫn nghe); bài nào chưa lấy được âm thanh thì phát video
+    và chỉ cách thu nhỏ thành cửa sổ nổi. Tạo icon = mở app không có thanh địa chỉ.
+  - **Android:** như bản 22 (Cốc Cốc thu nhỏ video).

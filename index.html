@@ -585,7 +585,7 @@ const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.platform==="
 const ccUA=/coc_coc|coccoc/i.test(navigator.userAgent)||((navigator.userAgentData&&navigator.userAgentData.brands)||[]).some(b=>/coc ?coc/i.test(b.brand));
 const isAndroid=/Android/i.test(navigator.userAgent),isMobile=isAndroid||isIOS;
 let isCC=ccUA||LS.get("hn.cc")===1;
-const ccUI=()=>isCC||isMobile&&LS.get("hn.cc")!==0; // Android + iPhone/iPad
+const ccUI=()=>isCC||LS.get("hn.cc")!==0; // mọi máy: Android, iPhone/iPad, máy tính
 function setCC(on){isCC=on||ccUA;LS.set("hn.cc",on?1:0);if(on){set.aud=false;set.ka=false;saveSet();keepAlive(false)}drawCC()}
 const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto",ka:!isIOS,aud:false},LS.get("hn.set")||{});set.hq=false;if(!set.m17){set.aud=false;set.m17=1;LS.set("hn.set",set)}
@@ -1480,7 +1480,7 @@ function renderMe(){
     toggleCell("note","var(--acc)","Chạy nền (chỉ âm thanh)",set.aud,()=>{switchMode();renderMe()},"Nhạc .mp3 luôn chạy nền. Video YouTube không chạy nền được – bật để app thử phát bài YouTube bằng âm thanh"),
     !isIOS&&!isCC&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
     toggleCell("redo","var(--green)","Tự phát lại khi bị dừng",set.bg,()=>{set.bg=!set.bg;saveSet();keepAlive(set.bg&&wantPlay);renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
-    (isMobile||isCC)&&toggleCell("pip","var(--blue)","Nút Chạy nền dưới trình phát",ccUI(),()=>{setCC(!ccUI());renderMe()},"Hiện 3 nút nhỏ: Chạy nền · Ẩn địa chỉ (iPhone: Tạo icon) · Hướng dẫn"),
+    toggleCell("pip","var(--blue)","Nút Chạy nền dưới trình phát",ccUI(),()=>{setCC(!ccUI());renderMe()},"Hiện 3 nút nhỏ: Chạy nền · Ẩn địa chỉ (iPhone: Tạo icon) · Hướng dẫn"),
     toggleCell("skip","var(--green)","SponsorBlock",set.sb,()=>{set.sb=!set.sb;saveSet();drawSegs();renderMe()},"Tự bỏ qua đoạn tài trợ, nhắc đăng ký, đoạn không phải nhạc"),
     toggleCell("tag","var(--blue)","DeArrow",set.da,()=>{set.da=!set.da;saveSet();showNow();renderMe()},"Dùng tên bài do cộng đồng sửa, bớt “giật tít”"),
     cell("download","var(--teal)","Bài đã lưu trên máy",offIds.size+" bài",()=>offIds.size?openSrc({k:"off",name:"Đã lưu trên máy"}):say("Chưa lưu bài nào. Bấm ⋯ ở bài hát (file .mp3) → Lưu để nghe khi mất mạng."))
@@ -1645,8 +1645,14 @@ function openInCC(){
 }
 function ccGuide(){
   const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
+  if(!isMobile)return panel("Nghe nền trên máy tính","Chrome, Edge, Cốc Cốc, Firefox, Safari",[
+    ol("Bấm nút <b>Chạy nền</b> – nhạc phát và mở một <b>cửa sổ nổi nhỏ</b> (tên bài, Phát/Dừng, Bài trước/sau) luôn nằm trên cùng.","Thu nhỏ trình duyệt hoặc mở phần mềm khác – nhạc vẫn chạy, hết bài tự sang bài sau.","Chỉ cần <b>không đóng tab</b> của app."),
+    h("p","note","Cửa sổ nổi có trên Chrome, Edge, Cốc Cốc bản mới. Trình duyệt khác vẫn nghe nền bình thường, chỉ không có cửa sổ nổi."),
+    h("p","note","Nút “Ẩn địa chỉ”: bật để app chiếm toàn màn hình (ẩn thanh địa chỉ, thanh tab). Bấm lại hoặc phím Esc để tắt."),
+    h("p","note","Phím tắt: Dấu cách = Phát/Dừng · N = bài sau · P = bài trước · ← → = tua 10 giây.")]);
   if(isIOS)return panel("Nghe nền trên iPhone","Video thu nhỏ thành cửa sổ nổi, nhạc vẫn chạy",[
     h("p","note","Dùng được với Cốc Cốc, Safari hay Chrome trên iPhone/iPad:"),
+    h("p","note","Bấm Chạy nền: app phát bài YouTube bằng ÂM THANH nên khoá máy, mở app khác vẫn nghe. Bài nào máy chủ chưa lấy được âm thanh thì app phát video – khi đó làm thêm các bước dưới để thu nhỏ video:"),
     ol("Bấm nút <b>Chạy nền</b> dưới trình phát (nhạc bắt đầu phát).","<b>Chạm 1 lần vào khung video</b> → bấm nút <b>phóng to</b> (4 góc mũi tên) ở góc dưới bên phải video.","Khi video đã phóng to: bấm nút <b>cửa sổ nhỏ</b> (hình 2 ô vuông có mũi tên) ở <b>góc trên bên trái</b>.","Video thu thành cửa sổ nổi. Vuốt về màn hình chính – nhạc vẫn chạy. Kéo cửa sổ nổi vào sát mép màn hình để giấu nó đi, nhạc vẫn phát."),
     h("p","note","Nếu không thấy nút cửa sổ nhỏ: vào Cài đặt của iPhone → Cài đặt chung → Hình trong hình → bật Tự động bắt đầu Hình trong hình."),
     h("p","note","Ẩn thanh địa chỉ trên iPhone: bấm nút “Tạo icon” dưới trình phát rồi làm theo hướng dẫn. Mở app từ icon ngoài màn hình sẽ không có thanh địa chỉ."),
@@ -1669,12 +1675,25 @@ function ccHint(){ // chỉ vào video: chạm video → bấm nút giữa trên
   S_.append(x);S_.scrollIntoView({behavior:"smooth",block:"center"});clearTimeout(ccHintT);ccHintT=setTimeout(()=>x.remove(),9000);
   addEventListener("blur",function bl(){removeEventListener("blur",bl);x.remove()}); // chạm vào video (khung YouTube) → ẩn gợi ý
 }
-function ccPlayBg(){ // "Chạy nền": phát bằng khung video YouTube (1 trình phát duy nhất) rồi chỉ cách thu nhỏ của Cốc Cốc
-  if(!isCC)setCC(true);if(set.aud){set.aud=false;saveSet()}
+function ccStart(){ // phát bài đang chọn (hoặc bài đầu danh sách); trả về false nếu chưa có bài
   const it=curItem();
-  if(!it){if(visible().length)playList(false);else return say("Hãy chọn một bài để nghe.")}
-  else if(viaAudio||!loaded)play(it.id,curTime()[0]||S.pos,true);else doPlay();
-  drawTools();drawCC();setTimeout(ccHint,300);
+  if(!it){if(visible().length){playList(false);return true}say("Hãy chọn một bài để nghe.");return false}
+  if(viaAudio&&!set.aud||!viaAudio&&set.aud&&it.type==="yt"||!loaded)play(it.id,curTime()[0]||S.pos,true);else doPlay();return true;
+}
+function ccPlayBg(){ // nút "Chạy nền" – mỗi loại máy một cách, bấm 1 lần là chạy
+  if(!isMobile){ // MÁY TÍNH: phát + mở cửa sổ điều khiển nổi luôn nằm trên cùng; thu nhỏ trình duyệt nhạc vẫn chạy
+    if(set.aud){set.aud=false;saveSet()}if(!ccStart())return;drawTools();drawCC();
+    if("documentPictureInPicture" in window&&!pipWin){openPip();say("Đã mở cửa sổ nổi. Thu nhỏ trình duyệt hoặc mở app khác – nhạc vẫn chạy.")}
+    else say("Đang phát. Thu nhỏ trình duyệt hoặc mở app khác – nhạc vẫn chạy (đừng đóng tab).");return;
+  }
+  if(isIOS){ // IPHONE/IPAD: phát chỉ âm thanh → khoá máy, mở app khác vẫn nghe. Bài nào không lấy được âm thanh thì phát video + chỉ cách thu nhỏ
+    if(!set.aud){set.aud=true;saveSet()}if(!ccStart())return;drawTools();drawCC();
+    say("Chạy nền: BẬT – khoá máy hoặc mở app khác vẫn nghe.");
+    setTimeout(()=>{if(isYT(curItem()))ccHint()},4500);return;
+  }
+  // ANDROID (Cốc Cốc): phát bằng khung video YouTube để Cốc Cốc thu nhỏ thành cửa sổ nổi
+  if(!isCC)setCC(true);if(set.aud){set.aud=false;saveSet()}
+  if(!ccStart())return;drawTools();drawCC();setTimeout(ccHint,300);
 }
 const isFull=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
 async function ccFull(){ // bật/tắt toàn màn hình: ẩn thanh địa chỉ của Cốc Cốc
