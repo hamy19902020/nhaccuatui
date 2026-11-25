@@ -117,3 +117,8 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
   - **iPhone/iPad:** Chạy nền = phát bài YouTube bằng âm thanh (khoá máy vẫn nghe); bài nào chưa lấy được âm thanh thì phát video
     và chỉ cách thu nhỏ thành cửa sổ nổi. Tạo icon = mở app không có thanh địa chỉ.
   - **Android:** như bản 22 (Cốc Cốc thu nhỏ video).
+- **25/11/2026 (bản 25):**
+  - Nút “Chạy nền” đổi tên thành **Ghim video** (giống nút giữa của Cốc Cốc).
+  - **Hướng dẫn** và **Tạo icon** mở ngay bên dưới 3 nút (không dùng hộp thoại nữa), bấm lại hoặc ✕ để đóng.
+  - **Tự sang bài sau khi đang ghim video / cửa sổ nổi:** đổi bài ngay trong cùng khung video (không dừng trình phát nữa) nên cửa sổ
+    nổi không bị đóng. Android mặc định phát bằng khung video (tắt được ở Tài khoản → “Nút Ghim video dưới trình phát”).

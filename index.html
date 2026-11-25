@@ -154,6 +154,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radiu
 #ccHint .pill svg.m{opacity:1;filter:drop-shadow(0 0 4px #fff);animation:ccp 1s ease-in-out infinite}
 @keyframes ccp{50%{transform:scale(1.25)}}
 #ccHint span{font-size:12px;font-weight:600;color:#fff;background:rgba(0,0,0,.65);padding:5px 10px;border-radius:10px;text-align:center;line-height:1.35}
+#ccInfo{margin-top:6px;padding:10px 12px;border-radius:14px;background:var(--fill);font-size:12.5px;position:relative;animation:vin .25s}
+#ccInfo>b{display:block;font-size:13.5px;margin:0 28px 4px 0}#ccInfo .note{text-align:left;margin:4px 0}#ccInfo .steps{font-size:12.5px;margin:4px 0 6px}
+#ccInfo .x{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:var(--tx2);background:var(--fill)}
+#ccInfo .btn{min-height:32px;font-size:12.5px;margin-top:4px}
 .ccbar.ccad{justify-content:flex-start;font-size:11.5px;color:var(--tx2)}.ccbar.ccad>span{flex:1;min-width:0}.ccbar.ccad .ib{width:26px;height:26px;font-size:11px}
 .tools button.on{background:var(--accS);color:var(--acc)}.tools button.on svg,.tools button.on b{color:var(--acc)}
 @media(min-width:430px){.tools{grid-template-columns:repeat(6,minmax(0,1fr))}}
@@ -584,9 +588,9 @@ const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.platform==="
 // Cốc Cốc nay dùng user-agent giống hệt Chrome nên không nhận ra tự động được → trên Android luôn hiện nút; bấm "Chạy nền" là app nhớ máy này dùng Cốc Cốc
 const ccUA=/coc_coc|coccoc/i.test(navigator.userAgent)||((navigator.userAgentData&&navigator.userAgentData.brands)||[]).some(b=>/coc ?coc/i.test(b.brand));
 const isAndroid=/Android/i.test(navigator.userAgent),isMobile=isAndroid||isIOS;
-let isCC=ccUA||LS.get("hn.cc")===1;
+let isCC=ccUA||LS.get("hn.cc")===1||isAndroid&&LS.get("hn.cc")!==0;
 const ccUI=()=>isCC||LS.get("hn.cc")!==0; // mọi máy: Android, iPhone/iPad, máy tính
-function setCC(on){isCC=on||ccUA;LS.set("hn.cc",on?1:0);if(on){set.aud=false;set.ka=false;saveSet();keepAlive(false)}drawCC()}
+function setCC(on){isCC=on||ccUA;if(!on&&ccInfoOpen)ccInfoClose();LS.set("hn.cc",on?1:0);if(on){set.aud=false;set.ka=false;saveSet();keepAlive(false)}drawCC()}
 const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 let set=Object.assign({sb:true,da:true,cc:0,ccSize:0,wl:false,bg:true,theme:"auto",ka:!isIOS,aud:false},LS.get("hn.set")||{});set.hq=false;if(!set.m17){set.aud=false;set.m17=1;LS.set("hn.set",set)}
 const THEMES=[["light","sun","Sáng"],["dark","moon","Tối"],["auto","auto","Tự động"]];
@@ -1293,13 +1297,14 @@ function switchMode(){
   const it=curItem();if(it&&it.type==="yt"&&loaded){const t=curTime()[0],was=wantPlay;play(it.id,t,true);if(!was)setTimeout(doPause,900)}
 }
 const reAud=(it,at,fresh)=>playYtAudio(it,at,fresh);
-function stopAll(){try{ytReady&&yt.stopVideo()}catch(e){}auReal=false;au.pause();au.removeAttribute("src");if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=""}setPlaying(false)}
+function stopAll(keep){if(!keep)try{ytReady&&yt.stopVideo()}catch(e){}auReal=false;au.pause();au.removeAttribute("src");if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=""}setPlaying(false)}
 function play(id,at=0,nopush){
   const it=queue.find(i=>i.id===id)||(S.curSong&&S.curSong.id===id?S.curSong:null);if(!it)return;
   if(!nopush&&S.cur&&S.cur!==id)hist.push(S.cur);
-  counted.delete(id);handoff=false;loaded=true;wantPlay=true;netWait=false;keepAlive(false);stopAll();if(auRetry!==id)auRetry="";S.cur=id;S.curSong=it;played.add(id);S.pos=at;ccDone="";
+  counted.delete(id);handoff=false;loaded=true;wantPlay=true;netWait=false;const seam=it.type==="yt"&&!set.aud&&ytReady&&loaded&&!viaAudio&&(document.hidden||isCC); // đang ở cửa sổ nổi/ghim video: giữ nguyên khung video, chỉ đổi bài
+  keepAlive(false);stopAll(seam);if(auRetry!==id)auRetry="";S.cur=id;S.curSong=it;played.add(id);S.pos=at;ccDone="";
   if(it.type==="yt"){
-    if(!set.aud&&document.hidden&&set.bg&&!isCC){viaAudio=true;handoff=true;auHold();playYtAudio(it,at)}
+    if(!set.aud&&document.hidden&&set.bg&&!isCC&&!seam){viaAudio=true;handoff=true;auHold();playYtAudio(it,at)}
     else if(set.aud){viaAudio=true;const c=stCache[it.ref];if(c&&Date.now()-c.t<100*60000){auSet(c.url,at,it.ref);prefetchNext()}else{auHold();playYtAudio(it,at)}}
     else startVideo(it,at);
     if(set.sb)sbGet(it.ref);if(set.da)daTitle(it.ref).then(()=>{if(curItem()===it){showNow();setMedia(it)}})}
@@ -1480,7 +1485,7 @@ function renderMe(){
     toggleCell("note","var(--acc)","Chạy nền (chỉ âm thanh)",set.aud,()=>{switchMode();renderMe()},"Nhạc .mp3 luôn chạy nền. Video YouTube không chạy nền được – bật để app thử phát bài YouTube bằng âm thanh"),
     !isIOS&&!isCC&&toggleCell("wifi","var(--purple)","Giữ phát khi tắt màn hình",set.ka,()=>{set.ka=!set.ka;saveSet();keepAlive(set.ka&&wantPlay);renderMe()},"Android / máy tính: giúp nhạc không bị ngắt khi khoá máy. Nếu máy kêu “rè” thì tắt mục này"),
     toggleCell("redo","var(--green)","Tự phát lại khi bị dừng",set.bg,()=>{set.bg=!set.bg;saveSet();keepAlive(set.bg&&wantPlay);renderMe()},"Tự phát tiếp khi tắt màn hình hoặc chuyển app"),
-    toggleCell("pip","var(--blue)","Nút Chạy nền dưới trình phát",ccUI(),()=>{setCC(!ccUI());renderMe()},"Hiện 3 nút nhỏ: Chạy nền · Ẩn địa chỉ (iPhone: Tạo icon) · Hướng dẫn"),
+    toggleCell("pip","var(--blue)","Nút Ghim video dưới trình phát",ccUI(),()=>{setCC(!ccUI());renderMe()},"Hiện 3 nút nhỏ: Ghim video · Ẩn địa chỉ (iPhone: Tạo icon) · Hướng dẫn"),
     toggleCell("skip","var(--green)","SponsorBlock",set.sb,()=>{set.sb=!set.sb;saveSet();drawSegs();renderMe()},"Tự bỏ qua đoạn tài trợ, nhắc đăng ký, đoạn không phải nhạc"),
     toggleCell("tag","var(--blue)","DeArrow",set.da,()=>{set.da=!set.da;saveSet();showNow();renderMe()},"Dùng tên bài do cộng đồng sửa, bớt “giật tít”"),
     cell("download","var(--teal)","Bài đã lưu trên máy",offIds.size+" bài",()=>offIds.size?openSrc({k:"off",name:"Đã lưu trên máy"}):say("Chưa lưu bài nào. Bấm ⋯ ở bài hát (file .mp3) → Lưu để nghe khi mất mạng."))
@@ -1541,7 +1546,7 @@ async function runHealth(){
     catch(e){R(2,nm,"Không kết nối được lúc này (không ảnh hưởng việc nghe nhạc)")}}
   R("mediaSession" in navigator?1:2,"Điều khiển ở màn hình khoá","mediaSession" in navigator?"Hỗ trợ · phát trong nền đang "+(set.bg?"bật":"tắt"):"Trình duyệt này không hỗ trợ");
   R("wakeLock" in navigator?1:2,"Giữ màn hình sáng","wakeLock" in navigator?"Hỗ trợ":"Chưa hỗ trợ (iPhone cần iOS 16.4 trở lên)");
-  R(isCC?1:3,"Trình duyệt Cốc Cốc",isCC?"Đang mở bằng Cốc Cốc – bấm Chạy nền, chạm video rồi bấm nút giữa để thu nhỏ":"Không phải Cốc Cốc – nên mở bằng Cốc Cốc để nghe nền và tự ghim video");
+  R(isCC?1:3,"Trình duyệt Cốc Cốc",isCC?"Đang mở bằng Cốc Cốc – bấm Ghim video, chạm video rồi bấm nút giữa để thu nhỏ":"Không phải Cốc Cốc – nên mở bằng Cốc Cốc để nghe nền và tự ghim video");
   R("documentPictureInPicture" in window?1:3,"Cửa sổ nổi của app","documentPictureInPicture" in window?"Hỗ trợ":"Máy này dùng nút cửa sổ nổi có sẵn của video");
   const sw=!!(navigator.serviceWorker&&navigator.serviceWorker.controller);R(sw?1:3,"Chế độ ứng dụng (mở nhanh)",sw?"Đang hoạt động":"Sẽ bật sau lần mở thứ hai");
   R(1,"Tên miền đang dùng",location.host+(standalone?" · đang mở từ icon ngoài màn hình":""));
@@ -1643,23 +1648,31 @@ function openInCC(){
   if(isAndroid){location.href="intent://"+location.host+"/#Intent;scheme=https;package=com.coccoc.trinhduyet;S.browser_fallback_url="+encodeURIComponent(CC_PLAY)+";end";return}
   copyText(SITE+"/","Đã sao chép link app. Mở Cốc Cốc rồi dán link vào ô địa chỉ.");
 }
+let ccInfoOpen="";
+function ccInfoClose(){const x=$("ccInfo");if(x)x.remove();ccInfoOpen=""}
+function ccPanel(title,sub,nodes){ // khung hướng dẫn mở ngay dưới 3 nút; bấm lại nút đó để đóng
+  if(ccInfoOpen===title){ccInfoClose();return}ccInfoClose();ccInfoOpen=title;
+  const B=$("ccBar"),box=h("div");box.id="ccInfo";const x=h("button","x");x.innerHTML=ico("x");x.setAttribute("aria-label","Đóng");x.onclick=ccInfoClose;
+  box.append(h("b",null,title),x);if(sub)box.append(h("p","note",sub));box.append(...nodes.filter(Boolean));B.after(box);
+  setTimeout(()=>box.scrollIntoView({behavior:"smooth",block:"nearest"}),50);
+}
 function ccGuide(){
   const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
-  if(!isMobile)return panel("Nghe nền trên máy tính","Chrome, Edge, Cốc Cốc, Firefox, Safari",[
-    ol("Bấm nút <b>Chạy nền</b> – nhạc phát và mở một <b>cửa sổ nổi nhỏ</b> (tên bài, Phát/Dừng, Bài trước/sau) luôn nằm trên cùng.","Thu nhỏ trình duyệt hoặc mở phần mềm khác – nhạc vẫn chạy, hết bài tự sang bài sau.","Chỉ cần <b>không đóng tab</b> của app."),
+  if(!isMobile)return ccPanel("Nghe nền trên máy tính","Chrome, Edge, Cốc Cốc, Firefox, Safari",[
+    ol("Bấm nút <b>Ghim video</b> – nhạc phát và mở một <b>cửa sổ nổi nhỏ</b> (tên bài, Phát/Dừng, Bài trước/sau) luôn nằm trên cùng.","Thu nhỏ trình duyệt hoặc mở phần mềm khác – nhạc vẫn chạy, hết bài tự sang bài sau.","Chỉ cần <b>không đóng tab</b> của app."),
     h("p","note","Cửa sổ nổi có trên Chrome, Edge, Cốc Cốc bản mới. Trình duyệt khác vẫn nghe nền bình thường, chỉ không có cửa sổ nổi."),
     h("p","note","Nút “Ẩn địa chỉ”: bật để app chiếm toàn màn hình (ẩn thanh địa chỉ, thanh tab). Bấm lại hoặc phím Esc để tắt."),
     h("p","note","Phím tắt: Dấu cách = Phát/Dừng · N = bài sau · P = bài trước · ← → = tua 10 giây.")]);
-  if(isIOS)return panel("Nghe nền trên iPhone","Video thu nhỏ thành cửa sổ nổi, nhạc vẫn chạy",[
+  if(isIOS)return ccPanel("Nghe nền trên iPhone","Video thu nhỏ thành cửa sổ nổi, nhạc vẫn chạy",[
     h("p","note","Dùng được với Cốc Cốc, Safari hay Chrome trên iPhone/iPad:"),
-    h("p","note","Bấm Chạy nền: app phát bài YouTube bằng ÂM THANH nên khoá máy, mở app khác vẫn nghe. Bài nào máy chủ chưa lấy được âm thanh thì app phát video – khi đó làm thêm các bước dưới để thu nhỏ video:"),
-    ol("Bấm nút <b>Chạy nền</b> dưới trình phát (nhạc bắt đầu phát).","<b>Chạm 1 lần vào khung video</b> → bấm nút <b>phóng to</b> (4 góc mũi tên) ở góc dưới bên phải video.","Khi video đã phóng to: bấm nút <b>cửa sổ nhỏ</b> (hình 2 ô vuông có mũi tên) ở <b>góc trên bên trái</b>.","Video thu thành cửa sổ nổi. Vuốt về màn hình chính – nhạc vẫn chạy. Kéo cửa sổ nổi vào sát mép màn hình để giấu nó đi, nhạc vẫn phát."),
+    h("p","note","Bấm Ghim video: app phát bài YouTube bằng ÂM THANH nên khoá máy, mở app khác vẫn nghe. Bài nào máy chủ chưa lấy được âm thanh thì app phát video – khi đó làm thêm các bước dưới để thu nhỏ video:"),
+    ol("Bấm nút <b>Ghim video</b> dưới trình phát (nhạc bắt đầu phát).","<b>Chạm 1 lần vào khung video</b> → bấm nút <b>phóng to</b> (4 góc mũi tên) ở góc dưới bên phải video.","Khi video đã phóng to: bấm nút <b>cửa sổ nhỏ</b> (hình 2 ô vuông có mũi tên) ở <b>góc trên bên trái</b>.","Video thu thành cửa sổ nổi. Vuốt về màn hình chính – nhạc vẫn chạy. Kéo cửa sổ nổi vào sát mép màn hình để giấu nó đi, nhạc vẫn phát."),
     h("p","note","Nếu không thấy nút cửa sổ nhỏ: vào Cài đặt của iPhone → Cài đặt chung → Hình trong hình → bật Tự động bắt đầu Hình trong hình."),
     h("p","note","Ẩn thanh địa chỉ trên iPhone: bấm nút “Tạo icon” dưới trình phát rồi làm theo hướng dẫn. Mở app từ icon ngoài màn hình sẽ không có thanh địa chỉ."),
     !isCC&&btn("plain wide","download","Cài trình duyệt Cốc Cốc",()=>open(CC_IOS,"_blank"))].filter(Boolean));
-  panel("Nghe nền trên Cốc Cốc","App thu nhỏ, nhạc vẫn chạy",[
+  ccPanel("Nghe nền trên Cốc Cốc","App thu nhỏ, nhạc vẫn chạy",[
     h("p","note","Cách 1 – nhanh nhất (máy nào cũng có):"),
-    ol("Bấm nút <b>Chạy nền</b> dưới trình phát.","<b>Chạm 1 lần vào khung video</b> – Cốc Cốc hiện thanh màu xanh lá có 3 nút.","Bấm <b>nút ở giữa</b> (hình 2 ô vuông chồng nhau). Video thu thành cửa sổ nổi nhỏ.","Vuốt về màn hình chính hoặc mở app khác – nhạc vẫn chạy, hết bài tự sang bài sau."),
+    ol("Bấm nút <b>Ghim video</b> dưới trình phát.","<b>Chạm 1 lần vào khung video</b> – Cốc Cốc hiện thanh màu xanh lá có 3 nút.","Bấm <b>nút ở giữa</b> (hình 2 ô vuông chồng nhau). Video thu thành cửa sổ nổi nhỏ.","Vuốt về màn hình chính hoặc mở app khác – nhạc vẫn chạy, hết bài tự sang bài sau."),
     h("p","note","Cách 2 – tự ghim mỗi lần (chỉ có ở Cốc Cốc bản mới; không thấy thì cập nhật Cốc Cốc trên CH Play, hoặc dùng Cách 1):"),
     ol("Bấm <b>Menu (≡)</b> ở góc dưới bên phải Cốc Cốc → <b>Cài đặt</b>.","Tìm mục <b>Ghim &amp; phát video trong nền</b> (có máy ghi là <b>Video</b> hoặc <b>Phát video trong nền</b>) → bật <b>Tự động ghim video</b>."),
     h("p","note","Ẩn thanh địa chỉ: bật nút “Ẩn địa chỉ” dưới trình phát (bấm lại để tắt). Hoặc tạo icon: Menu (≡) → Thêm vào màn hình chính → Thêm; mở app từ icon đó sẽ không có thanh địa chỉ."),
@@ -1705,7 +1718,7 @@ async function ccFull(){ // bật/tắt toàn màn hình: ẩn thanh địa ch�
 ["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>drawCC()));
 function iosIcon(){
   const ol=(...li)=>{const o=h("ol","steps");li.forEach(t=>{const l=h("li");l.innerHTML=t;o.append(l)});return o};
-  panel("Tạo icon – mở app không có thanh địa chỉ",null,[
+  ccPanel("Tạo icon – mở app không có thanh địa chỉ",null,[
     h("p","note","Trong Cốc Cốc trên iPhone:"),
     ol("Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên đi lên) – ở thanh dưới hoặc trong <b>Menu (≡)</b>.","Kéo xuống, chọn <b>Thêm vào MH chính</b>.","Bấm <b>Thêm</b> ở góc trên bên phải."),
     h("p","note","Nếu Cốc Cốc không có mục “Thêm vào MH chính”: bấm Sao chép link bên dưới → mở Safari → dán link → bấm nút Chia sẻ → Thêm vào MH chính → Thêm."),
@@ -1718,7 +1731,7 @@ function drawCC(){
     const noFS=(/iPhone|iPod/.test(navigator.userAgent)||!(document.fullscreenEnabled||document.webkitFullscreenEnabled))&&!standalone; // iPhone: web không ẩn được thanh địa chỉ → tạo icon
     const f=noFS?ccBtn("download","Tạo icon",iosIcon):ccBtn("full",standalone?"Đang mở từ icon":"Ẩn địa chỉ",standalone?()=>say("Đang mở từ icon – không có thanh địa chỉ."):ccFull,isFull()?"on":"");
     if(!standalone&&!noFS){const w=h("span","sw"+(isFull()?" on":""));f.append(w);f.setAttribute("role","switch");f.setAttribute("aria-checked",isFull())}
-    B.append(ccBtn("play","Chạy nền",ccPlayBg,"p"),f,ccBtn("","Hướng dẫn",ccGuide));return}
+    B.append(ccBtn("pip","Ghim video",ccPlayBg,"p"),f,ccBtn("","Hướng dẫn",ccGuide));return}
   B.hidden=!isMobile||LS.get("hn.ccHide")===1;if(B.hidden)return; // trình duyệt khác: chỉ 1 dòng gợi ý nhỏ, ẩn được
   B.className="ccbar ccad";const t=h("span",null,"Nghe nền tốt hơn bằng Cốc Cốc");
   const x=h("button","ib");x.innerHTML=ico("x");x.setAttribute("aria-label","Ẩn gợi ý");x.onclick=()=>{LS.set("hn.ccHide",1);drawCC()};
