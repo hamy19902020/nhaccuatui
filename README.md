@@ -109,3 +109,6 @@ Kiểm tra: mở `https://<tên-miền>/api/app?a=usage` phải ra JSON có `"co
 - **25/11/2026 (bản 22):** Cốc Cốc nay dùng user-agent giống hệt Chrome nên app không tự nhận ra được → trên **Android luôn hiện
   3 nút** Chạy nền · Ẩn địa chỉ · Hướng dẫn. Bấm “Chạy nền” lần đầu là app nhớ máy này dùng Cốc Cốc. Tắt/bật các nút ở
   Tài khoản → Nghe nhạc → “Nút Cốc Cốc dưới trình phát”.
+- **25/11/2026 (bản 23):** iPhone/iPad cũng hiện 3 nút: **Chạy nền** (chỉ cách: chạm video → phóng to → bấm nút cửa sổ nhỏ góc
+  trên trái để video thành cửa sổ nổi, nhạc vẫn chạy), **Tạo icon** (iPhone không cho web ẩn thanh địa chỉ → mở từ icon thì không
+  có thanh địa chỉ), **Hướng dẫn** (riêng cho iPhone).
